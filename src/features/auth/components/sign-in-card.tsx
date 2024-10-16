@@ -21,23 +21,22 @@ import {
     FormItem,
     FormMessage,
 } from "@/components/ui/form";
-
-const formShema = z.object({
-    email: z.string().trim().email(),
-    password: z.string().min(1, "Required"),
-})
+import { loginShema } from "@/features/schema";
+import { useLogin } from "../api/use-login";
 
 export const SignInCard = () => {
-    const form = useForm<z.infer<typeof formShema>>({
-        resolver: zodResolver(formShema),
+    const { mutate } = useLogin();
+
+    const form = useForm<z.infer<typeof loginShema>>({
+        resolver: zodResolver(loginShema),
         defaultValues: {
             email: "",
             password: "",
         }
     })
 
-    const onSubmit = (values: z.infer<typeof formShema>) => {
-        console.log({ values })
+    const onSubmit = (values: z.infer<typeof loginShema>) => {
+        mutate({ json: values })
     }
 
     return (
