@@ -7,7 +7,7 @@ import { createAdminClient } from "@/lib/appwrite";
 import { sessionMiddleware } from "@/lib/session-middleware";
 
 import { AUTH_COOKIE } from "../constants";
-import { loginShema, registerShema } from "../../schema";
+import { loginShema, registerShema } from "../schemas";
 
 const app = new Hono()
     .get(

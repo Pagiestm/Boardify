@@ -24,7 +24,7 @@ import {
     FormItem,
     FormMessage,
 } from "@/components/ui/form";
-import { registerShema } from "@/features/schema";
+import { registerShema } from "@/features/auth/schemas";
 import { useRegister } from "../api/use-register";
 
 export const SignUpCard = () => {

@@ -23,7 +23,7 @@ import {
     FormItem,
     FormMessage,
 } from "@/components/ui/form";
-import { loginShema } from "@/features/schema";
+import { loginShema } from "@/features/auth/schemas";
 import { useLogin } from "../api/use-login";
 
 export const SignInCard = () => {
