@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { MemberRole } from "@/features/members/types";
 import { getMember } from "@/features/members/utils";
 
-import { generatreInviteCode } from "@/lib/utils";
+import { generateInviteCode } from "@/lib/utils";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { DATABASE_ID, IMAGES_BUCKET_ID, MEMBERS_ID, WORKSPACES_ID } from "@/config";
 
@@ -75,7 +75,7 @@ const app = new Hono()
                     name,
                     userId: user.$id,
                     imageUrl: uploadedImageUrl,
-                    inviteCode: generatreInviteCode(6),
+                    inviteCode: generateInviteCode(6),
                 }
             )
 
@@ -174,6 +174,37 @@ const app = new Hono()
             )
 
             return c.json({ data: { $id: workspaceId } })
+        }
+    )
+    .post(
+        "/:workspaceId/reset-invite-code",
+        sessionMiddleware,
+        async (c) => {
+            const databases = c.get("databases")
+            const user = c.get("user")
+
+            const { workspaceId } = c.req.param()
+
+            const member = await getMember({
+                databases,
+                workspaceId,
+                userId: user.$id,
+            })
+
+            if (!member || member.role !== MemberRole.ADMIN) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            const workspace = await databases.updateDocument(
+                DATABASE_ID,
+                WORKSPACES_ID,
+                workspaceId,
+                {
+                    inviteCode: generateInviteCode(6)
+                }
+            )
+
+            return c.json({ data: workspace })
         }
     )
 
