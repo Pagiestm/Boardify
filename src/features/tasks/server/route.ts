@@ -10,7 +10,7 @@ import { createAdminClient } from "@/lib/appwrite";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { DATABASE_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from "@/config";
 
-import { TaskStatus } from "../types";
+import { Task, TaskStatus } from "../types";
 import { createtaskSchema } from "../schemas";
 
 const app = new Hono()
@@ -81,7 +81,7 @@ const app = new Hono()
                 query.push(Query.equal("search", search))
             }
 
-            const tasks = await databases.listDocuments(
+            const tasks = await databases.listDocuments<Task>(
                 DATABASE_ID,
                 TASKS_ID,
                 query
