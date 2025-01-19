@@ -25,7 +25,7 @@ const app = new Hono()
         )
 
         if (members.total === 0) {
-            return c.json({ data: { documents: [], total: 0} })
+            return c.json({ data: { documents: [], total: 0 } })
         }
 
         const workspaceIds = members.documents.map((member) => member.workspaceId)
@@ -41,6 +41,55 @@ const app = new Hono()
 
         return c.json({ data: workspaces })
     })
+    .get(
+        "/:workspaceId",
+        sessionMiddleware,
+        async (c) => {
+            const user = c.get("user");
+            const databases = c.get("databases");
+            const { workspaceId } = c.req.param()
+
+            const member = await getMember({
+                databases,
+                workspaceId,
+                userId: user.$id,
+            })
+
+            if (!member) {
+                return c.json({ error: "Unauthorized" }, 401)
+            }
+
+            const workspace = await databases.getDocument<Workspace>(
+                DATABASE_ID,
+                WORKSPACES_ID,
+                workspaceId,
+            )
+
+            return c.json({ data: workspace })
+        }
+    )
+    .get(
+        "/:workspaceId/info",
+        sessionMiddleware,
+        async (c) => {
+            const databases = c.get("databases");
+            const { workspaceId } = c.req.param()
+
+            const workspace = await databases.getDocument<Workspace>(
+                DATABASE_ID,
+                WORKSPACES_ID,
+                workspaceId,
+            )
+
+            return c.json({
+                data: {
+                    $id: workspace.$id,
+                    name: workspace.name,
+                    imageUrl: workspace.imageUrl
+                }
+            })
+        }
+    )
     .post(
         "/",
         zValidator("form", createWorkspaceSchema),
@@ -135,7 +184,7 @@ const app = new Hono()
                 uploadedImageUrl = `data:image/png;base64,${Buffer.from(arrayBuffer).toString("base64")}`
             } else {
                 uploadedImageUrl = image
-            } 
+            }
 
             const workspace = await databases.updateDocument(
                 DATABASE_ID,
@@ -210,8 +259,8 @@ const app = new Hono()
         }
     )
     .post(
-        "/:workspaceId/join", 
-        sessionMiddleware, 
+        "/:workspaceId/join",
+        sessionMiddleware,
         zValidator("json", z.object({ code: z.string() })),
         async (c) => {
             const { workspaceId } = c.req.param()
