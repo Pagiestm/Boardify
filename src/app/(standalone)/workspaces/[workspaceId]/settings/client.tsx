@@ -8,7 +8,7 @@ import { PageLoader } from "@/components/page-loader";
 import { PageError } from "@/components/page-error";
 
 
-export const WorkspaceIdSettingsClient = async () => {
+export const WorkspaceIdSettingsClient = () => {
     const workspaceId = useWorkspaceId()
     const { data: initialValues, isLoading } = useGetWorkspace({ workspaceId })
 

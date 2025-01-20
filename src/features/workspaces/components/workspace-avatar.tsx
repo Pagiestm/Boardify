@@ -3,7 +3,6 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { AvatarImage } from "@radix-ui/react-avatar"
 
 interface WorkspaceAvatarProps {
     image?: string

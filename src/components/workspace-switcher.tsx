@@ -6,7 +6,7 @@ import { RiAddCircleFill } from "react-icons/ri"
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id"
 import { useGetWorkspaces } from "@/features/workspaces/api/use-get-workspaces"
 import { WorkspaceAvatar } from "@/features/workspaces/components/workspace-avatar"
-import { usecreateWorkspaceModal } from "@/features/workspaces/hooks/use-create-workspace-modal"
+import { useCreateWorkspaceModal } from "@/features/workspaces/hooks/use-create-workspace-modal"
 
 import {
     Select,
@@ -20,7 +20,7 @@ export const WorkspaceSwitcher = () => {
     const workspaceId = useWorkspaceId()
     const router = useRouter()
     const { data: workspaces } = useGetWorkspaces()
-    const { open } = usecreateWorkspaceModal()
+    const { open } = useCreateWorkspaceModal()
 
     const onSelect = (id: string) => {
         router.push(`/workspaces/${id}`)

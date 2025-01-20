@@ -9,11 +9,11 @@ import { cn } from "@/lib/utils"
 import { useGetProjects } from "@/features/projects/api/use-get-projects"
 import { ProjectAvatar } from "@/features/projects/components/project-avatar"
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id"
-import { usecreateProjectModal } from "@/features/projects/hooks/use-create-project-modal"
+import { useCreateProjectModal } from "@/features/projects/hooks/use-create-project-modal"
 
 export const Projects = () => {
     const pathname = usePathname()
-    const { open } = usecreateProjectModal()
+    const { open } = useCreateProjectModal()
     const workspaceId = useWorkspaceId()
     const { data } = useGetProjects({
         workspaceId,

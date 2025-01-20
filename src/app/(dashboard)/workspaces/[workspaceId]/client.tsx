@@ -13,7 +13,7 @@ import { useGetProjects } from "@/features/projects/api/use-get-projects";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { useCreateTaskModal } from "@/features/tasks/hooks/use-create-task-modal";
-import { usecreateProjectModal } from "@/features/projects/hooks/use-create-project-modal";
+import { useCreateProjectModal } from "@/features/projects/hooks/use-create-project-modal";
 import { useGetWorkspaceAnalytics } from "@/features/workspaces/api/use-get-workspace-analytics";
 
 import { Button } from "@/components/ui/button";
@@ -122,7 +122,7 @@ interface ProjectListProps {
 
 export const ProjectList = ({ data, total }: ProjectListProps) => {
     const workspaceId = useWorkspaceId()
-    const { open: createProject } = usecreateProjectModal()
+    const { open: createProject } = useCreateProjectModal()
 
     return (
         <div className="flex flex-col gap-y-4 col-span-1">
