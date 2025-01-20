@@ -23,12 +23,12 @@ export async function signUpWithGithub() {
 export async function signUpWithGoogle() {
 	const { account } = await createAdminClient();
 
-	//const origin = headers().get("origin");
+	const origin = headers().get("origin");
 
 	const redirectUrl = await account.createOAuth2Token(
 		OAuthProvider.Google,
-		`${process.env.NEXT_PUBLIC_APP}/oauth`,
-		`${process.env.NEXT_PUBLIC_APP}/sign-up`,
+		`${origin}/oauth`,
+		`${origin}/sign-up`,
 	);
 
 	return redirect(redirectUrl);
