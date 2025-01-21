@@ -49,14 +49,14 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
     } = useResetInviteCode()
 
     const [DeleteDialog, confirmDelete] = useConfirm(
-        "Supprimer l'espace de travail",
+        "Supprimer l&apos;espace de travail",
         "Cette action ne peut pas être annulée.",
         "destructive"
     )
 
     const [ResetDialog, confirmReset] = useConfirm(
-        "Réinitialiser le lien d'invitation",
-        "Cela invalidera le lien d'invitation actuel",
+        "Réinitialiser le lien d&apos;invitation",
+        "Cela invalidera le lien d&apos;invitation actuel",
         "destructive"
     )
 
@@ -118,7 +118,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
 
     const handleCopyinviteLink = () => {
         navigator.clipboard.writeText(fullinviteLink)
-        .then(() => toast.success("Lien d'invitation copié dans le presse-papiers"))
+        .then(() => toast.success("Lien d&apos;invitation copié dans le presse-papiers"))
     }
 
     return (
@@ -148,12 +148,12 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>
-                                                Nom de l'espace de travail
+                                                Nom de l&apos;espace de travail
                                             </FormLabel>
                                             <FormControl>
                                                 <Input
                                                     {...field}
-                                                    placeholder="Entrez le nom de l'espace de travail"
+                                                    placeholder="Entrez le nom de l&apos;espace de travail"
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -187,7 +187,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                                                     </Avatar>
                                                 )}
                                                 <div className="flex flex-col">
-                                                    <p className="text-sm">Icône de l'espace de travail</p>
+                                                    <p className="text-sm">Icône de l&apos;espace de travail</p>
                                                     <p className="text-sm text-muted-foreground">
                                                         JPG, PNG, SVG ou JPEG, max 1mb
                                                     </p>
@@ -213,7 +213,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                                                                 }
                                                             }}
                                                         >
-                                                            Supprimer l'image
+                                                            Supprimer l&apos;image
                                                         </Button>
                                                     ) : (
                                                         <Button
@@ -263,7 +263,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                     <div className="flex flex-col">
                         <h3 className="font-bold">Inviter des membres</h3>
                         <p className="text-sm text-muted-foreground">
-                            Utilisez le lien d'invitation pour ajouter des membres à votre espace de travail.
+                            Utilisez le lien d&apos;invitation pour ajouter des membres à votre espace de travail.
                         </p>
                         <div className="mt-4">
                             <div className="flex items-center gap-x-2">
@@ -286,7 +286,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                             disabled={isPending || isResettingInviteCode}
                             onClick={handleResetInviteCode}
                         >
-                            Réinitialiser le lien d'invitation
+                            Réinitialiser le lien d&apos;invitation
                         </Button>
                     </div>
                 </CardContent>
@@ -297,7 +297,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                     <div className="flex flex-col">
                         <h3 className="font-bold">Zone de danger</h3>
                         <p className="text-sm text-muted-foreground">
-                            La suppression d'un espace de travail est irréversible et supprimera toutes les données associées.
+                            La suppression d&apos;un espace de travail est irréversible et supprimera toutes les données associées.
                         </p>
                         <DottedSeparator className="py-7" />
                         <Button
@@ -308,7 +308,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                             disabled={isPending || isDeletingWorkspace}
                             onClick={handleDelete}
                         >
-                            Supprimer l'espace de travail
+                            Supprimer l&apos;espace de travail
                         </Button>
                     </div>
                 </CardContent>

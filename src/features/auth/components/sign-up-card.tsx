@@ -92,7 +92,7 @@ export const SignUpCard = () => {
                                         <Input
                                             {...field}
                                             type="email"
-                                            placeholder="Entrez l'adresse e-mail"
+                                            placeholder="Entrez votre adresse e-mail"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -120,7 +120,7 @@ export const SignUpCard = () => {
                             size="lg"
                             className="w-full"
                         >
-                            S'inscrire
+                            S&apos;inscrire
                         </Button>
                     </form>
                 </Form>

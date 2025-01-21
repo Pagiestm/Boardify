@@ -183,7 +183,7 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
                                                                 }
                                                             }}
                                                         >
-                                                            Supprimer l'image
+                                                            Supprimer l&apos;image
                                                         </Button>
                                                     ) : (
                                                         <Button
@@ -194,7 +194,7 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
                                                             className="w-fit mt-2"
                                                             onClick={() => inputRef.current?.click()}
                                                         >
-                                                            Télécharger l'image
+                                                            Télécharger l&apos;image
                                                         </Button>
                                                     )}
                                                 </div>
@@ -233,7 +233,7 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
                     <div className="flex flex-col">
                         <h3 className="font-bold">Zone de danger</h3>
                         <p className="text-sm text-muted-foreground">
-                            La suppression d'un projet est irréversible et supprimera toutes les données associées.
+                            La suppression d&apos;un projet est irréversible et supprimera toutes les données associées.
                         </p>
                         <DottedSeparator className="py-7" />
                         <Button

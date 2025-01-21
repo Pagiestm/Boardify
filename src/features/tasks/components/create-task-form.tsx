@@ -98,7 +98,7 @@ export const CreateTaskForm = ({ onCancel, projectOptions, memberOptions }: Crea
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Date d'échéance
+                                            Date d&apos;échéance
                                         </FormLabel>
                                         <FormControl>
                                             <DatePicker {...field} />

@@ -154,7 +154,7 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
                                                             }
                                                         }}
                                                     >
-                                                        Supprimer l'image
+                                                        Supprimer l&apos;image
                                                     </Button>
                                                 ) : (
                                                     <Button
@@ -165,7 +165,7 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
                                                         className="w-fit mt-2"
                                                         onClick={() => inputRef.current?.click()}
                                                     >
-                                                        Télécharger l'image
+                                                        Télécharger l&apos;image
                                                     </Button>
                                                 )}
                                             </div>

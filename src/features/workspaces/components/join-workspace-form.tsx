@@ -46,10 +46,10 @@ export const JoinWorkspaceForm = ({
         <Card className="w-full h-full border-none shadow-none">
             <CardHeader className="p-7">
                 <CardTitle className="text-xl font-bold">
-                    Rejoindre l'espace de travail
+                    Rejoindre l&apos;espace de travail
                 </CardTitle>
                 <CardDescription>
-                    Vous avez été invité à rejoindre l'espace de travail <strong>{initialValues.name}</strong>
+                    Vous avez été invité à rejoindre l&apos;espace de travail <strong>{initialValues.name}</strong>
                 </CardDescription>
             </CardHeader>
             <div className="px-7">
@@ -76,7 +76,7 @@ export const JoinWorkspaceForm = ({
                         onClick={onSubmit}
                         disabled={isPending}
                     >
-                        Rejoindre l'espace de travail
+                        Rejoindre l&apos;espace de travail
                     </Button>
                 </div>
             </CardContent>

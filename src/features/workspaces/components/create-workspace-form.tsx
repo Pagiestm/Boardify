@@ -85,12 +85,12 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Nom de l'espace de travail
+                                            Nom de l&apos;espace de travail
                                         </FormLabel>
                                         <FormControl>
                                             <Input
                                                 {...field}
-                                                placeholder="Entrez le nom de l'espace de travail"
+                                                placeholder="Entrez le nom de l&apos;espace de travail"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -124,7 +124,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                                 </Avatar>
                                             )}
                                             <div className="flex flex-col">
-                                                <p className="text-sm">Icône de l'espace de travail</p>
+                                                <p className="text-sm">Icône de l&apos;espace de travail</p>
                                                 <p className="text-sm text-muted-foreground">
                                                     JPG, PNG, SVG ou JPEG, max 1mb
                                                 </p>
@@ -150,7 +150,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                                             }
                                                         }}
                                                     >
-                                                        Supprimer l'image
+                                                        Supprimer l&apos;image
                                                     </Button>
                                                 ) : (
                                                     <Button
@@ -187,7 +187,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                 type="submit"
                                 size="lg"
                             >
-                                Créer l'espace de travail
+                                Créer l&apos;espace de travail
                             </Button>
                         </div>
                     </form>

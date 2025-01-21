@@ -99,7 +99,7 @@ export const columns: ColumnDef<Task>[] = [
                     variant="ghost"
                     onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
                 >
-                    Date d'échéance
+                    Date d&apos;échéance
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
             )

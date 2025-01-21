@@ -98,7 +98,7 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Date d'échéance
+                                            Date d&apos;échéance
                                         </FormLabel>
                                         <FormControl>
                                             <DatePicker {...field} />
