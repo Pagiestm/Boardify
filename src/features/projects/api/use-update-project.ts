@@ -19,19 +19,19 @@ export const useUpdateProject = () => {
             const response = await client.api.projects[":projectId"]["$patch"]({ form, param })
 
             if (!response.ok) {
-                throw new Error("Failed to update project")
+                throw new Error("Erreur lors de la mise à jour du projet")
             }
 
             return await response.json();
         },
         onSuccess: ({ data }) => {
-            toast.success("Project updated")
+            toast.success("Projet mis à jour")
             
             queryClient.invalidateQueries({ queryKey: ["projects"] })
             queryClient.invalidateQueries({ queryKey: ["project", data.$id] })
         },
         onError: () => {
-            toast.error("Failed to update project")
+            toast.error("Erreur lors de la mise à jour du projet")
         },
     })
 

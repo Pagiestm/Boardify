@@ -19,20 +19,20 @@ export const useCreateTask = () => {
             const response = await client.api.tasks["$post"]({ json })
 
             if (!response.ok) {
-                throw new Error("Failed to create task")
+                throw new Error("Erreur lors de la création de la tâche")
             }
 
             return await response.json();
         },
         onSuccess: () => {
-            toast.success("Task created")
+            toast.success("Tâche créée")
 
             queryClient.invalidateQueries({ queryKey: ["project-analytics"] })
             queryClient.invalidateQueries({ queryKey: ["workspace-analytics"] })
             queryClient.invalidateQueries({ queryKey: ["tasks"] })
         },
         onError: () => {
-            toast.error("Failed to create task")
+            toast.error("Erreur lors de la création de la tâche")
         },
     })
 

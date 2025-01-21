@@ -49,14 +49,14 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
     } = useResetInviteCode()
 
     const [DeleteDialog, confirmDelete] = useConfirm(
-        "Delete Workspace",
-        "This action cannot be undone.",
+        "Supprimer l'espace de travail",
+        "Cette action ne peut pas être annulée.",
         "destructive"
     )
 
     const [ResetDialog, confirmReset] = useConfirm(
-        "Reset invite link",
-        "This will invalidate the current invite link",
+        "Réinitialiser le lien d'invitation",
+        "Cela invalidera le lien d'invitation actuel",
         "destructive"
     )
 
@@ -118,7 +118,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
 
     const handleCopyinviteLink = () => {
         navigator.clipboard.writeText(fullinviteLink)
-        .then(() => toast.success("Invite link copied to clipboard"))
+        .then(() => toast.success("Lien d'invitation copié dans le presse-papiers"))
     }
 
     return (
@@ -129,7 +129,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                 <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0">
                     <Button size="sm" variant="secondary" onClick={onCancel ? onCancel : () => router.push(`/workspaces/${initialValues.$id}`)}>
                         <ArrowLeftIcon className="size-4 mr-2" />
-                        Back
+                        Retour
                     </Button>
                     <CardTitle className="text-xl font-bold">
                         {initialValues.name}
@@ -148,12 +148,12 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>
-                                                Workspace name
+                                                Nom de l'espace de travail
                                             </FormLabel>
                                             <FormControl>
                                                 <Input
                                                     {...field}
-                                                    placeholder="Enter workspace name"
+                                                    placeholder="Entrez le nom de l'espace de travail"
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -187,9 +187,9 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                                                     </Avatar>
                                                 )}
                                                 <div className="flex flex-col">
-                                                    <p className="text-sm">Workspace Icon</p>
+                                                    <p className="text-sm">Icône de l'espace de travail</p>
                                                     <p className="text-sm text-muted-foreground">
-                                                        JPG, PNG, SVG or JPEG, max 1mb
+                                                        JPG, PNG, SVG ou JPEG, max 1mb
                                                     </p>
                                                     <input
                                                         className="hidden"
@@ -213,7 +213,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                                                                 }
                                                             }}
                                                         >
-                                                            Remove Image
+                                                            Supprimer l'image
                                                         </Button>
                                                     ) : (
                                                         <Button
@@ -224,7 +224,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                                                             className="w-fit mt-2"
                                                             onClick={() => inputRef.current?.click()}
                                                         >
-                                                            Upload Image
+                                                            Télécharger une image
                                                         </Button>
                                                     )}
                                                 </div>
@@ -243,14 +243,14 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                                     disabled={isPending}
                                     className={cn(!onCancel && "invisible")}
                                 >
-                                    Cancel
+                                    Annuler
                                 </Button>
                                 <Button
                                     disabled={isPending}
                                     type="submit"
                                     size="lg"
                                 >
-                                    Save Changes
+                                    Enregistrer les modifications
                                 </Button>
                             </div>
                         </form>
@@ -261,9 +261,9 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
             <Card className="w-full h-full border-none shadow-none">
                 <CardContent className="p-7">
                     <div className="flex flex-col">
-                        <h3 className="font-bold">Invite Members</h3>
+                        <h3 className="font-bold">Inviter des membres</h3>
                         <p className="text-sm text-muted-foreground">
-                            Use the invite link to add members to your workspace.
+                            Utilisez le lien d'invitation pour ajouter des membres à votre espace de travail.
                         </p>
                         <div className="mt-4">
                             <div className="flex items-center gap-x-2">
@@ -286,7 +286,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                             disabled={isPending || isResettingInviteCode}
                             onClick={handleResetInviteCode}
                         >
-                            Reset invite link
+                            Réinitialiser le lien d'invitation
                         </Button>
                     </div>
                 </CardContent>
@@ -295,9 +295,9 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
             <Card className="w-full h-full border-none shadow-none">
                 <CardContent className="p-7">
                     <div className="flex flex-col">
-                        <h3 className="font-bold">Danger Zone</h3>
+                        <h3 className="font-bold">Zone de danger</h3>
                         <p className="text-sm text-muted-foreground">
-                            Deleting a workspace is irreversible and will remove all associated data.
+                            La suppression d'un espace de travail est irréversible et supprimera toutes les données associées.
                         </p>
                         <DottedSeparator className="py-7" />
                         <Button
@@ -308,7 +308,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                             disabled={isPending || isDeletingWorkspace}
                             onClick={handleDelete}
                         >
-                            Delete Workspace
+                            Supprimer l'espace de travail
                         </Button>
                     </div>
                 </CardContent>

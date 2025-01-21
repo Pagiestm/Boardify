@@ -20,7 +20,7 @@ export const useGetWorkspaceAnalytics = ({
             });
 
             if (!response.ok) {
-                throw new Error("Failed to fetch workspace analytics");
+                throw new Error("Échec de la récupération des analyses de l'espace de travail");
             }
 
             const { data } = await response.json();

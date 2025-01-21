@@ -17,7 +17,7 @@ export const useGetWorkspace = ({
             });
 
             if (!response.ok) {
-                throw new Error("Failed to fetch workspace");
+                throw new Error("Échec de la récupération de l'espace de travail");
             }
 
             const { data } = await response.json();

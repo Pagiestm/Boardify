@@ -19,17 +19,17 @@ export const useUpdateMember = () => {
             const response = await client.api.members[":memberId"]["$patch"]({ param, json })
 
             if (!response.ok) {
-                throw new Error("Failed to update member")
+                throw new Error("Erreur lors de la mise à jour du membre")
             }
 
             return await response.json();
         },
         onSuccess: () => {
-            toast.success("Member updated")
+            toast.success("Membre mis à jour")
             queryClient.invalidateQueries({ queryKey: ["members"] })
         },
         onError: () => {
-            toast.error("Failed to update member")
+            toast.error("Erreur lors de la mise à jour du membre")
         },
     })
 

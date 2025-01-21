@@ -44,7 +44,7 @@ export const useGetTasks = ({
             });
 
             if (!response.ok) {
-                throw new Error("Failed to fetch tasks");
+                throw new Error("Erreur lors de la récupération des tâches");
             }
 
             const { data } = await response.json();

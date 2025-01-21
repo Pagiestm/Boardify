@@ -16,7 +16,7 @@ export const WorkspaceIdJoinClient = () => {
     }
 
     if (!initialValues) {
-        return <PageError message="Workspace not found" />
+        return <PageError message="Espace de travail non trouvé" />
     }
 
     return (

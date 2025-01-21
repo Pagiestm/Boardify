@@ -69,7 +69,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
         <Card className="w-full h-full border-none shadow-none">
             <CardHeader className="flex p-7">
                 <CardTitle className="text-xl font-bold">
-                    Create a new workspace
+                    Créer un nouvel espace de travail
                 </CardTitle>
             </CardHeader>
             <div className="px-7">
@@ -85,12 +85,12 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Workspace name
+                                            Nom de l'espace de travail
                                         </FormLabel>
                                         <FormControl>
                                             <Input
                                                 {...field}
-                                                placeholder="Enter workspace name"
+                                                placeholder="Entrez le nom de l'espace de travail"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -124,9 +124,9 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                                 </Avatar>
                                             )}
                                             <div className="flex flex-col">
-                                                <p className="text-sm">Workspace Icon</p>
+                                                <p className="text-sm">Icône de l'espace de travail</p>
                                                 <p className="text-sm text-muted-foreground">
-                                                    JPG, PNG, SVG or JPEG, max 1mb
+                                                    JPG, PNG, SVG ou JPEG, max 1mb
                                                 </p>
                                                 <input
                                                     className="hidden"
@@ -150,7 +150,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                                             }
                                                         }}
                                                     >
-                                                        Remove Image
+                                                        Supprimer l'image
                                                     </Button>
                                                 ) : (
                                                     <Button
@@ -161,7 +161,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                                         className="w-fit mt-2"
                                                         onClick={() => inputRef.current?.click()}
                                                     >
-                                                        Upload Image
+                                                        Télécharger une image
                                                     </Button>
                                                 )}
                                             </div>
@@ -180,14 +180,14 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                 disabled={isPending}
                                 className={cn(!onCancel && "invisible")}
                             >
-                                Cancel
+                                Annuler
                             </Button>
                             <Button
                                 disabled={isPending}
                                 type="submit"
                                 size="lg"
                             >
-                                Create Workspace
+                                Créer l'espace de travail
                             </Button>
                         </div>
                     </form>

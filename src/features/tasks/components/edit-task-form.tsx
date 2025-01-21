@@ -64,7 +64,7 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
         <Card className="w-full h-full border-none shadow-none">
             <CardHeader className="flex p-7">
                 <CardTitle className="text-xl font-bold">
-                    Edit a task
+                    Éditer une tâche
                 </CardTitle>
             </CardHeader>
             <div className="px-7">
@@ -80,12 +80,12 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Task name
+                                            Nom de la tâche
                                         </FormLabel>
                                         <FormControl>
                                             <Input
                                                 {...field}
-                                                placeholder="Enter task name"
+                                                placeholder="Entrez le nom de la tâche"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -98,7 +98,7 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Due Date
+                                            Date d'échéance
                                         </FormLabel>
                                         <FormControl>
                                             <DatePicker {...field} />
@@ -113,7 +113,7 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Assignee
+                                            Assigné à
                                         </FormLabel>
                                         <Select
                                             defaultValue={field.value}
@@ -121,7 +121,7 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Select assignee" />
+                                                    <SelectValue placeholder="Sélectionner un assigné" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <FormMessage />
@@ -148,7 +148,7 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Status
+                                            Statut
                                         </FormLabel>
                                         <Select
                                             defaultValue={field.value}
@@ -156,7 +156,7 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Select status" />
+                                                    <SelectValue placeholder="Sélectionner un statut" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <FormMessage />
@@ -165,16 +165,16 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                                     Backlog
                                                 </SelectItem>
                                                 <SelectItem value={TaskStatus.IN_PROGRESS}>
-                                                    In Progress
+                                                    En cours
                                                 </SelectItem>
                                                 <SelectItem value={TaskStatus.IN_REVIEW}>
-                                                    In Review
+                                                    En révision
                                                 </SelectItem>
                                                 <SelectItem value={TaskStatus.TODO}>
-                                                    Todo
+                                                    À faire
                                                 </SelectItem>
                                                 <SelectItem value={TaskStatus.DONE}>
-                                                    Done
+                                                    Fait
                                                 </SelectItem>
                                             </SelectContent>
                                         </Select>
@@ -187,7 +187,7 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>
-                                            Project
+                                            Projet
                                         </FormLabel>
                                         <Select
                                             defaultValue={field.value}
@@ -195,7 +195,7 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                         >
                                             <FormControl>
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Select project" />
+                                                    <SelectValue placeholder="Sélectionner un projet" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <FormMessage />
@@ -228,14 +228,14 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                 disabled={isPending}
                                 className={cn(!onCancel && "invisible")}
                             >
-                                Cancel
+                                Annuler
                             </Button>
                             <Button
                                 disabled={isPending}
                                 type="submit"
                                 size="lg"
                             >
-                                Save Changes
+                                Sauvegarder les modifications
                             </Button>
                         </div>
                     </form>

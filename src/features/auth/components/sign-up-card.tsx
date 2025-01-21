@@ -48,16 +48,16 @@ export const SignUpCard = () => {
         <Card className="w-full g-full md:w-[487px] border-none shadow-none">
             <CardHeader className="flex items-center justify-center text-center p-7">
                 <CardTitle className="text-2xl">
-                    Sign Up
+                    Inscription
                 </CardTitle>
                 <CardDescription>
-                    By signing up, you agree to our {" "}
+                    En vous inscrivant, vous acceptez notre {" "}
                     <Link href="/privacy">
-                        <span className="text-blue-700">Privacy Policy</span>
+                        <span className="text-blue-500">Politique de confidentialité</span>
                     </Link>{" "}
-                    and {" "}
+                    et {" "}
                     <Link href="/terms">
-                        <span className="text-blue-700">Terms of Service</span>
+                        <span className="text-blue-500">Conditions d'utilisation</span>
                     </Link>
                 </CardDescription>
             </CardHeader>
@@ -76,7 +76,7 @@ export const SignUpCard = () => {
                                         <Input
                                             {...field}
                                             type="text"
-                                            placeholder="Enter your name"
+                                            placeholder="Entrez votre nom"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -92,7 +92,7 @@ export const SignUpCard = () => {
                                         <Input
                                             {...field}
                                             type="email"
-                                            placeholder="Enter email address"
+                                            placeholder="Entrez l'adresse e-mail"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -108,7 +108,7 @@ export const SignUpCard = () => {
                                         <Input
                                             {...field}
                                             type="password"
-                                            placeholder="Enter your password"
+                                            placeholder="Entrez votre mot de passe"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -120,7 +120,7 @@ export const SignUpCard = () => {
                             size="lg"
                             className="w-full"
                         >
-                            Register
+                            S'inscrire
                         </Button>
                     </form>
                 </Form>
@@ -137,7 +137,7 @@ export const SignUpCard = () => {
                     className="w-full"
                 >
                     <FcGoogle className="mr-2 size-5" />
-                    Login with Google
+                    Connexion avec Google
                 </Button>
                 <Button
                     onClick={() => signUpWithGithub()}
@@ -147,7 +147,7 @@ export const SignUpCard = () => {
                     className="w-full"
                 >
                     <FaGithub className="mr-2 size-5" />
-                    Login with Github
+                    Connexion avec Github
                 </Button>
             </CardContent>
             <div className="px-7">
@@ -155,9 +155,9 @@ export const SignUpCard = () => {
             </div>
             <CardContent className="p-7 flex items-center justify-center">
                 <p>
-                    Already have an account ?
+                    Vous avez déjà un compte ?
                     <Link href="/sign-in">
-                        <span className="text-blue-700">&nbsp;Sign In</span>
+                        <span className="text-blue-500">&nbsp;Connectez-vous</span>
                     </Link>
                 </p>
             </CardContent>

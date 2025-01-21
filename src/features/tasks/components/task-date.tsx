@@ -14,11 +14,11 @@ export const TaskDate = ({ value, className }: TaskDateProps) => {
 
     let textColor = "text-muted-foreground"
     if (diffInDays <= 3) {
-        textColor = "text-red-500"
+        textColor = "text-red-600"
     } else if (diffInDays <= 7) {
-        textColor = "text-orange-500"
+        textColor = "text-orange-600"
     } else if (diffInDays <= 14) {
-        textColor = "text-yellow-500"
+        textColor = "text-yellow-600"
     }
 
     return (

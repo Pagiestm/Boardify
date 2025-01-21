@@ -19,13 +19,13 @@ export const useDeleteTask = () => {
             const response = await client.api.tasks[":taskId"]["$delete"]({ param })
 
             if (!response.ok) {
-                throw new Error("Failed to delete task")
+                throw new Error("Erreur lors de la suppression de la tâche")
             }
 
             return await response.json();
         },
         onSuccess: ({ data }) => {
-            toast.success("Task deleted")
+            toast.success("Tâche supprimée")
 
             queryClient.invalidateQueries({ queryKey: ["project-analytics"] })
             queryClient.invalidateQueries({ queryKey: ["workspace-analytics"] })
@@ -33,7 +33,7 @@ export const useDeleteTask = () => {
             queryClient.invalidateQueries({ queryKey: ["task", data.$id] })
         },
         onError: () => {
-            toast.error("Failed to delete task")
+            toast.error("Erreur lors de la suppression de la tâche")
         },
     })
 

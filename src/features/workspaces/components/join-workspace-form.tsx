@@ -34,7 +34,7 @@ export const JoinWorkspaceForm = ({
     const onSubmit = () => {
         mutate({
             param: { workspaceId },
-            json: { code: inviteCode}
+            json: { code: inviteCode }
         }, {
             onSuccess: ({ data }) => {
                 router.push(`/workspaces/${data.$id}`)
@@ -46,10 +46,10 @@ export const JoinWorkspaceForm = ({
         <Card className="w-full h-full border-none shadow-none">
             <CardHeader className="p-7">
                 <CardTitle className="text-xl font-bold">
-                    Join Workspace
+                    Rejoindre l'espace de travail
                 </CardTitle>
                 <CardDescription>
-                    You&apos;ve been invited to join <strong>{initialValues.name}</strong> workspace
+                    Vous avez été invité à rejoindre l'espace de travail <strong>{initialValues.name}</strong>
                 </CardDescription>
             </CardHeader>
             <div className="px-7">
@@ -66,7 +66,7 @@ export const JoinWorkspaceForm = ({
                         disabled={isPending}
                     >
                         <Link href="/">
-                            Cancel
+                            Annuler
                         </Link>
                     </Button>
                     <Button
@@ -76,7 +76,7 @@ export const JoinWorkspaceForm = ({
                         onClick={onSubmit}
                         disabled={isPending}
                     >
-                        Join Workspace
+                        Rejoindre l'espace de travail
                     </Button>
                 </div>
             </CardContent>

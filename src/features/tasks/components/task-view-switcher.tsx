@@ -79,7 +79,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) =
                             className="h-8 w-full lg:w-auto"
                             value="table"
                         >
-                            Table
+                            Tableau
                         </TabsTrigger>
                         <TabsTrigger
                             className="h-8 w-full lg:w-auto"
@@ -91,7 +91,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) =
                             className="h-8 w-full lg:w-auto"
                             value="calendar"
                         >
-                            Calendar
+                            Calendrier
                         </TabsTrigger>
                     </TabsList>
                     <Button
@@ -100,7 +100,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) =
                         className="w-full lg:w-auto"
                     >
                         <PlusIcon className="size-4 mr-2" />
-                        New
+                        Nouveau
                     </Button>
                 </div>
                 <DottedSeparator className="my-4" />

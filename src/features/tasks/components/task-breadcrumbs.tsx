@@ -27,8 +27,8 @@ export const TaskBreadcrumbs = ({
 
     const { mutate, isPending } = useDeleteTask();
     const [ConfirmDialog, confirm] = useConfirm(
-        "Delete task?",
-        "This action cannot be undone.",
+        "Supprimer la tâche ?",
+        "Cette action ne peut pas être annulée.",
         "destructive"
     )
 
@@ -68,7 +68,7 @@ export const TaskBreadcrumbs = ({
                 size="sm"
             >
                 <TrashIcon className="size-4 lg:mr-2" />
-                <span className="hidden lg:block">Delete Task</span>
+                <span className="hidden lg:block">Supprimer la tâche</span>
             </Button>
         </div>
     )

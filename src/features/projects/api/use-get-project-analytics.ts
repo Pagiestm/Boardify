@@ -20,7 +20,7 @@ export const useGetProjectAnalytics = ({
             });
 
             if (!response.ok) {
-                throw new Error("Failed to fetch project analytics");
+                throw new Error("Erreur lors de la récupération des données du projet");
             }
 
             const { data } = await response.json();

@@ -15,7 +15,7 @@ export const useGetMembers = ({
             const response = await client.api.members.$get({ query: { workspaceId } });
 
             if (!response.ok) {
-                throw new Error("Failed to fetch members");
+                throw new Error("Erreur lors de la récupération des membres");
             }
 
             const { data } = await response.json();

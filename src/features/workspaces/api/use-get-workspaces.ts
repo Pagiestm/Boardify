@@ -9,7 +9,7 @@ export const useGetWorkspaces = () => {
             const response = await client.api.workspaces.$get();
 
             if (!response.ok) {
-                throw new Error("Failed to fetch workspaces");
+                throw new Error("Échec de la récupération des espaces de travail");
             }
 
             const { data } = await response.json();

@@ -26,7 +26,7 @@ export const ProjectIdClient = () => {
     }
 
     if (!project) {
-        return <PageError message="Project not found" />
+        return <PageError message="Projet non trouvé" />
     }
 
     return (
@@ -44,7 +44,7 @@ export const ProjectIdClient = () => {
                     <Button variant="secondary" size="sm" asChild>
                         <Link href={`/workspaces/${project.workspaceId}/projects/${project.$id}/settings`}>
                             <PencilIcon className="size-4 mr-2" />
-                            Edit Project
+                            Modifier le projet
                         </Link>
                     </Button>
                 </div>

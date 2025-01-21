@@ -19,19 +19,19 @@ export const useDeleteProject = () => {
             const response = await client.api.projects[":projectId"]["$delete"]({ param })
 
             if (!response.ok) {
-                throw new Error("Failed to delete project")
+                throw new Error("Erreur lors de la suppression du projet")
             }
 
             return await response.json();
         },
         onSuccess: ({ data }) => {
-            toast.success("Project deleted")
+            toast.success("Projet supprimé")
             
             queryClient.invalidateQueries({ queryKey: ["projects"] })
             queryClient.invalidateQueries({ queryKey: ["projects", data.$id] })
         },
         onError: () => {
-            toast.error("Failed to delete project")
+            toast.error("Erreur lors de la suppression du projet")
         },
     })
 

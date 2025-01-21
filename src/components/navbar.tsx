@@ -8,18 +8,18 @@ import { MobileSidebar } from "./mobile-sidebar"
 
 const pathnameMap = {
     "tasks": {
-        title: "My Tasks",
-        description: "View all of your tasks here"
+        title: "Mes Tâches",
+        description: "Consultez toutes vos tâches ici"
     },
     "projects": {
-        title: "My Project",
-        description: "View tasks of your project here"
+        title: "Mon Projet",
+        description: "Consultez les tâches de votre projet ici"
     },
 }
 
 const defaultMap = {
-    title: "Home",
-    description: "Monitor all of your projects and tasks here"
+    title: "Accueil",
+    description: "Suivez tous vos projets et tâches ici"
 }
 
 export const Navbar = () => {
@@ -30,9 +30,9 @@ export const Navbar = () => {
     const { title, description } = pathnameMap[pathnameKey] || defaultMap
 
     return (
-        <nav className="pt-4 px-6 flex items-center justify-between">
+        <nav className="pt-4 px-6 flex items-center justify-between bg-background">
             <div className="flex-col hidden lg:flex">
-                <h1 className="text-2xl font-semibold">
+                <h1 className="text-2xl font-semibold text-foreground">
                     {title}
                 </h1>
                 <p className="text-muted-foreground">
