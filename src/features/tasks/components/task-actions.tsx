@@ -27,8 +27,8 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
     const { open } = useEditTaskModal()
 
     const [ConfirmDialog, confirm] = useConfirm(
-        "Delete task",
-        "This action cannot be undone.",
+        "Supprimer la tâche ?",
+        "Cette action ne peut pas être annulée.",
         "destructive"
     )
     const { mutate, isPending } = useDeleteTask()
@@ -58,32 +58,32 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
                 <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem
                         onClick={onOpenTask}
-                        className="font-medium p-[10px]"
+                        className="font-medium cursor-pointer p-[10px]"
                     >
                         <ExternalLinkIcon className="size-4 mr-2 stroke-2" />
-                        Task Details
+                        Détails de la tâche
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={onOpenProject}
-                        className="font-medium p-[10px]"
+                        className="font-medium cursor-pointer p-[10px]"
                     >
                         <PencilIcon className="size-4 mr-2 stroke-2" />
-                        Open Project
+                        Ouvrir le projet
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={() => open(id)}
-                        className="font-medium p-[10px]"
+                        className="font-medium cursor-pointer p-[10px]"
                     >
                         <PencilIcon className="size-4 mr-2 stroke-2" />
-                        Edit Task
+                        Éditer la tâche
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onClick={onDelete}
                         disabled={isPending}
-                        className="text-amber-700 focus:text-amber-700 font-medium p-[10px]"
+                        className="text-red-600 focus:text-red-600 cursor-pointer font-medium p-[10px]"
                     >
                         <TrashIcon className="size-4 mr-2 stroke-2" />
-                        Delete Task
+                        Supprimer la tâche
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

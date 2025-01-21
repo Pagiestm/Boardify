@@ -25,12 +25,12 @@ export const useJoinWorkspace = () => {
             return await response.json();
         },
         onSuccess: ({ data }) => {
-            toast.success("Joined workspace")
+            toast.success("Espace de travail rejoint")
             queryClient.invalidateQueries({ queryKey: ["workspaces"] })
             queryClient.invalidateQueries({ queryKey: ["workspace", data.$id] })
         },
         onError: () => {
-            toast.error("Failed to join workspace")
+            toast.error("Échec de la jonction à l'espace de travail")
         },
     })
 

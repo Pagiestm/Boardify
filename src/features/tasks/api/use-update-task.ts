@@ -19,13 +19,13 @@ export const useUpdateTask = () => {
             const response = await client.api.tasks[":taskId"]["$patch"]({ json, param })
 
             if (!response.ok) {
-                throw new Error("Failed to update task")
+                throw new Error("Erreur lors de la mise à jour de la tâche")
             }
 
             return await response.json();
         },
         onSuccess: ({ data }) => {
-            toast.success("Task updated")
+            toast.success("Tâche mise à jour")
 
             queryClient.invalidateQueries({ queryKey: ["project-analytics"] })
             queryClient.invalidateQueries({ queryKey: ["workspace-analytics"] })
@@ -33,7 +33,7 @@ export const useUpdateTask = () => {
             queryClient.invalidateQueries({ queryKey: ["task", data.$id] })
         },
         onError: () => {
-            toast.error("Failed to update task")
+            toast.error("Erreur lors de la mise à jour de la tâche")
         },
     })
 

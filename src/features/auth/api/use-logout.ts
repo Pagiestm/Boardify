@@ -19,19 +19,19 @@ export const useLogout = () => {
             const response = await client.api.auth.logout["$post"]()
 
             if (!response.ok) {
-                throw new Error("Failed to logout")
+                throw new Error("Erreur lors de la déconnexion")
             }
 
             return await response.json();
         },
         onSuccess: () => {
-            toast.success("Logged out")
+            toast.success("Déconnexion réussie")
             
             router.refresh()
             queryClient.invalidateQueries()
         },
         onError: () => {
-            toast.error("Failed to log out")
+            toast.error("Erreur lors de la déconnexion")
         }
     })
 

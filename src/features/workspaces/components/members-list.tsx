@@ -31,8 +31,8 @@ import {
 export const MembersList = () => {
     const workspaceId = useWorkspaceId()
     const [ConfirmDialog, confirm] = useConfirm(
-        "Remove member",
-        "This member will be removed from the workspace",
+        "Supprimer le membre",
+        "Ce membre sera retiré de l'espace de travail",
         "destructive"
     )
 
@@ -62,7 +62,6 @@ export const MembersList = () => {
                 window.location.reload()
             },
         })
-
     }
 
     return (
@@ -72,11 +71,11 @@ export const MembersList = () => {
                 <Button asChild variant="secondary" size="sm">
                     <Link href={`/workspaces/${workspaceId}`}>
                         <ArrowLeftIcon className="size-4 mr-2" />
-                        Back
+                        Retour
                     </Link>
                 </Button>
                 <CardTitle className="text-xl font-bold">
-                    Members list
+                    Liste des membres
                 </CardTitle>
             </CardHeader>
             <div className="px-7">
@@ -111,27 +110,27 @@ export const MembersList = () => {
                                         onClick={() => handleUpdateMember(member.$id, MemberRole.ADMIN)}
                                         disabled={isUpdatingMember}
                                     >
-                                        Set as Administrator
+                                        Définir comme Administrateur
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         className="font-medium"
                                         onClick={() => handleUpdateMember(member.$id, MemberRole.MEMBER)}
                                         disabled={isUpdatingMember}
                                     >
-                                        Set as Member
+                                        Définir comme Membre
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
-                                        className="font-medium text-amber-700"
+                                        className="font-medium text-red-600"
                                         onClick={() => handleDeleteMember(member.$id)}
                                         disabled={isDeletingMember}
                                     >
-                                        Remove {member.name}
+                                        Supprimer {member.name}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
                         {index < data.documents.length - 1 && (
-                            <Separator className="my-2.5 bg-netural-500" />
+                            <Separator className="my-2.5 bg-neutral-500" />
                         )}
                     </Fragment>
                 ))}

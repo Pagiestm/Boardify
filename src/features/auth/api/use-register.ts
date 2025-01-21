@@ -21,18 +21,18 @@ export const useRegister = () => {
             const response = await client.api.auth.register["$post"]({ json })
 
             if (!response.ok) {
-                throw new Error("Failed to register")
+                throw new Error("Erreur lors de l'inscription")
             }
 
             return await response.json();
         },
         onSuccess: () => {
-            toast.success("Registered")
+            toast.success("Inscription réussie")
             router.refresh()
             queryClient.invalidateQueries({ queryKey: ["current"] })
         },
         onError: () => {
-            toast.error("Failed to register")
+            toast.error("Erreur lors de l'inscription")
         }
     })
 

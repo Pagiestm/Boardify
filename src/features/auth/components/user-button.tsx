@@ -1,6 +1,6 @@
 "use client"
 
-import { Loader, LogOut } from "lucide-react"
+import { Loader, LogOut, Moon, Sun } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
     DropdownMenu,
@@ -9,6 +9,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { DottedSeparator } from "@/components/dotted-separator"
+import { useTheme } from "next-themes"
 
 import { useLogout } from "../api/use-logout"
 import { useCurrent } from "../api/use-current"
@@ -16,10 +17,11 @@ import { useCurrent } from "../api/use-current"
 export const UserButton = () => {
     const { mutate: logout } = useLogout()
     const { data: user, isLoading } = useCurrent()
+    const { theme, setTheme } = useTheme()
 
     if (isLoading) {
         return (
-            <div className="size-10 rounded-full flex items-center justify-center bg-neutral-200 border-neutral-300">
+            <div className="size-10 rounded-full flex items-center justify-center bg-secondary border-border">
                 <Loader className="size-4 animate-spin text-muted-foreground" />
             </div>
         )
@@ -38,8 +40,8 @@ export const UserButton = () => {
     return (
         <DropdownMenu modal={false}>
             <DropdownMenuTrigger className="outline-none relative">
-                <Avatar className="size-10 hover:opacity-75 transition border border-neutral-300">
-                    <AvatarFallback className="bg-neutral-200 font-medium text-neutral-500 items-center justify-center">
+                <Avatar className="size-10 hover:opacity-75 transition border border-border">
+                    <AvatarFallback className="bg-secondary font-medium text-muted-foreground items-center justify-center">
                         {avatarFallback}
                     </AvatarFallback>
                 </Avatar>
@@ -52,19 +54,30 @@ export const UserButton = () => {
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-center justify-center">
-                        <p className="text-sm font-medium text-neutral-900">
+                        <p className="text-sm font-medium text-foreground">
                             {name || "User"}
                         </p>
-                        <p className="text-sm text-neutral-500">{email}</p>
+                        <p className="text-sm text-muted-foreground">{email}</p>
                     </div>
                 </div>
                 <DottedSeparator className="mb-1" />
                 <DropdownMenuItem
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className="h-10 flex items-center justify-center font-medium cursor-pointer"
+                >
+                    {theme === "dark" ? (
+                        <Sun className="size-4 mr-2" />
+                    ) : (
+                        <Moon className="size-4 mr-2" />
+                    )}
+                    {theme === "dark" ? "Mode clair" : "Mode sombre"}
+                </DropdownMenuItem>
+                <DropdownMenuItem
                     onClick={() => logout()}
-                    className="h-10 flex items-center justify-center text-amber-700 font-medium cursor-pointer"
+                    className="h-10 flex items-center justify-center text-red-600 font-medium cursor-pointer"
                 >
                     <LogOut className="size-4 mr-2" />
-                    log out
+                    Déconnexion
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

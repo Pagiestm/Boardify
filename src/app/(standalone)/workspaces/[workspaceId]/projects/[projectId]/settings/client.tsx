@@ -16,7 +16,7 @@ export const ProjectIdSettingsClient = () => {
     }
 
     if (!initialValues) {
-        return <PageError message="Project not found" />
+        return <PageError message="Projet non trouvé" />
     }
 
     return (

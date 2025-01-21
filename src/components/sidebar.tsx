@@ -8,9 +8,10 @@ import { WorkspaceSwitcher } from "./workspace-switcher"
 
 export const Sidebar = () => {
     return (
-        <aside className="h-full bg-neutral-100 p-4 w-full">
-            <Link href="/">
-                <Image src="/logo.svg" alt="logo" width={164} height={48} />
+        <aside className="h-full bg-neutral-100 dark:bg-background p-4 w-full">
+            <Link href="/" className="flex items-center">
+                <Image src="/logo.svg" alt="logo" className="dark:invert" width={48} height={48} />
+                <span className="ml-2 text-2xl font-bold">Boardify</span>
             </Link>
             <DottedSeparator className="my-4" />
             <WorkspaceSwitcher />

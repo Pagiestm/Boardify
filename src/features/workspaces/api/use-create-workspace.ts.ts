@@ -27,13 +27,13 @@ export const useCreateWorkspace = () => {
             return await response.json();
         },
         onSuccess: () => {
-            toast.success("Workspace created")
+            toast.success("Espace de travail créé")
 
             router.refresh()
             queryClient.invalidateQueries({ queryKey: ["workspaces"] })
         },
         onError: () => {
-            toast.error("Failed to create workspace")
+            toast.error("Échec de la création de l'espace de travail")
         },
     })
 
