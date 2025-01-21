@@ -12,8 +12,9 @@ const StandaloneLayout = ({ children }: StandaloneLayoutProps) => {
         <main className="bg-neutral-100 dark:bg-background min-h-screen">
             <div className="mx-auto max-w-screen-2xl p-4">
                 <nav className="flex justify-between items-center h-[73px]">
-                    <Link href="/">
-                        <Image src="/logo.svg" alt="logo" height={56} width={152} />
+                    <Link href="/" className="flex items-center">
+                        <Image src="/logo.svg" alt="logo" className="dark:invert" width={48} height={48} />
+                        <span className="ml-2 text-2xl font-bold">Boardify</span>
                     </Link>
                     <UserButton />
                 </nav>
