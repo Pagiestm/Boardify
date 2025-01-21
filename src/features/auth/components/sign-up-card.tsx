@@ -57,7 +57,7 @@ export const SignUpCard = () => {
                     </Link>{" "}
                     et {" "}
                     <Link href="/terms">
-                        <span className="text-blue-500">Conditions d'utilisation</span>
+                        <span className="text-blue-500">Conditions d&apos;utilisation</span>
                     </Link>
                 </CardDescription>
             </CardHeader>
