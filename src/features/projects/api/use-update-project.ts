@@ -16,6 +16,11 @@ export const useUpdateProject = () => {
         RequestType
     >({
         mutationFn: async ({ form, param }) => {
+            if (form.image instanceof File && form.image.size > 1048576) { // 1MB = 1048576 bytes
+                toast.error("L'image dépasse 1Mo");
+                throw new Error("L'image dépasse 1Mo");
+            }
+            
             const response = await client.api.projects[":projectId"]["$patch"]({ form, param })
 
             if (!response.ok) {

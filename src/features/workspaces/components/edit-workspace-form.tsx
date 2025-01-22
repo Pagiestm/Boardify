@@ -49,14 +49,14 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
     } = useResetInviteCode()
 
     const [DeleteDialog, confirmDelete] = useConfirm(
-        "Supprimer l&apos;espace de travail",
+        "Supprimer l'espace de travail",
         "Cette action ne peut pas être annulée.",
         "destructive"
     )
 
     const [ResetDialog, confirmReset] = useConfirm(
-        "Réinitialiser le lien d&apos;invitation",
-        "Cela invalidera le lien d&apos;invitation actuel",
+        "Réinitialiser le lien d'invitation",
+        "Cela invalidera le lien d'invitation actuel",
         "destructive"
     )
 
@@ -118,7 +118,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
 
     const handleCopyinviteLink = () => {
         navigator.clipboard.writeText(fullinviteLink)
-        .then(() => toast.success("Lien d&apos;invitation copié dans le presse-papiers"))
+        .then(() => toast.success("Lien d'invitation copié dans le presse-papiers"))
     }
 
     return (
