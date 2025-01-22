@@ -30,7 +30,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
-import { TaskStatus } from "../types";
+import { TaskStatus, TaskPriority } from "../types";
 import { createtaskSchema } from "../schemas";
 import { useCreateTask } from "../api/use-create-task";
 
@@ -175,6 +175,39 @@ export const CreateTaskForm = ({ onCancel, projectOptions, memberOptions }: Crea
                                                 </SelectItem>
                                                 <SelectItem value={TaskStatus.DONE}>
                                                     Done
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="priority"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Priorité
+                                        </FormLabel>
+                                        <Select
+                                            defaultValue={field.value}
+                                            onValueChange={field.onChange}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Sélectionner une priorité" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <FormMessage />
+                                            <SelectContent>
+                                                <SelectItem value={TaskPriority.HIGH}>
+                                                    Haute
+                                                </SelectItem>
+                                                <SelectItem value={TaskPriority.MEDIUM}>
+                                                    Moyenne
+                                                </SelectItem>
+                                                <SelectItem value={TaskPriority.LOW}>
+                                                    Basse
                                                 </SelectItem>
                                             </SelectContent>
                                         </Select>

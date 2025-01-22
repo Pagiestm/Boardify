@@ -10,7 +10,7 @@ import { createAdminClient } from "@/lib/appwrite";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { DATABASE_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from "@/config";
 
-import { Task, TaskStatus } from "../types";
+import { Task, TaskStatus, TaskPriority } from "../types";
 import { createtaskSchema } from "../schemas";
 
 const app = new Hono()
@@ -59,6 +59,7 @@ const app = new Hono()
                 status: z.nativeEnum(TaskStatus).nullish(),
                 search: z.string().nullish(),
                 dueDate: z.string().nullish(),
+                priority: z.nativeEnum(TaskPriority).nullish(),
             })
         ),
         async (c) => {
@@ -73,6 +74,7 @@ const app = new Hono()
                 search,
                 assigneeId,
                 dueDate,
+                priority,
             } = c.req.valid("query")
 
             const member = await getMember({
@@ -107,6 +109,11 @@ const app = new Hono()
             if (dueDate) {
                 console.log("dueDate: ", dueDate)
                 query.push(Query.equal("dueDate", dueDate))
+            }
+
+            if (priority) {
+                console.log("priority: ", priority);
+                query.push(Query.equal("priority", priority));
             }
 
             if (search) {
@@ -184,6 +191,7 @@ const app = new Hono()
                 projectId,
                 dueDate,
                 assigneeId,
+                priority,
             } = c.req.valid("json")
 
             const member = await getMember({
@@ -223,6 +231,7 @@ const app = new Hono()
                     projectId,
                     dueDate,
                     assigneeId,
+                    priority,
                     position: newPosition,
                 }
             )
@@ -244,6 +253,7 @@ const app = new Hono()
                 projectId,
                 dueDate,
                 assigneeId,
+                priority,
             } = c.req.valid("json")
             const { taskId } = c.req.param()
 
@@ -273,6 +283,7 @@ const app = new Hono()
                     projectId,
                     dueDate,
                     assigneeId,
+                    priority,
                     description,
                 }
             )

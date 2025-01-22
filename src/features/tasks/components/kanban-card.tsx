@@ -9,6 +9,8 @@ import { TaskDate } from "./task-date";
 import { TaskActions } from "./task-actions";
 
 import { Task } from "../types";
+import { Badge } from "@/components/ui/badge";
+import { snakeCaseToTitleCase } from "@/lib/utils";
 
 interface KanbanCardProps {
     task: Task;
@@ -19,6 +21,9 @@ export const KanbanCard = ({ task }: KanbanCardProps) => {
         <div className="bg-white dark:bg-gray-800 p-2.5 mb-1.5 rounded shadow-sm space-y-3">
             <div className="flex items-start justify-between gap-x-2">
                 <p className="text-sm line-clamp-2">{task.name}</p>
+                <div className="flex items-center gap-x-1.5">
+                    <Badge variant={task.priority}>{snakeCaseToTitleCase(task.priority)}</Badge>
+                </div>
                 <TaskActions id={task.$id} projectId={task.projectId}>
                     <MoreHorizontal className="size-[18px] stroke-1 shrink-0 text-neutral-700 dark:text-white hover:opacity-75 transition" />
                 </TaskActions>
