@@ -187,7 +187,7 @@ export const CreateWorkspaceForm = ({ onCancel }: CreateWorkspaceFormProps) => {
                                 type="submit"
                                 size="lg"
                             >
-                                Créer l&apos;espace de travail
+                                Créer
                             </Button>
                         </div>
                     </form>

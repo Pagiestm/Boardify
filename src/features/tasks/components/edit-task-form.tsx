@@ -235,7 +235,7 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                 type="submit"
                                 size="lg"
                             >
-                                Sauvegarder les modifications
+                                Sauvegarder
                             </Button>
                         </div>
                     </form>

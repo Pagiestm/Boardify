@@ -250,7 +250,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                                     type="submit"
                                     size="lg"
                                 >
-                                    Enregistrer les modifications
+                                    Enregistrer
                                 </Button>
                             </div>
                         </form>

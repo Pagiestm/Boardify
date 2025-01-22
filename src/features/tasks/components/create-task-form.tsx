@@ -235,7 +235,7 @@ export const CreateTaskForm = ({ onCancel, projectOptions, memberOptions }: Crea
                                 type="submit"
                                 size="lg"
                             >
-                                Créer la tâche
+                                Créer
                             </Button>
                         </div>
                     </form>

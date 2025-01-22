@@ -60,7 +60,7 @@ export const TaskDescription = ({
                         onClick={handleSave}
                         disabled={isPending}
                     >
-                        {isPending ? "Enregistrement..." : "Sauvegarder les modifications"}
+                        {isPending ? "Enregistrement..." : "Sauvegarder"}
                     </Button>
                 </div>
             ) : (

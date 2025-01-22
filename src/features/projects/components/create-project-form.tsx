@@ -191,7 +191,7 @@ export const CreateProjectForm = ({ onCancel }: CreateProjectFormProps) => {
                                 type="submit"
                                 size="lg"
                             >
-                                Créer le projet
+                                Créer
                             </Button>
                         </div>
                     </form>

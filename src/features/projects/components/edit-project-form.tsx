@@ -220,7 +220,7 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
                                     type="submit"
                                     size="lg"
                                 >
-                                    Enregistrer les modifications
+                                    Enregistrer
                                 </Button>
                             </div>
                         </form>
