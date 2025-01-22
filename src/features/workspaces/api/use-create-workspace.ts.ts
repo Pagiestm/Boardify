@@ -18,6 +18,11 @@ export const useCreateWorkspace = () => {
         RequestType
     >({
         mutationFn: async ({ form }) => {
+            if (form.image instanceof File && form.image.size > 1048576) { // 1MB = 1048576 bytes
+                toast.error("L'image dépasse 1Mo");
+                throw new Error("L'image dépasse 1Mo");
+            }
+            
             const response = await client.api.workspaces["$post"]({ form })
 
             if (!response.ok) {
@@ -32,8 +37,12 @@ export const useCreateWorkspace = () => {
             router.refresh()
             queryClient.invalidateQueries({ queryKey: ["workspaces"] })
         },
-        onError: () => {
-            toast.error("Échec de la création de l'espace de travail")
+        onError: (error) => {
+            if (error.message === "L'image dépasse 1Mo") {
+                toast.error(error.message);
+            } else {
+                toast.error("Échec de la création de l'espace de travail")
+            }
         },
     })
 

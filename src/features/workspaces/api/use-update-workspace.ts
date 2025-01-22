@@ -16,6 +16,11 @@ export const useUpdateWorkspace = () => {
         RequestType
     >({
         mutationFn: async ({ form, param }) => {
+            if (form.image instanceof File && form.image.size > 1048576) { // 1MB = 1048576 bytes
+                toast.error("L'image dépasse 1Mo");
+                throw new Error("L'image dépasse 1Mo");
+            }
+
             const response = await client.api.workspaces[":workspaceId"]["$patch"]({ form, param })
 
             if (!response.ok) {
@@ -30,8 +35,12 @@ export const useUpdateWorkspace = () => {
             queryClient.invalidateQueries({ queryKey: ["workspaces"] })
             queryClient.invalidateQueries({ queryKey: ["workspace", data.$id] })
         },
-        onError: () => {
-            toast.error("Échec de la mise à jour de l'espace de travail")
+        onError: (error) => {
+            if (error.message === "L'image dépasse 1Mo") {
+                toast.error(error.message);
+            } else {
+                toast.error("Échec de la mise à jour de l'espace de travail")
+            }
         },
     })
 

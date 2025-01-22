@@ -20,7 +20,7 @@ export const useCreateProject = () => {
                 toast.error("L'image dépasse 1Mo");
                 throw new Error("L'image dépasse 1Mo");
             }
-            
+
             const response = await client.api.projects["$post"]({ form })
 
             if (!response.ok) {
@@ -33,8 +33,12 @@ export const useCreateProject = () => {
             toast.success("Projet créé")
             queryClient.invalidateQueries({ queryKey: ["projects"] })
         },
-        onError: () => {
-            toast.error("Erreur lors de la création du projet")
+        onError: (error) => {
+            if (error.message === "L'image dépasse 1Mo") {
+                toast.error(error.message);
+            } else {
+                toast.error("Erreur lors de la création du projet");
+            }
         },
     })
 

@@ -20,7 +20,7 @@ export const useUpdateProject = () => {
                 toast.error("L'image dépasse 1Mo");
                 throw new Error("L'image dépasse 1Mo");
             }
-            
+
             const response = await client.api.projects[":projectId"]["$patch"]({ form, param })
 
             if (!response.ok) {
@@ -35,8 +35,12 @@ export const useUpdateProject = () => {
             queryClient.invalidateQueries({ queryKey: ["projects"] })
             queryClient.invalidateQueries({ queryKey: ["project", data.$id] })
         },
-        onError: () => {
-            toast.error("Erreur lors de la mise à jour du projet")
+        onError: (error) => {
+            if (error.message === "L'image dépasse 1Mo") {
+                toast.error(error.message);
+            } else {
+                toast.error("Erreur lors de la mis à jour du projet");
+            }
         },
     })
 
