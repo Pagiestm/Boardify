@@ -21,7 +21,7 @@ const buttonVariants = cva(
           "bg-gray-200 text-black hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600",
         ghost: "border-transparent shadow-none hover:bg-accent hover:text-accent-foreground",
         muted: "bg-neutral-200 text-neutral-600 hover:bg-neutral-300 dark:bg-neutral-600 dark:text-white dark:hover:bg-neutral-500",
-        teritary: "bg-blue-100 text-blue-600 border-transparent hover:bg-blue-200 shadow-none"
+        teritary: "bg-blue-600 text-white border-transparent hover:bg-blue-700 dark:hover:bg-blue-800"
       },
       size: {
         default: "h-10 px-4 py-2",
