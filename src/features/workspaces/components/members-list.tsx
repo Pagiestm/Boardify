@@ -22,7 +22,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getCurrent } from "@/features/auth/queries";
 
 export const MembersList = () => {
   const workspaceId = useWorkspaceId();
