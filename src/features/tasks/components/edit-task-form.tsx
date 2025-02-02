@@ -35,30 +35,30 @@ import { useUpdateTask } from "../api/use-update-task";
 
 interface EditTaskFormProps {
     onCancel?: () => void;
-    projectOptions: { id: string, name: string, imageUrl: string }[]
-    memberOptions: { id: string, name: string }[]
-    initialValues: Task
+    projectOptions: { id: string, name: string, imageUrl: string }[];
+    memberOptions: { id: string, name: string }[];
+    initialValues: Task;
 }
 
 export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialValues }: EditTaskFormProps) => {
-    const { mutate, isPending } = useUpdateTask()
+    const { mutate, isPending } = useUpdateTask();
 
     const form = useForm<z.infer<typeof createtaskSchema>>({
-        resolver: zodResolver(createtaskSchema.omit({ workspaceId: true, description: true })),
+        resolver: zodResolver(createtaskSchema.omit({ workspaceId: true })),
         defaultValues: {
             ...initialValues,
             dueDate: initialValues.dueDate ? new Date(initialValues.dueDate) : undefined,
         },
-    })
+    });
 
     const onSubmit = (values: z.infer<typeof createtaskSchema>) => {
         mutate({ json: values, param: { taskId: initialValues.$id } }, {
             onSuccess: () => {
-                form.reset()
-                onCancel?.()
+                form.reset();
+                onCancel?.();
             }
-        })
-    }
+        });
+    };
 
     return (
         <Card className="w-full h-full border-none shadow-none">
@@ -101,7 +101,11 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
                                             Date d&apos;échéance
                                         </FormLabel>
                                         <FormControl>
-                                            <DatePicker {...field} />
+                                            <DatePicker
+                                                {...field}
+                                                value={field.value ? new Date(field.value) : undefined}
+                                                onChange={(date) => field.onChange(date || "")}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
