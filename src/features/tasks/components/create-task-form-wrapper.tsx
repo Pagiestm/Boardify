@@ -8,10 +8,13 @@ import { CreateTaskForm } from "./create-task-form";
 
 interface CreateTaskFormWrapperProps {
     onCancel: () => void;
+    selectProjetId?: string // NOTE: si le modal est ouvert dans un projet déja selectionner , 
+                            // pas besoin de redemander à l'utilisateur de selectionner le projet !
 }
 
 export const CreateTaskFormWrapper = ({
-    onCancel
+    onCancel,
+    selectProjetId
 }: CreateTaskFormWrapperProps) => {
     const workspaceId = useWorkspaceId()
 
@@ -46,6 +49,7 @@ export const CreateTaskFormWrapper = ({
             onCancel={onCancel}
             projectOptions={projectOptions ?? []}
             memberOptions={memberOptions ?? []}
+            currentProjet={selectProjetId}
         />
     )
 }

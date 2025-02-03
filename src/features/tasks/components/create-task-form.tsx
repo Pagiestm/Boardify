@@ -33,10 +33,12 @@ import {
 import { TaskStatus, TaskPriority } from "../types";
 import { createtaskSchema } from "../schemas";
 import { useCreateTask } from "../api/use-create-task";
+import { useEffect } from "react";
 
 interface CreateTaskFormProps {
   onCancel?: () => void;
   projectOptions: { id: string; name: string; imageUrl: string }[];
+  currentProjet? : string
   memberOptions: { id: string; name: string }[];
 }
 
@@ -44,6 +46,7 @@ export const CreateTaskForm = ({
   onCancel,
   projectOptions,
   memberOptions,
+  currentProjet = undefined,
 }: CreateTaskFormProps) => {
   const workspaceId = useWorkspaceId();
   const { mutate, isPending } = useCreateTask();
@@ -51,7 +54,7 @@ export const CreateTaskForm = ({
   const form = useForm<z.infer<typeof createtaskSchema>>({
     resolver: zodResolver(createtaskSchema.omit({ workspaceId: true })),
     defaultValues: {
-      workspaceId,
+      workspaceId
     },
   });
 
@@ -66,6 +69,12 @@ export const CreateTaskForm = ({
       }
     );
   };
+
+  useEffect(() => {
+    if(currentProjet){
+      form.setValue("projectId", currentProjet);
+    }
+  }, [currentProjet])
 
   return (
     <Card className="w-full h-full border-none shadow-none">
