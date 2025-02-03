@@ -105,15 +105,17 @@ export const CreateTaskForm = ({
                     <FormLabel>Date d&apos;échéance</FormLabel>
                     <FormControl>
                       <DatePicker
-                        {...field}
-                        value={field.value ? new Date(field.value) : undefined}
-                        onChange={(date) => field.onChange(date || "")}
+                        value={field.value ? new Date(field.value) : undefined} // Convertit une date valide, sinon undefined
+                        onChange={(date) =>
+                          field.onChange(date ? date.toISOString() : "")
+                        } 
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="assigneeId"
