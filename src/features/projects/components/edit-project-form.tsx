@@ -1,20 +1,15 @@
 "use client"
 
 import { z } from "zod";
-import { useRef } from "react";
-import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeftIcon, ImageIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/hooks/use-confirm";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { DottedSeparator } from "@/components/dotted-separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ImageUploadField } from "@/components/forms/image-upload-field";
+import { DangerZone, FormFooter, FormHeader } from "@/components/forms/form-shell";
 import {
     Form,
     FormControl,
@@ -44,13 +39,11 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
 
     const [DeleteDialog, confirmDelete] = useConfirm(
         "Supprimer le projet",
-        "Cette action ne peut pas être annulée.",
+        "Cette action est irréversible : toutes les tâches du projet seront supprimées.",
         "destructive"
     )
 
-    const inputRef = useRef<HTMLInputElement>(null)
-
-    const form = useForm<z.infer<typeof updateProjectSchema>>({
+    const form = useForm<z.input<typeof updateProjectSchema>, unknown, z.output<typeof updateProjectSchema>>({
         resolver: zodResolver(updateProjectSchema),
         defaultValues: {
             ...initialValues,
@@ -72,7 +65,7 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
         })
     }
 
-    const onSubmit = (values: z.infer<typeof updateProjectSchema>) => {
+    const onSubmit = (values: z.output<typeof updateProjectSchema>) => {
         const finalValues = {
             ...values,
             image: values.image instanceof File ? values.image : ""
@@ -84,171 +77,64 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
         })
     }
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-
-        if (file) {
-            form.setValue("image", file)
-        }
-    }
+    const handleBack = onCancel ?? (() => router.push(`/workspaces/${initialValues.workspaceId}/projects/${initialValues.$id}`))
 
     return (
-        <div className="flex flex-col gap-y-4">
+        <div className="flex flex-col gap-6">
             <DeleteDialog />
-            <Card className="w-full h-full border-none shadow-none">
-                <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0">
-                    <Button size="sm" variant="secondary" onClick={onCancel ? onCancel : () => router.push(`/workspaces/${initialValues.workspaceId}/projects/${initialValues.$id}`)}>
-                        <ArrowLeftIcon className="size-4 mr-2" />
-                        Retour
-                    </Button>
-                    <CardTitle className="text-xl font-bold">
-                        {initialValues.name}
-                    </CardTitle>
-                </CardHeader>
-                <div className="px-7">
-                    <DottedSeparator />
-                </div>
-                <CardContent className="p-7">
-                    <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)}>
-                            <div className="flex flex-col gap-y-4">
-                                <FormField
-                                    control={form.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>
-                                                Nom du projet
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    placeholder="Entrez le nom du projet"
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="image"
-                                    render={({ field }) => (
-                                        <div className="flex flex-col gap-y-2">
-                                            <div className="flex items-center gap-x-5">
-                                                {field.value ? (
-                                                    <div className="size-[72px] relative rounded-md overflow-hidden">
-                                                        <Image
-                                                            alt="logo"
-                                                            fill
-                                                            className="object-cover"
-                                                            src={
-                                                                field.value instanceof File
-                                                                    ? URL.createObjectURL(field.value)
-                                                                    : field.value
-                                                            }
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <Avatar className="size-[72px]">
-                                                        <AvatarFallback>
-                                                            <ImageIcon className="size-36px text-neutral-400" />
-                                                        </AvatarFallback>
-                                                    </Avatar>
-                                                )}
-                                                <div className="flex flex-col">
-                                                    <p className="text-sm">Icône du projet</p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        JPG, PNG, SVG ou JPEG, max 1 Mo
-                                                    </p>
-                                                    <input
-                                                        className="hidden"
-                                                        type="file"
-                                                        accept=".jpg, .png, .jpeg, .svg"
-                                                        ref={inputRef}
-                                                        onChange={handleImageChange}
-                                                        disabled={isPending}
-                                                    />
-                                                    {field.value ? (
-                                                        <Button
-                                                            type="button"
-                                                            disabled={isPending}
-                                                            variant="destructive"
-                                                            size="xs"
-                                                            className="w-fit mt-2"
-                                                            onClick={() => {
-                                                                field.onChange(null)
-                                                                if (inputRef.current) {
-                                                                    inputRef.current.value = ""
-                                                                }
-                                                            }}
-                                                        >
-                                                            Supprimer l&apos;image
-                                                        </Button>
-                                                    ) : (
-                                                        <Button
-                                                            type="button"
-                                                            disabled={isPending}
-                                                            variant="teritary"
-                                                            size="xs"
-                                                            className="w-fit mt-2"
-                                                            onClick={() => inputRef.current?.click()}
-                                                        >
-                                                            Télécharger l&apos;image
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                />
-                            </div>
-                            <DottedSeparator className="py-7" />
-                            <div className="flex items-center justify-between">
-                                <Button
-                                    type="button"
-                                    size="lg"
-                                    variant="secondary"
-                                    onClick={onCancel}
-                                    disabled={isPending}
-                                    className={cn(!onCancel && "invisible")}
-                                >
-                                    Annuler
-                                </Button>
-                                <Button
-                                    disabled={isPending}
-                                    type="submit"
-                                    size="lg"
-                                >
-                                    Enregistrer
-                                </Button>
-                            </div>
-                        </form>
-                    </Form>
-                </CardContent>
+            <Card className="overflow-hidden">
+                <FormHeader
+                    onBack={handleBack}
+                    title="Paramètres du projet"
+                    description={<>Modifiez le nom et l&apos;icône de <strong className="font-medium text-foreground">{initialValues.name}</strong>.</>}
+                />
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <div className="flex flex-col gap-5 px-6 pb-6">
+                            <FormField
+                                control={form.control}
+                                name="name"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Nom du projet</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                placeholder="Ex. : Refonte du site"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="image"
+                                render={({ field }) => (
+                                    <ImageUploadField
+                                        label="Icône du projet"
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        disabled={isPending}
+                                    />
+                                )}
+                            />
+                        </div>
+                        <FormFooter
+                            onCancel={onCancel}
+                            isPending={isPending}
+                            submitLabel="Enregistrer"
+                        />
+                    </form>
+                </Form>
             </Card>
 
-            <Card className="w-full h-full border-none shadow-none">
-                <CardContent className="p-7">
-                    <div className="flex flex-col">
-                        <h3 className="font-bold">Zone de danger</h3>
-                        <p className="text-sm text-muted-foreground">
-                            La suppression d&apos;un projet est irréversible et supprimera toutes les données associées.
-                        </p>
-                        <DottedSeparator className="py-7" />
-                        <Button
-                            className="mt-6 w-fit ml-auto"
-                            size="sm"
-                            variant="destructive"
-                            type="button"
-                            disabled={isPending  || isDeletingProject}
-                            onClick={handleDelete}
-                        >
-                            Supprimer le projet
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+            <DangerZone
+                description="La suppression d'un projet est irréversible et supprime toutes les tâches associées."
+                actionLabel="Supprimer le projet"
+                onAction={handleDelete}
+                disabled={isPending || isDeletingProject}
+            />
         </div>
     )
 }

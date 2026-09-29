@@ -2,37 +2,26 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { TaskStatus, TaskPriority } from "@/features/tasks/types"
+import { TASK_PRIORITY_CONFIG, TASK_STATUS_CONFIG } from "@/features/tasks/constants"
 
 import { cn } from "@/lib/utils"
 
+const taskVariants = Object.fromEntries([
+  ...Object.values(TaskStatus).map((status) => [status, TASK_STATUS_CONFIG[status].badge]),
+  ...Object.values(TaskPriority).map((priority) => [priority, TASK_PRIORITY_CONFIG[priority].badge]),
+]) as Record<TaskStatus | TaskPriority, string>
+
 const badgeVariants = cva(
-  "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex w-fit shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-medium [&_svg]:size-3",
   {
     variants: {
       variant: {
-        default:
-          "border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80",
-        secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
-        outline: "text-foreground",
-        [TaskStatus.TODO]:
-          "border-transparent bg-red-400 text-primary hover:bg-red-400/80",
-        [TaskStatus.IN_PROGRESS]:
-          "border-transparent bg-yellow-400 text-primary hover:bg-yellow-400/80",
-        [TaskStatus.IN_REVIEW]:
-          "border-transparent bg-blue-400 text-primary hover:bg-blue-400/80",
-        [TaskStatus.DONE]:
-          "border-transparent bg-emerald-400 text-primary hover:bg-emerald-400/80",
-        [TaskStatus.BACKLOG]:
-          "border-transparent bg-pink-400 text-primary hover:bg-pink-400/80",
-        [TaskPriority.HIGH]:
-          "border-transparent bg-red-400 text-primary hover:bg-red-400/80 text-white dark:text-black",
-        [TaskPriority.MEDIUM]:
-          "border-transparent bg-yellow-400 text-primary hover:bg-yellow-400/80 text-white dark:text-black",
-        [TaskPriority.LOW]:
-          "border-transparent bg-green-400 text-primary hover:bg-green-400/80 text-white dark:text-black",
+        default: "bg-primary text-primary-foreground",
+        secondary: "bg-secondary text-secondary-foreground",
+        destructive: "bg-destructive/10 text-destructive",
+        outline: "border text-foreground",
+        soft: "bg-primary/10 text-primary",
+        ...taskVariants,
       },
     },
     defaultVariants: {
@@ -41,13 +30,26 @@ const badgeVariants = cva(
   }
 )
 
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-  VariantProps<typeof badgeVariants> { }
+const dotClasses = Object.fromEntries([
+  ...Object.values(TaskStatus).map((status) => [status, TASK_STATUS_CONFIG[status].dot]),
+  ...Object.values(TaskPriority).map((priority) => [priority, TASK_PRIORITY_CONFIG[priority].dot]),
+]) as Record<string, string>
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+export interface BadgeProps
+  extends React.ComponentProps<"span">,
+    VariantProps<typeof badgeVariants> {
+  /** Leading colored dot */
+  dot?: boolean
+}
+
+function Badge({ className, variant, dot, children, ...props }: BadgeProps) {
+  const dotClass = variant ? dotClasses[variant] : undefined
+
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <span data-slot="badge" className={cn(badgeVariants({ variant }), className)} {...props}>
+      {dot && dotClass && <span aria-hidden className={cn("size-1.5 rounded-full", dotClass)} />}
+      {children}
+    </span>
   )
 }
 

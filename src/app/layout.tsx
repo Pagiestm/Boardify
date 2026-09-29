@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
@@ -8,11 +9,25 @@ import { QueryProvider } from "@/components/query-provider";
 
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+});
 
 export const metadata: Metadata = {
-  title: "Boardify",
-  description: "Boardify, la plateforme de gestion de projets",
+  title: {
+    default: "Boardify — Gestion de projets simple pour les équipes",
+    template: "%s · Boardify",
+  },
+  description:
+    "Boardify réunit vos espaces de travail, projets et tâches : kanban, calendrier, tableau et statistiques pour avancer ensemble.",
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#18181b" },
+  ],
 };
 
 export default function RootLayout({
@@ -23,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body
-        className={cn(inter.className, "antialiased min-h-screen")}
+        className={cn(inter.variable, "min-h-screen font-sans antialiased")}
       >
         <ThemeProvider
           attribute="class"
@@ -31,10 +46,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider>
-            <Toaster />
-            {children}
-          </QueryProvider>
+          <NuqsAdapter>
+            <QueryProvider>
+              <Toaster />
+              {children}
+            </QueryProvider>
+          </NuqsAdapter>
         </ThemeProvider>
       </body>
     </html>

@@ -10,8 +10,12 @@ export const CreateProjectModal = () => {
     const { isOpen, setIsOpen, close } = useCreateProjectModal()
 
     return (
-        <ResponsiveModal open={isOpen} onopenchange={setIsOpen}>
-            <CreateProjectForm onCancel={close}/>
+        <ResponsiveModal
+            open={isOpen}
+            onopenchange={setIsOpen}
+            title="Créer un projet"
+        >
+            <CreateProjectForm onCancel={close} />
         </ResponsiveModal>
     )
 }

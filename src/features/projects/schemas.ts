@@ -10,6 +10,8 @@ export const createProjectSchema = z.object({
     workspaceId: z.string(),
 })
 
+export const projectFormSchema = createProjectSchema.omit({ workspaceId: true })
+
 export const updateProjectSchema = z.object({
     name: z.string().trim().min(1, "Minimum 1 charactère requis").optional(),
     image: z.union([

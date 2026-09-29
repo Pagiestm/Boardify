@@ -1,8 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { Fragment } from "react";
-import { ArrowLeftIcon, MoreVerticalIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  MoreHorizontalIcon,
+  ShieldCheckIcon,
+  UserIcon,
+  UserMinusIcon,
+} from "lucide-react";
 
 import { MemberRole } from "@/features/members/types";
 import { useGetMembers } from "@/features/members/api/use-get-members";
@@ -11,28 +15,32 @@ import { useDeleteMember } from "@/features/members/api/use-delete-member";
 import { useUpdateMember } from "@/features/members/api/use-update-member";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useConfirm } from "@/hooks/use-confirm";
-import { Separator } from "@/components/ui/separator";
-import { DottedSeparator } from "@/components/dotted-separator";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormHeader } from "@/components/forms/form-shell";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 export const MembersList = () => {
+  const router = useRouter();
   const workspaceId = useWorkspaceId();
 
   const [ConfirmDialog, confirm] = useConfirm(
-    "Supprimer le membre",
-    "Ce membre sera retiré de l'espace de travail",
+    "Retirer le membre",
+    "Ce membre perdra l'accès à l'espace de travail et à ses projets.",
     "destructive"
   );
 
-  const { data } = useGetMembers({ workspaceId });
+  const { data, isLoading } = useGetMembers({ workspaceId });
   const { mutate: deleteMember, isPending: isDeletingMember } =
     useDeleteMember();
   const { mutate: updateMember, isPending: isUpdatingMember } =
@@ -59,80 +67,95 @@ export const MembersList = () => {
     );
   };
 
+  const total = data?.documents.length ?? 0;
+
   return (
-    <Card className="w-full h-full border-none shadow-none">
+    <Card className="overflow-hidden">
       <ConfirmDialog />
-      <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0">
-        <Button asChild variant="secondary" size="sm">
-          <Link href={`/workspaces/${workspaceId}`}>
-            <ArrowLeftIcon className="size-4 mr-2" />
-            Retour
-          </Link>
-        </Button>
-        <CardTitle className="text-xl font-bold">Liste des membres</CardTitle>
-      </CardHeader>
-      <div className="px-7">
-        <DottedSeparator />
-      </div>
-      <CardContent className="p-7">
-        {data?.documents.map((member, index) => (
-          <Fragment key={member.$id}>
-            <div className="flex items-center gap-2">
+      <FormHeader
+        onBack={() => router.push(`/workspaces/${workspaceId}`)}
+        title="Membres"
+        description={
+          isLoading
+            ? "Chargement des membres…"
+            : `${total} membre${total > 1 ? "s" : ""} dans cet espace de travail`
+        }
+      />
+      <ul className="divide-y border-t">
+        {isLoading &&
+          Array.from({ length: 3 }).map((_, i) => (
+            <li key={i} className="flex items-center gap-3 px-6 py-3">
+              <Skeleton className="size-8 rounded-full" />
+              <Skeleton className="h-3.5 w-28" />
+              <Skeleton className="h-3 w-40" />
+            </li>
+          ))}
+        {!isLoading && total === 0 && (
+          <li className="px-6 py-10 text-center text-sm text-muted-foreground">
+            Aucun membre pour le moment.
+          </li>
+        )}
+        {data?.documents.map((member) => {
+          const isAdmin = member.role === MemberRole.ADMIN;
+
+          return (
+            <li
+              key={member.$id}
+              className="flex items-center gap-3 px-6 py-3"
+            >
               <MemberAvatar
-                className="size-10"
-                fallbackClassName="text-lg"
+                className="size-8"
+                fallbackClassName="text-xs"
                 name={member.name}
               />
-              <div className="flex flex-col">
-                <p className="text-sm font-medium">{member.name}</p>
-                <p className="text-xs text-muted-foreground">{member.email}</p>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <p className="truncate text-sm font-medium">{member.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{member.email}</p>
               </div>
+              <Badge variant={isAdmin ? "soft" : "secondary"}>
+                {isAdmin ? "Admin" : "Membre"}
+              </Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button className="ml-auto" variant="secondary" size="icon">
-                    <MoreVerticalIcon className="size-4 text-muted-foreground" />
+                  <Button variant="ghost" size="icon-sm" aria-label={`Actions pour ${member.name}`}>
+                    <MoreHorizontalIcon />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent side="bottom" align="end">
-                  {member.role != MemberRole.ADMIN && (
+                <DropdownMenuContent side="bottom" align="end" className="w-56">
+                  <DropdownMenuLabel>Rôle</DropdownMenuLabel>
+                  {!isAdmin && (
                     <DropdownMenuItem
-                      className="font-medium"
-                      onClick={() =>
-                        handleUpdateMember(member.$id, MemberRole.ADMIN)
-                      }
+                      onClick={() => handleUpdateMember(member.$id, MemberRole.ADMIN)}
                       disabled={isUpdatingMember}
                     >
-                      Définir comme Administrateur
+                      <ShieldCheckIcon />
+                      Définir comme administrateur
                     </DropdownMenuItem>
                   )}
-                  {![MemberRole.MEMBER, MemberRole.ADMIN].includes(member.role) && (
+                  {member.role !== MemberRole.MEMBER && (
                     <DropdownMenuItem
-                      className="font-medium"
-                      onClick={() =>
-                        handleUpdateMember(member.$id, MemberRole.MEMBER)
-                      }
+                      onClick={() => handleUpdateMember(member.$id, MemberRole.MEMBER)}
                       disabled={isUpdatingMember}
                     >
-                      Définir comme Membre
+                      <UserIcon />
+                      Définir comme membre
                     </DropdownMenuItem>
                   )}
-                  {/* TODO Ajouter une condition pour recupérer le current User pour tester si il a le rôle Admin  */}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    className="font-medium text-red-600"
+                    variant="destructive"
                     onClick={() => handleDeleteMember(member.$id)}
                     disabled={isDeletingMember}
                   >
-                    Supprimer {member.name}
+                    <UserMinusIcon />
+                    Retirer {member.name}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
-            {index < data.documents.length - 1 && (
-              <Separator className="my-2.5 bg-neutral-500" />
-            )}
-          </Fragment>
-        ))}
-      </CardContent>
+            </li>
+          );
+        })}
+      </ul>
     </Card>
   );
 };

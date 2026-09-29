@@ -3,15 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { DottedSeparator } from "@/components/dotted-separator";
 import { Button } from "@/components/ui/button";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+
+import { WorkspaceAvatar } from "./workspace-avatar";
 
 import { useInviteCode } from "../hooks/use-invite-code";
 import { useWorkspaceId } from "../hooks/use-workspace-id";
@@ -20,6 +16,7 @@ import { useJoinWorkspace } from "../api/use-join-workspace";
 interface JoinWorkspaceFormProps {
     initialValues: {
         name: string;
+        imageUrl?: string;
     }
 }
 
@@ -43,43 +40,42 @@ export const JoinWorkspaceForm = ({
     }
 
     return (
-        <Card className="w-full h-full border-none shadow-none">
-            <CardHeader className="p-7">
-                <CardTitle className="text-xl font-bold">
-                    Rejoindre l&apos;espace de travail
-                </CardTitle>
-                <CardDescription>
-                    Vous avez été invité à rejoindre l&apos;espace de travail <strong>{initialValues.name}</strong>
-                </CardDescription>
-            </CardHeader>
-            <div className="px-7">
-                <DottedSeparator />
-            </div>
-            <CardContent className="p-7">
-                <div className="flex flex-col lg:flex-row gap-2 items-center justify-between">
-                    <Button
-                        variant="secondary"
-                        type="button"
-                        asChild
-                        size="lg"
-                        className="w-full lg:w-fit"
-                        disabled={isPending}
-                    >
-                        <Link href="/">
-                            Annuler
-                        </Link>
-                    </Button>
-                    <Button
-                        size="lg"
-                        className="w-full lg:w-fit"
-                        type="button"
-                        onClick={onSubmit}
-                        disabled={isPending}
-                    >
-                        Rejoindre l&apos;espace de travail
-                    </Button>
+        <Card>
+            <div className="flex flex-col items-center gap-4 px-6 pt-8 pb-6 text-center">
+                <WorkspaceAvatar
+                    name={initialValues.name}
+                    image={initialValues.imageUrl}
+                    className="size-14"
+                    fallbackClassName="text-xl"
+                />
+                <div className="space-y-1">
+                    <p className="text-sm text-muted-foreground">Vous êtes invité à rejoindre</p>
+                    <h1 className="text-xl font-semibold tracking-tight">{initialValues.name}</h1>
                 </div>
-            </CardContent>
+                <p className="max-w-sm text-sm text-muted-foreground">
+                    En rejoignant cet espace de travail, vous aurez accès à ses projets et à ses tâches.
+                </p>
+            </div>
+            <div className="flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end">
+                <Button
+                    variant="ghost"
+                    type="button"
+                    asChild
+                    disabled={isPending}
+                >
+                    <Link href="/dashboard">
+                        Refuser
+                    </Link>
+                </Button>
+                <Button
+                    type="button"
+                    onClick={onSubmit}
+                    disabled={isPending}
+                >
+                    {isPending && <Spinner className="text-primary-foreground" />}
+                    Rejoindre l&apos;espace
+                </Button>
+            </div>
         </Card>
     );
 }

@@ -1,48 +1,96 @@
-.rbc-header {
-    @apply text-sm;
-    @apply font-normal;
-    @apply pb-4;
-    @apply text-muted-foreground;
-    @apply border-b-0;
+/*
+ * react-big-calendar, restyled with the app's CSS variables so it follows
+ * light and dark themes.
+ */
+
+.boardify-calendar .rbc-month-view {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--card);
 }
 
-.rbc-header+.rbc-header {
-    @apply border-l-0;
+.boardify-calendar .rbc-month-header {
+    background: var(--muted);
 }
 
-.rbc-button-link {
-    @apply text-xs;
-    @apply font-normal;
-    @apply text-muted-foreground;
+.boardify-calendar .rbc-header {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-align: left;
+    text-transform: capitalize;
+    color: var(--muted-foreground);
+    border-bottom: 1px solid var(--border);
 }
 
-.rbc-month-row {
-    @apply min-h-[180px];
-    @apply border-t;
-    @apply border-x;
+.boardify-calendar .rbc-header + .rbc-header {
+    border-left: 1px solid var(--border);
 }
 
-:not(.rbc-month-row ~ .rbc-month-row).rbc-month-row {
-    @apply rounded-t-md;
+.boardify-calendar .rbc-month-row {
+    min-height: 128px;
+    overflow: visible;
 }
 
-.rbc-month-row:last-of-type {
-    @apply border-b;
-    @apply rounded-b-md;
+.boardify-calendar .rbc-month-row + .rbc-month-row {
+    border-top: 1px solid var(--border);
 }
 
-.rbc-month-view {
-    @apply border-none;
+.boardify-calendar .rbc-day-bg + .rbc-day-bg {
+    border-left: 1px solid var(--border);
 }
 
-.rbc-date-cell {
-    @apply p-2;
+.boardify-calendar .rbc-date-cell {
+    padding: 0.375rem 0.5rem 0.25rem;
+    text-align: left;
 }
 
-.rbc-today {
-    background-color: inherit;
+.boardify-calendar .rbc-button-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.25rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--foreground);
 }
 
-.rbc-off-range-bg {
-    background: inherit;
+.boardify-calendar .rbc-off-range .rbc-button-link {
+    color: var(--muted-foreground);
+    opacity: 0.6;
+}
+
+.boardify-calendar .rbc-off-range-bg {
+    background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+.boardify-calendar .rbc-today {
+    background: transparent;
+}
+
+.boardify-calendar .rbc-now .rbc-button-link {
+    background: var(--primary);
+    color: var(--primary-foreground);
+    font-weight: 600;
+}
+
+.boardify-calendar .rbc-row-segment {
+    padding: 0 0.375rem 0.25rem;
+}
+
+.boardify-calendar .rbc-show-more {
+    background: transparent;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0 0.5rem;
+}
+
+.boardify-calendar .rbc-show-more:hover {
+    color: var(--foreground);
+    text-decoration: underline;
 }

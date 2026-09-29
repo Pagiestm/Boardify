@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
     DragDropContext,
     Droppable,
@@ -9,22 +9,39 @@ import {
 import { KanbanCard } from "./kanban-card";
 import { KanbanColumnHeader } from "./kanban-column-header";
 
-import { Task, TaskStatus } from "../types";
+import { cn } from "@/lib/utils";
 
-const boards: TaskStatus[] = [
-    TaskStatus.BACKLOG,
-    TaskStatus.TODO,
-    TaskStatus.IN_PROGRESS,
-    TaskStatus.IN_REVIEW,
-    TaskStatus.DONE,
-];
+import { PopulatedTask, TaskStatus } from "../types";
+import { TASK_STATUS_ORDER } from "../constants";
+
+const boards = TASK_STATUS_ORDER;
 
 type TasksState = {
-    [key in TaskStatus]: Task[];
+    [key in TaskStatus]: PopulatedTask[];
+}
+
+const groupTasks = (data: PopulatedTask[]): TasksState => {
+    const grouped: TasksState = {
+        [TaskStatus.BACKLOG]: [],
+        [TaskStatus.TODO]: [],
+        [TaskStatus.IN_PROGRESS]: [],
+        [TaskStatus.IN_REVIEW]: [],
+        [TaskStatus.DONE]: [],
+    }
+
+    data.forEach((task) => {
+        grouped[task.status]?.push(task);
+    })
+
+    Object.values(grouped).forEach((column) => {
+        column.sort((a, b) => a.position - b.position)
+    })
+
+    return grouped;
 }
 
 interface DataKanbanProps {
-    data: Task[];
+    data: PopulatedTask[];
     onChange: (tasks: { $id: string; status: TaskStatus; position: number }[]) => void;
 }
 
@@ -32,45 +49,14 @@ export const DataKanban = ({
     data,
     onChange,
 }: DataKanbanProps) => {
-    const [tasks, setTasks] = useState<TasksState>(() => {
-        const initialTasks: TasksState = {
-            [TaskStatus.BACKLOG]: [],
-            [TaskStatus.TODO]: [],
-            [TaskStatus.IN_PROGRESS]: [],
-            [TaskStatus.IN_REVIEW]: [],
-            [TaskStatus.DONE]: [],
-        }
+    const [tasks, setTasks] = useState<TasksState>(() => groupTasks(data))
+    const [prevData, setPrevData] = useState(data)
 
-        data.forEach((task) => {
-            initialTasks[task.status].push(task);
-        });
-
-        Object.keys(initialTasks).forEach((status) => {
-            initialTasks[status as TaskStatus].sort((a, b) => a.position - b.position)
-        })
-
-        return initialTasks;
-    })
-
-    useEffect(() => {
-        const newTasks: TasksState = {
-            [TaskStatus.BACKLOG]: [],
-            [TaskStatus.TODO]: [],
-            [TaskStatus.IN_PROGRESS]: [],
-            [TaskStatus.IN_REVIEW]: [],
-            [TaskStatus.DONE]: [],
-        }
-
-        data.forEach((task) => {
-            newTasks[task.status].push(task);
-        })
-
-        Object.keys(newTasks).forEach((status) => {
-            newTasks[status as TaskStatus].sort((a, b) => a.position - b.position)
-        })
-
-        setTasks(newTasks)
-    }, [data])
+    // Re-sync local (optimistic) columns whenever fresh data arrives
+    if (data !== prevData) {
+        setPrevData(data)
+        setTasks(groupTasks(data))
+    }
 
     const onDragEnd = useCallback((result: DropResult) => {
         if (!result.destination) return
@@ -146,34 +132,45 @@ export const DataKanban = ({
 
     return (
         <DragDropContext onDragEnd={onDragEnd}>
-            <div className="flex overflow-x-auto">
+            <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 lg:snap-none">
                 {boards.map((board) => {
                     return (
-                        <div key={board} className="flex-1 mx-2 bg-muted p-1.5 rounded-md min-w-[200px]">
+                        <div
+                            key={board}
+                            className="flex w-[272px] min-w-[272px] flex-1 snap-start flex-col rounded-lg bg-muted/40 p-2"
+                        >
                             <KanbanColumnHeader
                                 board={board}
                                 taskCount={tasks[board].length}
                             />
                             <Droppable droppableId={board}>
-                                {(provided) => (
+                                {(provided, snapshot) => (
                                     <div
                                         {...provided.droppableProps}
                                         ref={provided.innerRef}
-                                        className="min-g-[200px] py-1.5"
+                                        className={cn(
+                                            "min-h-[200px] flex-1 rounded-md transition-colors",
+                                            snapshot.isDraggingOver && "bg-primary/5"
+                                        )}
                                     >
+                                        {tasks[board].length === 0 && !snapshot.isDraggingOver && (
+                                            <div className="flex h-20 items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">
+                                                Aucune tâche
+                                            </div>
+                                        )}
                                         {tasks[board].map((task, index) => (
                                             <Draggable
                                                 key={task.$id}
                                                 draggableId={task.$id}
                                                 index={index}
                                             >
-                                                {(provided) => (
+                                                {(provided, snapshot) => (
                                                     <div
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
                                                         {...provided.dragHandleProps}
                                                     >
-                                                        <KanbanCard task={task} />
+                                                        <KanbanCard task={task} isDragging={snapshot.isDragging} />
                                                     </div>
                                                 )}
                                             </Draggable>

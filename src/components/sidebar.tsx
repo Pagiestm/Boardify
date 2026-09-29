@@ -1,24 +1,22 @@
-import Image from "next/image"
-import Link from "next/link"
+import { Logo } from "@/components/brand/logo"
 
 import { Projects } from "./projects"
 import { Navigation } from "./navigation"
-import { DottedSeparator } from "./dotted-separator"
+import { SidebarSearch } from "./command-palette"
 import { WorkspaceSwitcher } from "./workspace-switcher"
 
 export const Sidebar = () => {
     return (
-        <aside className="h-full bg-neutral-100 dark:bg-background p-4 w-full">
-            <Link href="/" className="flex items-center">
-                <Image src="/logo.svg" alt="logo" className="dark:invert" width={48} height={48} />
-                <span className="ml-2 text-2xl font-bold">Boardify</span>
-            </Link>
-            <DottedSeparator className="my-4" />
-            <WorkspaceSwitcher />
-            <DottedSeparator className="my-4" />
-            <Navigation />
-            <DottedSeparator className="my-4" />
-            <Projects />
+        <aside className="flex h-full w-full flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+            <div className="flex h-14 shrink-0 items-center px-4">
+                <Logo href="/dashboard" />
+            </div>
+            <div className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 pb-4 hide-scrollbar">
+                <WorkspaceSwitcher />
+                <Navigation />
+                <Projects />
+            </div>
+            <SidebarSearch />
         </aside>
     )
 }
