@@ -1,12 +1,13 @@
-import { useState } from "react";
-import { PencilIcon, XIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { PencilIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { DottedSeparator } from "@/components/dotted-separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Task } from "../types";
 import { useUpdateTask } from "../api/use-update-task";
+import { isTypingTarget } from "./task-view-switcher";
 
 interface TaskDescriptionProps {
     task: Task;
@@ -16,7 +17,7 @@ export const TaskDescription = ({
     task
 }: TaskDescriptionProps) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [value, setValue] = useState(task.description);
+    const [value, setValue] = useState(task.description ?? "");
 
     const { mutate, isPending } = useUpdateTask();
 
@@ -31,47 +32,74 @@ export const TaskDescription = ({
         })
     }
 
+    // `i` enters edit mode
+    useEffect(() => {
+        if (isEditing) return;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== "i" || event.metaKey || event.ctrlKey || event.altKey || isTypingTarget(event.target)) return;
+            if (document.querySelector("[role=dialog]")) return;
+            event.preventDefault();
+            setIsEditing(true);
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [isEditing]);
+
+    const handleCancel = () => {
+        setValue(task.description ?? "");
+        setIsEditing(false);
+    }
+
     return (
-        <div className="p-4 border rounded-lg">
-            <div className="flex items-center justify-between">
-                <p className="text-lg font-semibold">Aperçu</p>
-                <Button onClick={() => setIsEditing((prev) => !prev)} size="sm" variant="secondary">
-                    {isEditing ? (
-                        <XIcon className="size-4 mr-2" />
-                    ) : (
-                        <PencilIcon className="size-4 mr-2" />
-                    )}
-                    {isEditing ? "Annuler" : "Éditer"}
-                </Button>
-            </div>
-            <DottedSeparator className="my-4" />
-            {isEditing ? (
-                <div className="flex flex-col gap-y-4">
-                    <Textarea
-                        placeholder="Ajouter une description..."
-                        value={value}
-                        rows={4}
-                        onChange={(e) => setValue(e.target.value)}
-                        disabled={isPending}
-                    />
-                    <Button
-                        size="sm"
-                        className="w-fit ml-auto"
-                        onClick={handleSave}
-                        disabled={isPending}
-                    >
-                        {isPending ? "Enregistrement..." : "Sauvegarder"}
+        <Card>
+            <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
+                <CardTitle className="text-sm">Description</CardTitle>
+                {!isEditing && (
+                    <Button onClick={() => setIsEditing(true)} size="sm" variant="outline" title="Modifier (i)">
+                        <PencilIcon />
+                        Modifier
                     </Button>
-                </div>
-            ) : (
-                <div>
-                    {task.description || (
-                        <span className="text-muted-foreground">
-                            Aucune description définie
-                        </span>
-                    )}
-                </div>
-            )}
-        </div>
+                )}
+            </CardHeader>
+            <CardContent className="pt-5">
+                {isEditing ? (
+                    <div className="flex flex-col gap-3">
+                        <Textarea
+                            placeholder="Ajoutez une description : contexte, étapes, liens utiles…"
+                            value={value}
+                            rows={10}
+                            autoFocus
+                            onChange={(e) => setValue(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === "Escape") handleCancel();
+                                if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
+                                    e.preventDefault();
+                                    handleSave();
+                                }
+                            }}
+                            disabled={isPending}
+                        />
+                        <div className="flex items-center justify-end gap-2">
+                            <Button size="sm" variant="ghost" onClick={handleCancel} disabled={isPending}>
+                                Annuler
+                            </Button>
+                            <Button size="sm" onClick={handleSave} disabled={isPending}>
+                                {isPending ? "Enregistrement…" : "Enregistrer"}
+                            </Button>
+                        </div>
+                    </div>
+                ) : task.description ? (
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{task.description}</p>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={() => setIsEditing(true)}
+                        className="w-full rounded-md border border-dashed px-4 py-8 text-center text-sm text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+                    >
+                        Aucune description. Cliquez pour en ajouter une.
+                    </button>
+                )}
+            </CardContent>
+        </Card>
     )
 }

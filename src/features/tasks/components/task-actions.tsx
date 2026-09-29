@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { ExternalLinkIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { ExternalLinkIcon, FolderIcon, PencilIcon, TrashIcon } from "lucide-react";
 
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
@@ -8,6 +8,7 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -28,7 +29,7 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
 
     const [ConfirmDialog, confirm] = useConfirm(
         "Supprimer la tâche ?",
-        "Cette action ne peut pas être annulée.",
+        "Cette action est définitive et ne peut pas être annulée.",
         "destructive"
     )
     const { mutate, isPending } = useDeleteTask()
@@ -56,34 +57,26 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
                     {children}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem
-                        onClick={onOpenTask}
-                        className="font-medium cursor-pointer p-[10px]"
-                    >
-                        <ExternalLinkIcon className="size-4 mr-2 stroke-2" />
-                        Détails de la tâche
+                    <DropdownMenuItem onClick={onOpenTask}>
+                        <ExternalLinkIcon className="text-muted-foreground" />
+                        Voir la tâche
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onClick={onOpenProject}
-                        className="font-medium cursor-pointer p-[10px]"
-                    >
-                        <PencilIcon className="size-4 mr-2 stroke-2" />
-                        Ouvrir le projet
+                    <DropdownMenuItem onClick={onOpenProject}>
+                        <FolderIcon className="text-muted-foreground" />
+                        Voir le projet
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onClick={() => open(id)}
-                        className="font-medium cursor-pointer p-[10px]"
-                    >
-                        <PencilIcon className="size-4 mr-2 stroke-2" />
-                        Éditer la tâche
+                    <DropdownMenuItem onClick={() => open(id)}>
+                        <PencilIcon className="text-muted-foreground" />
+                        Modifier
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem
+                        variant="destructive"
                         onClick={onDelete}
                         disabled={isPending}
-                        className="text-red-600 focus:text-red-600 cursor-pointer font-medium p-[10px]"
                     >
-                        <TrashIcon className="size-4 mr-2 stroke-2" />
-                        Supprimer la tâche
+                        <TrashIcon />
+                        Supprimer
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

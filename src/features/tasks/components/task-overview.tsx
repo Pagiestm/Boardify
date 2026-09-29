@@ -1,56 +1,90 @@
+import { useEffect } from "react";
 import { PencilIcon } from "lucide-react";
 
 import { MemberAvatar } from "@/features/members/components/member-avatar";
+import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { snakeCaseToTitleCase } from "@/lib/utils";
-import { DottedSeparator } from "@/components/dotted-separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { TaskDate } from "./task-date";
 import { OverviewProperty } from "./overview-property";
 
-import { Task } from "../types";
+import { PopulatedTask, TaskStatus } from "../types";
+import { TASK_PRIORITY_CONFIG, TASK_STATUS_CONFIG } from "../constants";
 import { useEditTaskModal } from "../hooks/use-edit-task-modal";
+import { isTypingTarget } from "./task-view-switcher";
 
 interface TaskOverviewProps {
-    task: Task;
+    task: PopulatedTask;
 }
+
+const Empty = () => <span className="text-muted-foreground">—</span>;
 
 export const TaskOverview = ({
     task
 }: TaskOverviewProps) => {
     const { open } = useEditTaskModal();
 
+    // `e` opens the edit modal
+    useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key !== "e" || event.metaKey || event.ctrlKey || event.altKey || isTypingTarget(event.target)) return;
+            if (document.querySelector("[role=dialog]")) return;
+            event.preventDefault();
+            open(task.$id);
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [open, task.$id]);
+
+    const status = TASK_STATUS_CONFIG[task.status];
+    const priority = task.priority ? TASK_PRIORITY_CONFIG[task.priority] : undefined;
+
     return (
-        <div className="flex flex-col gap-y-4 col-span-1">
-            <div className="bg-muted rounded-lg p-4">
-                <div className="flex items-center justify-between">
-                    <p className="text-lg font-semibold">Aperçu</p>
-                    <Button onClick={() => open(task.$id)} size="sm" variant="secondary">
-                        <PencilIcon className="size-4 mr-2" />
-                        Éditer
-                    </Button>
-                </div>
-                <DottedSeparator className="my-4" />
-                <div className="flex flex-col gap-y-4">
+        <Card>
+            <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
+                <CardTitle className="text-sm">Détails</CardTitle>
+                <Button onClick={() => open(task.$id)} size="sm" variant="outline" title="Modifier (e)">
+                    <PencilIcon />
+                    Modifier
+                </Button>
+            </CardHeader>
+            <CardContent className="py-2">
+                <dl className="divide-y">
                     <OverviewProperty label="Assigné à">
-                        <MemberAvatar
-                            name={task.assignee.name}
-                            className="size-6"
-                        />
-                        <p className="text-sm font-medium">{task.assignee.name}</p>
+                        {task.assignee?.name ? (
+                            <>
+                                <MemberAvatar name={task.assignee.name} className="size-6" fallbackClassName="text-[10px]" />
+                                <span className="truncate">{task.assignee.name}</span>
+                            </>
+                        ) : <Empty />}
                     </OverviewProperty>
-                    <OverviewProperty label="Date d'échéance">
-                        <TaskDate value={task.dueDate} className="text-sm font-medium" />
+                    <OverviewProperty label="Échéance">
+                        <TaskDate
+                            value={task.dueDate}
+                            variant="full"
+                            showIcon
+                            muted={task.status === TaskStatus.DONE}
+                        />
                     </OverviewProperty>
                     <OverviewProperty label="Statut">
-                        <Badge variant={task.status}>
-                            {snakeCaseToTitleCase(task.status)}
-                        </Badge>
+                        {status ? <Badge variant={task.status} dot>{status.label}</Badge> : <Empty />}
                     </OverviewProperty>
-                </div>
-            </div>
-        </div>
+                    <OverviewProperty label="Priorité">
+                        {priority && task.priority ? <Badge variant={task.priority} dot>{priority.label}</Badge> : <Empty />}
+                    </OverviewProperty>
+                    <OverviewProperty label="Projet">
+                        {task.project ? (
+                            <>
+                                <ProjectAvatar name={task.project.name} image={task.project.imageUrl} className="size-5" />
+                                <span className="truncate">{task.project.name}</span>
+                            </>
+                        ) : <Empty />}
+                    </OverviewProperty>
+                </dl>
+            </CardContent>
+        </Card>
     )
 }

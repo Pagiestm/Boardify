@@ -2,19 +2,12 @@ import { useState } from "react";
 
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { ResponsiveModal } from "@/components/responsive-modal";
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
 
 export const useConfirm = (
     title: string,
     message: string,
     variant: ButtonProps["variant"] = "primary",
-): [() => JSX.Element, () => Promise<unknown>] => {
+): [() => React.JSX.Element, () => Promise<unknown>] => {
     const [promise, setPromise] = useState<{ resolve: (value: boolean) => void } | null>(null);
 
     const confirm = () => {
@@ -24,39 +17,31 @@ export const useConfirm = (
     }
 
     const handleClose = () => {
+        promise?.resolve(false)
         setPromise(null)
     }
 
     const handleConfirm = () => {
         promise?.resolve(true)
-        handleClose()
-    }
-
-    const handleCancel = () => {
-        promise?.resolve(false)
-        handleClose()
+        setPromise(null)
     }
 
     const ConfirmationDialog = () => (
-        <ResponsiveModal open={promise !== null} onopenchange={handleClose}>
-            <Card className="w-full h-full border-none shadow-none">
-                <CardContent className="pt-8">
-                    <CardHeader className="p-0">
-                        <CardTitle>{title}</CardTitle>
-                        <CardDescription>{message}</CardDescription>
-                    </CardHeader>
-                    <div className="pt-4 w-full flex flex-col gap-y-2 lg:flex-row gap-x-2 items-center justify-end">
-                        <Button onClick={handleCancel} variant="outline" className="w-full lg:w-auto">
-                            Annuler
-                        </Button>
-                        <Button onClick={handleConfirm} variant={variant} className="w-full lg:w-auto">
-                            Confirmer
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
+        <ResponsiveModal open={promise !== null} onopenchange={handleClose} title={title}>
+            <div className="space-y-2 p-6 pr-12">
+                <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
+                <p className="text-sm text-muted-foreground">{message}</p>
+            </div>
+            <div className="flex flex-col-reverse gap-2 border-t px-6 py-4 sm:flex-row sm:justify-end">
+                <Button onClick={handleClose} variant="ghost">
+                    Annuler
+                </Button>
+                <Button onClick={handleConfirm} variant={variant} autoFocus>
+                    Confirmer
+                </Button>
+            </div>
         </ResponsiveModal>
     )
 
-    return [ConfirmationDialog, confirm] 
+    return [ConfirmationDialog, confirm]
 }

@@ -3,28 +3,19 @@ import { useRouter } from "next/navigation";
 
 import { Member } from "@/features/members/types";
 import { Project } from "@/features/projects/types";
-import { MemberAvatar } from "@/features/members/components/member-avatar";
-import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
 import { cn } from "@/lib/utils";
 
 import { TaskStatus } from "../types";
+import { TASK_STATUS_CONFIG } from "../constants";
 
 interface EventCardProps {
     title: string;
-    assignee: Member;
-    project: Project;
+    assignee?: Member;
+    project?: Project;
     status: TaskStatus;
     id: string;
-}
-
-const statusColorMap: Record<TaskStatus, string> = {
-    [TaskStatus.BACKLOG]: "border-l-pink-500",
-    [TaskStatus.TODO]: "border-l-red-500",
-    [TaskStatus.IN_PROGRESS]: "border-l-yellow-500",
-    [TaskStatus.IN_REVIEW]: "border-l-blue-500",
-    [TaskStatus.DONE]: "border-l-emerald-500",
 }
 
 export const EventCard = ({
@@ -36,33 +27,37 @@ export const EventCard = ({
 }: EventCardProps) => {
     const workspaceId = useWorkspaceId()
     const router = useRouter()
+    const config = TASK_STATUS_CONFIG[status]
 
     const onClick = (
-        e: React.MouseEvent<HTMLDivElement>
+        e: React.MouseEvent<HTMLButtonElement>
     ) => {
         e.stopPropagation()
 
         router.push(`/workspaces/${workspaceId}/tasks/${id}`)
     }
 
+    const meta = [
+        config?.label,
+        assignee?.name,
+        project?.name,
+    ].filter(Boolean).join(" · ")
+
     return (
-        <div className="px-2">
-            <div onClick={onClick} className={cn(
-                "p-1.5 text-xs bg-white text-primary border rounded-md border-l-4 flex flex-col gap-y-1.5 cursor-pointer hover:opacity-75 transition dark:bg-gray-800",
-                statusColorMap[status]
-            )}>
-                <p>{title}</p>
-                <div className="flex items-center gap-x-1">
-                    <MemberAvatar
-                        name={assignee?.name}
-                    />
-                    <div className="size-1 rounded-full bg-neutral-300" />
-                    <ProjectAvatar
-                        name={project?.name}
-                        image={project?.imageUrl}
-                    />
-                </div>
-            </div>
+        <div className="px-1">
+            <button
+                type="button"
+                onClick={onClick}
+                title={`${title}${meta ? ` — ${meta}` : ""}`}
+                className={cn(
+                    "flex w-full items-center rounded-sm border-l-2 bg-muted px-1.5 py-0.5 text-left text-xs text-foreground transition-colors",
+                    "hover:bg-accent",
+                    config?.border,
+                    status === TaskStatus.DONE && "text-muted-foreground line-through"
+                )}
+            >
+                <span className="truncate">{title}</span>
+            </button>
         </div>
     )
 }

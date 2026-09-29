@@ -2,37 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SettingsIcon, UsersIcon } from "lucide-react";
-import { GoCheckCircle, GoCheckCircleFill, GoHome, GoHomeFill } from "react-icons/go";
+import { HomeIcon, ListChecksIcon, SettingsIcon, UsersIcon } from "lucide-react";
 
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
+
 import { cn } from "@/lib/utils";
 
 const routes = [
-    {
-        label: "Accueil",
-        href: "",
-        icon: GoHome,
-        activeIcon: GoHomeFill,
-    },
-    {
-        label: "Mes Tâches",
-        href: "/tasks",
-        icon: GoCheckCircle,
-        activeIcon: GoCheckCircleFill,
-    },
-    {
-        label: "Paramètres",
-        href: "/settings",
-        icon: SettingsIcon,
-        activeIcon: SettingsIcon,
-    },
-    {
-        label: "Membres",
-        href: "/members",
-        icon: UsersIcon,
-        activeIcon: UsersIcon,
-    },
+    { label: "Accueil", href: "", icon: HomeIcon },
+    { label: "Mes tâches", href: "/tasks", icon: ListChecksIcon },
+    { label: "Paramètres", href: "/settings", icon: SettingsIcon },
+    { label: "Membres", href: "/members", icon: UsersIcon },
 ]
 
 export const Navigation = () => {
@@ -40,24 +20,31 @@ export const Navigation = () => {
     const pathname = usePathname()
 
     return (
-        <ul className="flex flex-col">
-            {routes.map((item) => {
-                const fullHref = `/workspaces/${workspaceId}${item.href}`
-                const isActive = pathname === fullHref
-                const Icon = isActive ? item.activeIcon : item.icon
+        <nav>
+            <ul className="flex flex-col gap-0.5">
+                {routes.map(({ label, href, icon: Icon }) => {
+                    const fullHref = `/workspaces/${workspaceId}${href}`
+                    const isActive = pathname === fullHref
 
-                return (
-                    <Link key={item.href} href={fullHref}>
-                        <div className={cn(
-                            "flex items-center gap-2.5 p-2.5 rounded-md font-medium hover:text-foreground transition text-muted-foreground",
-                            isActive && "bg-card shadow-sm hover:opacity-100 text-foreground",
-                        )}>
-                            <Icon className="size-5 text-muted-foreground"/>
-                            {item.label}
-                        </div>
-                    </Link>
-                )
-            })}
-        </ul>
+                    return (
+                        <li key={href}>
+                            <Link
+                                href={fullHref}
+                                aria-current={isActive ? "page" : undefined}
+                                className={cn(
+                                    "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+                                    isActive
+                                        ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
+                                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                )}
+                            >
+                                <Icon className={cn("size-4", isActive && "text-primary")} />
+                                {label}
+                            </Link>
+                        </li>
+                    )
+                })}
+            </ul>
+        </nav>
     )
 }

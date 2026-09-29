@@ -1,5 +1,8 @@
 import { Models } from "node-appwrite";
 
+import type { Member } from "@/features/members/types";
+import type { Project } from "@/features/projects/types";
+
 export enum TaskStatus {
     BACKLOG = "BACKLOG",
     TODO = "TODO",
@@ -17,6 +20,7 @@ export enum TaskPriority {
 export type Task = Models.Document & {
     name: string;
     status: TaskStatus;
+    workspaceId: string;
     assigneeId: string;
     projectId: string;
     position: number;
@@ -24,3 +28,8 @@ export type Task = Models.Document & {
     priority: TaskPriority;
     description?: string;
 }
+
+export type PopulatedTask = Task & {
+    project?: Project;
+    assignee?: Member;
+};

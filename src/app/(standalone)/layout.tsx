@@ -1,6 +1,4 @@
-import Image from "next/image";
-import Link from "next/link";
-
+import { Logo } from "@/components/brand/logo";
 import { UserButton } from "@/features/auth/components/user-button";
 
 interface StandaloneLayoutProps {
@@ -9,20 +7,17 @@ interface StandaloneLayoutProps {
 
 const StandaloneLayout = ({ children }: StandaloneLayoutProps) => {
     return (
-        <main className="bg-neutral-100 dark:bg-background min-h-screen">
-            <div className="mx-auto max-w-screen-2xl p-4">
-                <nav className="flex justify-between items-center h-[73px]">
-                    <Link href="/" className="flex items-center">
-                        <Image src="/logo.svg" alt="logo" className="dark:invert" width={48} height={48} />
-                        <span className="ml-2 text-2xl font-bold">Boardify</span>
-                    </Link>
+        <div className="flex min-h-screen flex-col bg-muted/40">
+            <header className="border-b bg-background">
+                <nav className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-4 sm:px-6">
+                    <Logo href="/dashboard" />
                     <UserButton />
                 </nav>
-                <div className="flex flex-col items-center justify-center py-4">
-                    {children}
-                </div>
-            </div>
-        </main>
+            </header>
+            <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col items-center px-4 py-10 sm:px-6 sm:py-14">
+                {children}
+            </main>
+        </div>
     );
 }
 

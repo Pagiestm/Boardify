@@ -1,32 +1,42 @@
-import { useMedia } from 'react-use';
+"use client"
+
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 import {
     Dialog,
     DialogContent,
+    DialogTitle,
 } from "@/components/ui/dialog"
 
 import {
     Drawer,
     DrawerContent,
+    DrawerTitle,
 } from "@/components/ui/drawer"
 
 interface ResponsiveModalProps {
     children: React.ReactNode;
     open: boolean,
     onopenchange: (open: boolean) => void
+    title?: string;
 }
 
 export const ResponsiveModal = ({
     children,
     open,
-    onopenchange
+    onopenchange,
+    title = "Fenêtre",
 }: ResponsiveModalProps) => {
-    const isDesktop = useMedia('(min-width: 1024px)', true);
+    const isDesktop = useMediaQuery("(min-width: 1024px)", true);
 
     if (isDesktop) {
         return (
             <Dialog open={open} onOpenChange={onopenchange}>
-                <DialogContent className="w-full sm:max-w-lg p-0 border-none overflow-y-auto hide-scrollbar max-h-[85vh]">
+                <DialogContent
+                    aria-describedby={undefined}
+                    className="block w-full sm:max-w-lg p-0 overflow-y-auto hide-scrollbar max-h-[88vh]"
+                >
+                    <DialogTitle className="sr-only">{title}</DialogTitle>
                     {children}
                 </DialogContent>
             </Dialog>
@@ -35,7 +45,8 @@ export const ResponsiveModal = ({
 
     return (
         <Drawer open={open} onOpenChange={onopenchange}>
-            <DrawerContent>
+            <DrawerContent aria-describedby={undefined}>
+                <DrawerTitle className="sr-only">{title}</DrawerTitle>
                 <div className="overflow-y-auto hide-scrollbar max-h-[85vh]">
                     {children}
                 </div>

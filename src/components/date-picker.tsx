@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { fr } from "date-fns/locale";
+import { CalendarIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -20,29 +21,36 @@ interface DatePickerProps {
     placeholder?: string;
 }
 
-export const DatePicker = ({ value, onChange, className, placeholder = "Select date" }: DatePickerProps) => {
+export const DatePicker = ({ value, onChange, className, placeholder = "Choisir une date" }: DatePickerProps) => {
+    const [open, setOpen] = React.useState(false);
+
     return (
-        <Popover>
+        <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
                 <Button
                     variant="outline"
-                    size="lg"
                     className={cn(
-                        "w-full justify-start text-left font-normal px-3",
+                        "h-11 w-full justify-start px-3.5 text-left font-normal",
                         !value && "text-muted-foreground",
                         className
                     )}
                 >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {value ? format(value, "PPP") : <span>{placeholder}</span>}
+                    <CalendarIcon className="text-muted-foreground" />
+                    {value ? format(value, "d MMMM yyyy", { locale: fr }) : <span>{placeholder}</span>}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                     mode="single"
                     selected={value}
-                    onSelect={(date) => onChange(date as Date)}
-                    initialFocus
+                    defaultMonth={value}
+                    onSelect={(date) => {
+                        if (date) {
+                            onChange(date);
+                            setOpen(false);
+                        }
+                    }}
+                    autoFocus
                 />
             </PopoverContent>
         </Popover>

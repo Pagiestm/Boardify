@@ -1,9 +1,9 @@
-import { cn } from "@/lib/utils"
+import { cn, getAvatarColor, getInitial } from "@/lib/utils"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 interface MemberAvatarProps {
-    name: string
+    name?: string
     className?: string
     fallbackClassName?: string
 }
@@ -15,14 +15,18 @@ export const MemberAvatar = ({
 }: MemberAvatarProps) => {
     return (
         <Avatar className={cn(
-            "size-5 transition border border-neutral-300 rounded-full",
+            "size-5 rounded-full",
             className
         )}>
-            <AvatarFallback className={cn(
-                "bg-neutral-200 font-medium text-neutral-500 flex items-center justify-center",
-                fallbackClassName
-            )}>
-                {name.charAt(0).toUpperCase()}
+            <AvatarFallback
+                title={name}
+                className={cn(
+                    "rounded-full text-[10px] font-semibold",
+                    getAvatarColor(name),
+                    fallbackClassName
+                )}
+            >
+                {getInitial(name)}
             </AvatarFallback>
         </Avatar>
     )

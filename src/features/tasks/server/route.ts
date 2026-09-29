@@ -4,6 +4,7 @@ import { ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { getMember } from "@/features/members/utils";
+import { Member } from "@/features/members/types";
 import { Project } from "@/features/projects/types";
 
 import { createAdminClient } from "@/lib/appwrite";
@@ -92,33 +93,27 @@ const app = new Hono()
             ]
 
             if (projectId) {
-                console.log("projectId: ", projectId)
                 query.push(Query.equal("projectId", projectId))
             }
 
             if (status) {
-                console.log("status: ", status)
                 query.push(Query.equal("status", status))
             }
 
             if (assigneeId) {
-                console.log("assigneeId: ", assigneeId)
                 query.push(Query.equal("assigneeId", assigneeId))
             }
 
             if (dueDate) {
-                console.log("dueDate: ", dueDate)
                 query.push(Query.equal("dueDate", dueDate))
             }
 
             if (priority) {
-                console.log("priority: ", priority);
                 query.push(Query.equal("priority", priority));
             }
 
             if (search) {
-                console.log("search: ", search)
-                query.push(Query.equal("search", search))
+                query.push(Query.contains("name", search))
             }
 
             const tasks = await databases.listDocuments<Task>(
@@ -136,7 +131,7 @@ const app = new Hono()
                 projectIds.length > 0 ? [Query.contains("$id", projectIds)] : []
             )
 
-            const members = await databases.listDocuments(
+            const members = await databases.listDocuments<Member>(
                 DATABASE_ID,
                 MEMBERS_ID,
                 assigneeIds.length > 0 ? [Query.contains("$id", assigneeIds)] : []
@@ -281,7 +276,7 @@ const app = new Hono()
                     name,
                     status,
                     projectId,
-                    dueDate,
+                    dueDate: dueDate instanceof Date ? dueDate.toISOString() : dueDate,
                     assigneeId,
                     priority,
                     description,
@@ -322,7 +317,7 @@ const app = new Hono()
                 task.projectId
             )
 
-            const member = await databases.getDocument(
+            const member = await databases.getDocument<Member>(
                 DATABASE_ID,
                 MEMBERS_ID,
                 task.assigneeId
@@ -373,10 +368,10 @@ const app = new Hono()
 
             const workspaceIds = new Set(tasksToUpdate.documents.map((task) => task.workspaceId))
             if (workspaceIds.size !== 1) {
-                return c.json({ error: "All tasks must belong to he same workspace" })
+                return c.json({ error: "All tasks must belong to the same workspace" }, 400)
             }
 
-            const workspaceId = workspaceIds.values().next().value
+            const workspaceId = [...workspaceIds][0]
 
             const member = await getMember({
                 databases,

@@ -1,29 +1,28 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { MenuIcon } from "lucide-react"
 import { usePathname } from "next/navigation"
 
 import { Sidebar } from "./sidebar"
 import { Button } from "./ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet"
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet"
 
 export const MobileSidebar = () => {
-    const [isOpen, setIsOpen] = useState(false)
     const pathname = usePathname()
-
-    useEffect(() => {
-        setIsOpen(false)
-    }, [pathname])
+    // Remember which path the sheet was opened on so it closes after navigation.
+    const [openPath, setOpenPath] = useState<string | null>(null)
+    const isOpen = openPath === pathname
 
     return (
-        <Sheet modal={false} open={isOpen} onOpenChange={setIsOpen}>
+        <Sheet modal={false} open={isOpen} onOpenChange={(open) => setOpenPath(open ? pathname : null)}>
             <SheetTrigger asChild>
-                <Button variant="secondary" className="lg:hidden">
-                    <MenuIcon className="size-4 text-neutral-500"/>
+                <Button variant="ghost" size="icon-sm" className="lg:hidden" aria-label="Ouvrir le menu">
+                    <MenuIcon />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0">
+            <SheetContent side="left" className="w-72 p-0" aria-describedby={undefined}>
+                <SheetTitle className="sr-only">Menu</SheetTitle>
                 <Sidebar />
             </SheetContent>
         </Sheet>

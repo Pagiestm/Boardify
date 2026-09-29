@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<p align="center">
+  <img src="public/logo.svg" width="64" height="64" alt="Boardify" />
+</p>
 
-## Getting Started
+<h1 align="center">Boardify</h1>
 
-First, run the development server:
+<p align="center">Gestion de projets simple pour les équipes : espaces de travail, projets et tâches en Kanban, tableau ou calendrier.</p>
+
+## Stack
+
+- [Next.js 16](https://nextjs.org) (App Router, Turbopack) · React 19 · TypeScript
+- [Tailwind CSS 4](https://tailwindcss.com) · composants [shadcn/ui](https://ui.shadcn.com) · [Motion](https://motion.dev) · [cmdk](https://cmdk.paco.me) (palette ⌘K)
+- [Hono](https://hono.dev) pour l'API (`src/app/api/[[...route]]`) · [TanStack Query](https://tanstack.com/query) / [TanStack Table](https://tanstack.com/table)
+- [Appwrite](https://appwrite.io) (auth, base de données, stockage)
+
+## Démarrage
 
 ```bash
+npm install
+cp .env.example .env.local   # puis renseigner les valeurs
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+L'application est disponible sur [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variables d'environnement
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Toutes les valeurs se trouvent dans la console Appwrite :
 
-## Learn More
+| Variable | Où la trouver |
+| --- | --- |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` en local |
+| `NEXT_PUBLIC_APPWRITE_ENDPOINT` | *Settings* du projet → API Endpoint (se termine par `/v1`) |
+| `NEXT_PUBLIC_APPWRITE_PROJECT` | *Settings* du projet → Project ID |
+| `NEXT_APPWRITE_KEY` | *Overview → Integrations → API Keys* (scopes auth, databases, storage) |
+| `NEXT_PUBLIC_APPWRITE_DATABASE_ID` | *Databases* → ID de la base |
+| `NEXT_PUBLIC_APPWRITE_WORKSPACES_ID` / `MEMBERS_ID` / `PROJECTS_ID` / `TASKS_ID` | ID de chaque collection |
+| `NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID` | *Storage* → ID du bucket d'images |
 
-To learn more about Next.js, take a look at the following resources:
+Pour la connexion Google / GitHub, activez les providers dans *Auth → Settings* et ajoutez une plateforme Web `localhost` dans le projet Appwrite.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Commande | Description |
+| --- | --- |
+| `npm run dev` | Serveur de développement |
+| `npm run build` | Build de production |
+| `npm run start` | Lance le build de production |
+| `npm run lint` | ESLint |
+| `npm run release` | Lance semantic-release (utilisé par la CI) |
 
-## Deploy on Vercel
+## Versions et releases
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Les versions sont gérées automatiquement par [semantic-release](https://semantic-release.gitbook.io) (config : `.releaserc.json`, workflow : `.github/workflows/release.yml`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+À chaque push sur `master`, la CI analyse les commits depuis la dernière release et, si nécessaire, publie une nouvelle version : tag Git, release GitHub, `CHANGELOG.md` et `package.json` mis à jour. La version courante est affichée dans l'application (pied de page, barre latérale, pages de connexion).
+
+Les messages de commit doivent suivre les [Conventional Commits](https://www.conventionalcommits.org/fr) :
+
+| Commit | Effet |
+| --- | --- |
+| `fix: …` | version corrective (1.0.**1**) |
+| `feat: …` | version mineure (1.**1**.0) |
+| `feat!: …` ou `BREAKING CHANGE:` dans le corps | version majeure (**2**.0.0) |
+| `chore:`, `docs:`, `refactor:`, `style:`… | pas de nouvelle version |

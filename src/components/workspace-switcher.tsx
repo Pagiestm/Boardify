@@ -1,7 +1,7 @@
 "use client"
 
+import { PlusIcon } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { RiAddCircleFill } from "react-icons/ri"
 
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id"
 import { useGetWorkspaces } from "@/features/workspaces/api/use-get-workspaces"
@@ -27,22 +27,32 @@ export const WorkspaceSwitcher = () => {
     }
 
     return (
-        <div className="flex flex-col gap-y-2">
-            <div className="flex items-center justify-between">
-                <p className="text-sm uppercase text-neutral-500">Espaces de travail</p>
-                <RiAddCircleFill onClick={open} className="size-5 text-neutral-500 cursor-pointer hover:opacity-75 transition" />
+        <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between px-2.5">
+                <p className="text-xs font-medium text-muted-foreground">Espace de travail</p>
+                <button
+                    type="button"
+                    onClick={open}
+                    aria-label="Créer un espace de travail"
+                    className="rounded-sm p-0.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+                >
+                    <PlusIcon className="size-4" />
+                </button>
             </div>
             <Select onValueChange={onSelect} value={workspaceId}>
-                <SelectTrigger className="w-full bg-neutral-200 dark:bg-neutral-700 font-medium p-1">
-                    <SelectValue placeholder="Aucun espace de travail sélectionné" />
+                <SelectTrigger className="h-10 px-2">
+                    <SelectValue placeholder="Aucun espace sélectionné" />
                 </SelectTrigger>
                 <SelectContent>
                     {workspaces?.documents.map((workspace) => (
                         <SelectItem key={workspace.$id} value={workspace.$id}>
-                            <div className="flex justify-start items-center gap-3 font-medium">
-                                <WorkspaceAvatar name={workspace.name} image={workspace.imageUrl} />
-                                <span className="truncate">{workspace.name}</span>
-                            </div>
+                            <WorkspaceAvatar
+                                name={workspace.name}
+                                image={workspace.imageUrl}
+                                className="size-6"
+                                fallbackClassName="text-xs"
+                            />
+                            <span className="truncate font-medium">{workspace.name}</span>
                         </SelectItem>
                     ))}
                 </SelectContent>
