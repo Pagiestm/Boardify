@@ -59,7 +59,7 @@
     "@types/react": "^19.3.0",
     "@types/react-big-calendar": "^1.16.3",
     "@types/react-dom": "^19.3.0",
-    "conventional-changelog-conventionalcommits": "^10.4.0",
+    "conventional-changelog-conventionalcommits": "^9.3.1",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.7",
     "postcss": "^8.5.28",
