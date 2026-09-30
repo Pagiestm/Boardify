@@ -17,8 +17,6 @@ test.describe("Projets", () => {
 
     const name = await createProject(page);
 
-    // hasText plutôt qu'un RegExp : le marqueur « [E2E] » serait pris pour une
-    // classe de caractères.
     await expect(
       page.getByRole("complementary").getByRole("link").filter({ hasText: name }),
     ).toBeVisible();
@@ -30,7 +28,6 @@ test.describe("Projets", () => {
     const dialog = await openCreateProject(page);
     await dialog.getByRole("button", { name: "Créer", exact: true }).click();
 
-    // La modale reste ouverte : la validation Zod a bloqué la soumission.
     await expect(dialog).toBeVisible();
     await expect(page).not.toHaveURL(/\/projects\//);
   });

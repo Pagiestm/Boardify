@@ -13,8 +13,6 @@ test.describe("Kanban", () => {
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
     await expect(card).toBeVisible();
 
-    // @hello-pangea/dnd expose un mode clavier : Espace saisit la carte, les
-    // flèches la déplacent, Espace la dépose.
     const bulkUpdate = page.waitForResponse(
       (response) =>
         response.url().includes("/api/tasks/bulk-update") && response.request().method() === "POST",
@@ -27,7 +25,6 @@ test.describe("Kanban", () => {
     const response = await bulkUpdate;
     expect(response.status()).toBe(200);
 
-    // La position survit à un rechargement complet.
     await page.reload();
     await expect(page.getByText(name).first()).toBeVisible();
   });

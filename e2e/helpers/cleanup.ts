@@ -17,18 +17,6 @@ const json = async <T>(request: APIRequestContext, url: string): Promise<T> => {
 
 const isMarked = (document: Document) => document.name?.startsWith(E2E_MARKER);
 
-/**
- * Supprime les données produites par les tests, via l'API de l'application et
- * la session du compte de test — aucun scope Appwrite supplémentaire requis.
- *
- * Le garde-fou est le marqueur porté par le nom : projets et tâches sont
- * balayés dans tous les espaces du compte (les tests écrivent dans celui qui
- * existe déjà, marqué ou non), mais seuls ceux qui le portent sont supprimés.
- * Un espace n'est supprimé que s'il le porte lui-même.
- *
- * L'ordre est imposé par l'application : `DELETE /workspaces/:id` ne supprime
- * pas ses projets ni ses tâches, qui resteraient orphelins.
- */
 export const cleanupTestData = async (request: APIRequestContext) => {
   const workspaces = await json<{ documents: Document[] }>(request, "/api/workspaces");
 

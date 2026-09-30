@@ -18,8 +18,6 @@ export const metadata: Metadata = {
 };
 
 export default async function LandingPage() {
-  // getCurrent() lève lorsqu'aucune session n'est ouverte : la landing reste
-  // consultable, simplement dans sa version visiteur.
   const isLoggedIn = await getCurrent()
     .then(Boolean)
     .catch(() => false);

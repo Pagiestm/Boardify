@@ -33,7 +33,6 @@ export const TaskDescription = ({ task }: TaskDescriptionProps) => {
     );
   };
 
-  // `i` enters edit mode
   useEffect(() => {
     if (isEditing) return;
     const onKeyDown = (event: KeyboardEvent) => {

@@ -55,7 +55,6 @@ const TablePreview = () => (
 const WEEKDAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
 const CalendarPreview = () => {
-  // October 2026 starts on a Thursday
   const offset = 3;
   const cells = Array.from({ length: 35 }, (_, index) => index - offset + 1);
 

@@ -26,8 +26,6 @@ test.describe("Tâches", () => {
   });
 
   test("on crée une tâche et elle apparaît dans la liste", async ({ page }) => {
-    // Une tâche exige un projet : la spec crée le sien pour ne dépendre
-    // d'aucune autre, ni de l'état laissé par un run précédent.
     await gotoWorkspace(page);
     await createProject(page);
     await gotoTasks(page);

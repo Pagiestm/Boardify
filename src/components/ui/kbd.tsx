@@ -2,7 +2,6 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-/** Keyboard key hint, e.g. <Kbd>N</Kbd> or <Kbd>⌘K</Kbd>. */
 function Kbd({ className, ...props }: React.ComponentProps<"kbd">) {
   return (
     <kbd

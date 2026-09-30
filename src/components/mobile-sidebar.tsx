@@ -10,7 +10,6 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
 
 export const MobileSidebar = () => {
   const pathname = usePathname();
-  // Remember which path the sheet was opened on so it closes after navigation.
   const [openPath, setOpenPath] = useState<string | null>(null);
   const isOpen = openPath === pathname;
 

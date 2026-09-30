@@ -13,7 +13,6 @@ interface FormHeaderProps {
   className?: string;
 }
 
-/** Title + description at the top of a form (page card or modal). */
 export const FormHeader = ({ title, description, onBack, className }: FormHeaderProps) => {
   return (
     <div className={cn("space-y-1 px-6 pt-6 pr-12 pb-5", className)}>

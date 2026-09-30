@@ -54,8 +54,6 @@ test.describe("Pages publiques", () => {
     await page.getByRole("link", { name: "FAQ" }).first().click();
 
     await expect(page).toHaveURL(/#faq$/);
-    // Le défilement fluide est asynchrone : on attend que la section soit
-    // réellement à l'écran plutôt que de se fier au seul changement d'URL.
     await expect(page.getByRole("heading", { name: "Questions fréquentes" })).toBeInViewport();
   });
 

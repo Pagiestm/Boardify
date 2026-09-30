@@ -22,9 +22,7 @@ export const SHORTCUTS: { keys: string[]; label: string }[] = [
   { keys: ["?"], label: "Afficher les raccourcis" },
 ];
 
-// Tiny shared store so the navbar, hotkeys and palette can open the help dialog.
 let isOpen = false;
-// How many instances of the dialog are mounted (0 outside the dashboard layout).
 let mounted = 0;
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((listener) => listener());

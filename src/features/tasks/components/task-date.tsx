@@ -7,13 +7,8 @@ import { cn } from "@/lib/utils";
 interface TaskDateProps {
   value?: string;
   className?: string;
-  /** Prefix with a small calendar icon */
   showIcon?: boolean;
-  /** Tasks already done should not be highlighted as late */
   muted?: boolean;
-  /**
-   * short → `12 oct` · long → `12 oct 2026` · full → `12 oct 2026 (dans 3 j)`
-   */
   variant?: "short" | "long" | "full";
 }
 

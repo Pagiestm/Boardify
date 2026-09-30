@@ -44,7 +44,6 @@ export const DataKanban = ({ data, onChange }: DataKanbanProps) => {
   const [tasks, setTasks] = useState<TasksState>(() => groupTasks(data));
   const [prevData, setPrevData] = useState(data);
 
-  // Re-sync local (optimistic) columns whenever fresh data arrives
   if (data !== prevData) {
     setPrevData(data);
     setTasks(groupTasks(data));

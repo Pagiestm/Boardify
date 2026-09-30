@@ -1,15 +1,10 @@
 import { TaskPriority, TaskStatus } from "./types";
 
 interface StatusConfig {
-  /** Human label (French) */
   label: string;
-  /** Text color class */
   text: string;
-  /** Small round marker background */
   dot: string;
-  /** Soft badge styles */
   badge: string;
-  /** Left border accent (calendar events) */
   border: string;
 }
 

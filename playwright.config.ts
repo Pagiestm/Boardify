@@ -1,16 +1,10 @@
 import { loadEnvConfig } from "@next/env";
 import { defineConfig, devices } from "@playwright/test";
 
-// Playwright ne lit pas les .env de Next : on les charge explicitement pour
-// disposer des identifiants du compte de test en local.
 loadEnvConfig(process.cwd());
 
 const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
 
-/**
- * Les parcours authentifiés ont besoin d'un compte Appwrite réel : sans
- * identifiants, seul le projet « public » est monté (voir e2e/README.md).
- */
 export const hasCredentials = Boolean(process.env.E2E_EMAIL && process.env.E2E_PASSWORD);
 
 export default defineConfig({
@@ -46,10 +40,7 @@ export default defineConfig({
             dependencies: ["setup"],
           },
           {
-            // Joué une fois la suite terminée : supprime ce que les tests ont créé.
             name: "cleanup",
-            // Réutilise la session du compte de test : le nettoyage passe par
-            // l'API de l'application, pas par une clé Appwrite privilégiée.
             use: { ...devices["Desktop Chrome"], storageState: "e2e/.auth/user.json" },
             testMatch: /setup\/cleanup\.teardown\.ts/,
           },

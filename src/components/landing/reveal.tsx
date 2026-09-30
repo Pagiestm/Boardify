@@ -8,7 +8,6 @@ interface RevealProps {
   delay?: number;
 }
 
-/** Gentle one-time fade/slide-in when the element scrolls into view. */
 export const Reveal = ({ children, className, delay = 0 }: RevealProps) => {
   const reduceMotion = useReducedMotion();
 

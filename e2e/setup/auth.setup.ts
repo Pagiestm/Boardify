@@ -6,13 +6,6 @@ import { WORKSPACE_NAME } from "../helpers/data";
 
 const storageState = path.join(__dirname, "../.auth/user.json");
 
-/**
- * Se connecte une fois pour toutes et conserve le cookie de session : les
- * specs authentifiées repartent de cet état au lieu de rejouer le formulaire.
- *
- * Le compte de test est vierge après chaque nettoyage — /dashboard renvoie
- * alors vers la création d'un espace de travail, qu'on crée ici.
- */
 setup("authentification", async ({ page }) => {
   await page.goto("/sign-in");
 
