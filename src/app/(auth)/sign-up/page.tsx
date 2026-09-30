@@ -4,11 +4,11 @@ import { getCurrent } from "@/features/auth/queries";
 import { SignUpCard } from "@/features/auth/components/sign-up-card";
 
 const SignUpPage = async () => {
-    const user = await getCurrent()
+  const user = await getCurrent();
 
-    if (user) redirect("/dashboard")
+  if (user) redirect("/dashboard");
 
-    return <SignUpCard />
-}
+  return <SignUpCard />;
+};
 
 export default SignUpPage;

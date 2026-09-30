@@ -3,28 +3,26 @@ import { useQuery } from "@tanstack/react-query";
 import { client } from "@/lib/rpc";
 
 interface useGetWorkspaceProps {
-    workspaceId: string;
+  workspaceId: string;
 }
 
-export const useGetWorkspace = ({
-    workspaceId,
-}: useGetWorkspaceProps) => {
-    const query = useQuery({
-        queryKey: ["workspace", workspaceId],
-        queryFn: async () => {
-            const response = await client.api.workspaces[":workspaceId"].$get({
-                param: { workspaceId },
-            });
+export const useGetWorkspace = ({ workspaceId }: useGetWorkspaceProps) => {
+  const query = useQuery({
+    queryKey: ["workspace", workspaceId],
+    queryFn: async () => {
+      const response = await client.api.workspaces[":workspaceId"].$get({
+        param: { workspaceId },
+      });
 
-            if (!response.ok) {
-                throw new Error("Échec de la récupération de l'espace de travail");
-            }
+      if (!response.ok) {
+        throw new Error("Échec de la récupération de l'espace de travail");
+      }
 
-            const { data } = await response.json();
+      const { data } = await response.json();
 
-            return data;
-        }
-    })
+      return data;
+    },
+  });
 
-    return query;
-}
+  return query;
+};

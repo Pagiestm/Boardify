@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    "group:allNonMajor",
+    "group:monorepos",
+    ":maintainLockFilesWeekly",
+    ":automergeMinor",
+    ":prConcurrentLimitNone",
+    ":prHourlyLimitNone"
+  ],
+  "baseBranches": ["master"],
+  "timezone": "Europe/Paris",
+  "minimumReleaseAge": "3 days",
+  "platformAutomerge": false,
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": null
+  },
+  "packageRules": [
+    {
+      "description": "Avant la 1.0, une mineure peut casser comme une majeure. Relecture avant fusion.",
+      "matchCurrentVersion": "<1.0.0",
+      "matchUpdateTypes": ["minor"],
+      "groupName": "paquets 0.x",
+      "automerge": false
+    },
+    {
+      "description": "TypeScript tenu en 5.x : la majeure suivante devance eslint-config-next, qui embarque sa propre plage typescript-eslint. Les mineures 5.x restent ouvertes.",
+      "matchPackageNames": ["typescript"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Preset de changelog tenu en majeure 9 : la 10 exige un writer que semantic-release ne fournit pas. Voir c1fdda5.",
+      "matchPackageNames": ["conventional-changelog-conventionalcommits"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}

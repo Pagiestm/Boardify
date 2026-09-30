@@ -1,0 +1,8 @@
+.next
+node_modules
+package-lock.json
+CHANGELOG.md
+next-env.d.ts
+playwright-report
+test-results
+e2e/.auth

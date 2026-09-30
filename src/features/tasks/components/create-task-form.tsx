@@ -40,7 +40,7 @@ export const CreateTaskForm = ({
           form.reset();
           onCancel?.();
         },
-      }
+      },
     );
   };
 
@@ -57,11 +57,7 @@ export const CreateTaskForm = ({
             projectOptions={projectOptions}
             memberOptions={memberOptions}
           />
-          <FormFooter
-            onCancel={onCancel}
-            isPending={isPending}
-            submitLabel="Créer"
-          />
+          <FormFooter onCancel={onCancel} isPending={isPending} submitLabel="Créer" />
         </form>
       </Form>
     </div>
