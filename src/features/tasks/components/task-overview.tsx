@@ -20,7 +20,7 @@ interface TaskOverviewProps {
   task: PopulatedTask;
 }
 
-const Empty = () => <span className="text-muted-foreground">—</span>;
+const Empty = () => <span className="text-muted-foreground">-</span>;
 
 export const TaskOverview = ({ task }: TaskOverviewProps) => {
   const { open } = useEditTaskModal();

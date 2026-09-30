@@ -36,7 +36,7 @@ export const EventCard = ({ title, assignee, project, status, id }: EventCardPro
       <button
         type="button"
         onClick={onClick}
-        title={`${title}${meta ? ` — ${meta}` : ""}`}
+        title={`${title}${meta ? ` - ${meta}` : ""}`}
         className={cn(
           "flex w-full items-center rounded-sm border-l-2 bg-muted px-1.5 py-0.5 text-left text-xs text-foreground transition-colors",
           "hover:bg-accent",

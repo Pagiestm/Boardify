@@ -37,7 +37,7 @@ const SortableHeader = ({ column, label }: { column: TaskColumn; label: string }
   );
 };
 
-const Empty = () => <span className="text-muted-foreground">—</span>;
+const Empty = () => <span className="text-muted-foreground">-</span>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const columns: ColumnDef<TaskTableFeatures, PopulatedTask, any>[] = [
