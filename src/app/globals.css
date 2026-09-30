@@ -96,6 +96,14 @@
   --sidebar-border: oklch(1 0 0 / 8%);
 }
 
+@theme inline {
+  --color-chart-backlog: #0d9488;
+  --color-chart-todo: #2563eb;
+  --color-chart-in-progress: #d97706;
+  --color-chart-in-review: #7c3aed;
+  --color-chart-done: #16a34a;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
