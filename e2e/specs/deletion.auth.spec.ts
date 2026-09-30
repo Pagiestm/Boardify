@@ -5,9 +5,9 @@ import { createProject, createTask, gotoTasks, gotoWorkspace } from "../helpers"
 test.describe("Suppressions", () => {
   test("une tâche est supprimée après confirmation", async ({ page }) => {
     await gotoWorkspace(page);
-    await createProject(page);
+    const projectName = await createProject(page);
     await gotoTasks(page);
-    const name = await createTask(page);
+    const name = await createTask(page, projectName);
 
     await page.getByRole("tab", { name: "Kanban" }).click();
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
@@ -22,9 +22,9 @@ test.describe("Suppressions", () => {
 
   test("la confirmation peut être annulée", async ({ page }) => {
     await gotoWorkspace(page);
-    await createProject(page);
+    const projectName = await createProject(page);
     await gotoTasks(page);
-    const name = await createTask(page);
+    const name = await createTask(page, projectName);
 
     await page.getByRole("tab", { name: "Kanban" }).click();
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });

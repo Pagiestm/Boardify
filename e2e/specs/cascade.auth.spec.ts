@@ -12,12 +12,12 @@ test.describe("Suppression en cascade", () => {
   test("supprimer un projet supprime ses tâches", async ({ page, request }) => {
     await gotoWorkspace(page);
     const workspaceId = workspaceIdFromUrl(page);
-    await createProject(page);
+    const projectName = await createProject(page);
     const projectUrl = page.url();
     const projectId = projectUrl.split("/projects/")[1];
 
     await gotoTasks(page);
-    await createTask(page);
+    await createTask(page, projectName);
 
     const before = await (
       await request.get(`/api/tasks?workspaceId=${workspaceId}&projectId=${projectId}`)
