@@ -18,13 +18,11 @@ export const metadata: Metadata = {
 };
 
 export default async function LandingPage() {
-  let isLoggedIn = false;
-
-  try {
-    isLoggedIn = Boolean(await getCurrent());
-  } catch {
-    isLoggedIn = false;
-  }
+  // getCurrent() lève lorsqu'aucune session n'est ouverte : la landing reste
+  // consultable, simplement dans sa version visiteur.
+  const isLoggedIn = await getCurrent()
+    .then(Boolean)
+    .catch(() => false);
 
   return (
     <div className="min-h-screen overflow-x-clip">
