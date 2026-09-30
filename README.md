@@ -67,14 +67,16 @@ npm run test:e2e        # toute la suite
 npm run test:e2e:ui     # mode interactif
 ```
 
-| Fichier                                                            | Ce qui est couvert                                                  |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| [`specs/landing.public.spec.ts`](e2e/specs/landing.public.spec.ts) | Landing, formulaire de connexion, boutons OAuth, garde `/dashboard` |
-| [`specs/workspace.auth.spec.ts`](e2e/specs/workspace.auth.spec.ts) | Ouverture de l'espace, navigation, palette ⌘K, raccourci `g t`      |
-| [`specs/project.auth.spec.ts`](e2e/specs/project.auth.spec.ts)     | Création d'un projet, barre latérale, refus d'un nom vide           |
-| [`specs/task.auth.spec.ts`](e2e/specs/task.auth.spec.ts)           | Création d'une tâche, les trois vues, raccourcis, vue en URL        |
-| [`specs/kanban.auth.spec.ts`](e2e/specs/kanban.auth.spec.ts)       | Glisser-déposer au clavier et persistance de la position            |
-| [`specs/deletion.auth.spec.ts`](e2e/specs/deletion.auth.spec.ts)   | Suppression d'une tâche et d'un projet, annulation                  |
+| Fichier                                                              | Ce qui est couvert                                                  |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| [`specs/landing.public.spec.ts`](e2e/specs/landing.public.spec.ts)   | Landing, formulaire de connexion, boutons OAuth, garde `/dashboard` |
+| [`specs/workspace.auth.spec.ts`](e2e/specs/workspace.auth.spec.ts)   | Ouverture de l'espace, navigation, palette ⌘K, raccourci `g t`      |
+| [`specs/project.auth.spec.ts`](e2e/specs/project.auth.spec.ts)       | Création d'un projet, barre latérale, refus d'un nom vide           |
+| [`specs/task.auth.spec.ts`](e2e/specs/task.auth.spec.ts)             | Création d'une tâche, les trois vues, raccourcis, vue en URL        |
+| [`specs/kanban.auth.spec.ts`](e2e/specs/kanban.auth.spec.ts)         | Glisser-déposer au clavier et persistance de la position            |
+| [`specs/deletion.auth.spec.ts`](e2e/specs/deletion.auth.spec.ts)     | Suppression d'une tâche et d'un projet, annulation                  |
+| [`specs/validation.auth.spec.ts`](e2e/specs/validation.auth.spec.ts) | Champs requis d'une tâche, refus avant tout appel réseau            |
+| [`specs/cascade.auth.spec.ts`](e2e/specs/cascade.auth.spec.ts)       | Suppression en cascade des tâches d'un projet                       |
 
 Les parcours authentifiés exigent un compte de test (`E2E_EMAIL`,
 `E2E_PASSWORD`) ; sans ces variables, seuls les parcours publics s'exécutent.

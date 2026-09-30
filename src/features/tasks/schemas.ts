@@ -6,15 +6,12 @@ export const createtaskSchema = z.object({
   status: z.nativeEnum(TaskStatus, { error: "Requis" }),
   workspaceId: z.string().trim().min(1, "Requis"),
   projectId: z.string().trim().min(1, "Requis"),
-  dueDate: z
-    .union([
-      z.coerce
-        .date<Date | string>()
-        .refine((date) => !isNaN(date.getTime()), { message: "Date invalide" }),
-      z.literal(""),
-    ])
-    .optional(),
-  assigneeId: z.string().trim().min(1, "Requis").optional(),
+  // Requis : la collection Appwrite exige ces deux attributs. Les déclarer
+  // facultatifs ici laissait passer la validation puis échouer la création.
+  dueDate: z.coerce
+    .date<Date | string>({ error: "Requis" })
+    .refine((date) => !isNaN(date.getTime()), { message: "Date invalide" }),
+  assigneeId: z.string({ error: "Requis" }).trim().min(1, "Requis"),
   priority: z.nativeEnum(TaskPriority, { error: "Requis" }),
   description: z.string().optional(),
 });

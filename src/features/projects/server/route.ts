@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { ID, Query } from "node-appwrite";
+import { Databases, ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 
@@ -13,6 +13,25 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 import { createProjectSchema, updateProjectSchema } from "../schemas";
 
 import { Project } from "../types";
+
+/** Supprime les tâches d'un projet, par lots de 100. */
+const deleteProjectTasks = async (databases: Databases, projectId: string): Promise<void> => {
+  let cursor: string | undefined;
+
+  do {
+    const queries = [Query.equal("projectId", projectId), Query.limit(100)];
+    if (cursor) queries.push(Query.cursorAfter(cursor));
+
+    const { documents } = await databases.listDocuments(DATABASE_ID, TASKS_ID, queries);
+    if (documents.length === 0) break;
+
+    await Promise.all(
+      documents.map((document) => databases.deleteDocument(DATABASE_ID, TASKS_ID, document.$id)),
+    );
+
+    cursor = documents.length === 100 ? documents[documents.length - 1].$id : undefined;
+  } while (cursor);
+};
 
 const app = new Hono()
   .post("/", sessionMiddleware, zValidator("form", createProjectSchema), async (c) => {
@@ -165,6 +184,10 @@ const app = new Hono()
     if (!member) {
       return c.json({ error: "Unauthorized" }, 401);
     }
+
+    // Appwrite ne cascade pas : les tâches du projet resteraient sinon en base,
+    // rattachées à un projet disparu.
+    await deleteProjectTasks(databases, projectId);
 
     await databases.deleteDocument(DATABASE_ID, PROJECTS_ID, projectId);
 

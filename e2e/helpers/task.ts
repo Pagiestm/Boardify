@@ -6,9 +6,8 @@ import { expectDialogClosed, pickToday, selectFirstOption } from "./forms";
 /**
  * Crée une tâche depuis la vue « Mes tâches » et renvoie son nom.
  *
- * Statut, priorité et projet sont requis par `createtaskSchema`. « Assigné à »
- * et « Date d'échéance » y sont facultatifs mais requis par la collection
- * Appwrite : sans eux l'API répond 500 (voir la section « Écarts connus »).
+ * Tous les champs renseignés ici sont requis par `createtaskSchema`, aligné sur
+ * les attributs exigés par la collection Appwrite.
  */
 export const createTask = async (page: Page) => {
   const name = uniqueName("Tâche");

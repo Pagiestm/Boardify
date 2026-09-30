@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { ID, Query } from "node-appwrite";
+import { Databases, ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 
@@ -10,10 +10,43 @@ import { getMember } from "@/features/members/utils";
 
 import { generateInviteCode } from "@/lib/utils";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, IMAGES_BUCKET_ID, MEMBERS_ID, TASKS_ID, WORKSPACES_ID } from "@/config";
+import {
+  DATABASE_ID,
+  IMAGES_BUCKET_ID,
+  MEMBERS_ID,
+  PROJECTS_ID,
+  TASKS_ID,
+  WORKSPACES_ID,
+} from "@/config";
 
 import { Workspace } from "../types";
 import { createWorkspaceSchema, updateWorkspaceSchema } from "../schemas";
+
+/** Supprime tout ce qui dépend d'un espace de travail, par lots de 100. */
+const deleteWorkspaceChildren = async (
+  databases: Databases,
+  workspaceId: string,
+): Promise<void> => {
+  for (const collectionId of [TASKS_ID, PROJECTS_ID, MEMBERS_ID]) {
+    let cursor: string | undefined;
+
+    do {
+      const queries = [Query.equal("workspaceId", workspaceId), Query.limit(100)];
+      if (cursor) queries.push(Query.cursorAfter(cursor));
+
+      const { documents } = await databases.listDocuments(DATABASE_ID, collectionId, queries);
+      if (documents.length === 0) break;
+
+      await Promise.all(
+        documents.map((document) =>
+          databases.deleteDocument(DATABASE_ID, collectionId, document.$id),
+        ),
+      );
+
+      cursor = documents.length === 100 ? documents[documents.length - 1].$id : undefined;
+    } while (cursor);
+  }
+};
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
@@ -168,6 +201,10 @@ const app = new Hono()
     if (!member || member.role !== MemberRole.ADMIN) {
       return c.json({ error: "Unauthorized" }, 401);
     }
+
+    // Appwrite ne cascade pas : sans ce nettoyage, tâches, projets et membres
+    // survivraient à leur espace de travail et resteraient inatteignables.
+    await deleteWorkspaceChildren(databases, workspaceId);
 
     await databases.deleteDocument(DATABASE_ID, WORKSPACES_ID, workspaceId);
 

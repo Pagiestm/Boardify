@@ -98,12 +98,14 @@ test("mon parcours", async ({ page }) => {
 Chaque spec crée ce dont elle a besoin : elles tournent en parallèle et ne
 doivent dépendre ni l'une de l'autre, ni d'un run précédent.
 
-## Écarts connus entre Zod et Appwrite
+## Régressions verrouillées
 
-`createtaskSchema` déclare `assigneeId` et `dueDate` facultatifs alors que la
-collection `tasks` les exige : une création sans eux répond **500** sans aucun
-message à l'écran. Les helpers les renseignent toujours — à corriger côté
-application, pas côté tests.
+Deux défauts corrigés sont désormais tenus par des tests :
+
+- `validation.auth.spec.ts` — `assigneeId` et `dueDate` étaient facultatifs
+  dans `createtaskSchema` alors que la collection les exige : la création
+  partait et l'API répondait 500. La validation bloque maintenant côté client.
+- `cascade.auth.spec.ts` — supprimer un projet laissait ses tâches en base.
 
 ## Secrets GitHub
 
