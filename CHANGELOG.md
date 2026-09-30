@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/Pagiestm/Boardify/compare/v1.1.0...v1.1.1) (2026-09-30)
+
+### Bug Fixes
+
+* **ci:** permet à renovate de régénérer le lockfile ([d78a47b](https://github.com/Pagiestm/Boardify/commit/d78a47b9f3281b1896c9f232aef00d2dd87ddb65))
+
 ## [1.1.0](https://github.com/Pagiestm/Boardify/compare/v1.0.0...v1.1.0) (2026-09-30)
 
 ### Features
