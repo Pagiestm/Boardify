@@ -12,32 +12,32 @@ import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
 
 export const metadata: Metadata = {
-    title: {
-        absolute: "Boardify — Gestion de projets simple pour les équipes",
-    },
+  title: {
+    absolute: "Boardify — Gestion de projets simple pour les équipes",
+  },
 };
 
 export default async function LandingPage() {
-    let isLoggedIn = false;
+  let isLoggedIn = false;
 
-    try {
-        isLoggedIn = Boolean(await getCurrent());
-    } catch {
-        isLoggedIn = false;
-    }
+  try {
+    isLoggedIn = Boolean(await getCurrent());
+  } catch {
+    isLoggedIn = false;
+  }
 
-    return (
-        <div className="min-h-screen overflow-x-clip">
-            <LandingHeader isLoggedIn={isLoggedIn} />
-            <main>
-                <Hero isLoggedIn={isLoggedIn} />
-                <Features />
-                <ViewsSection />
-                <HowItWorks />
-                <Faq />
-                <FinalCta isLoggedIn={isLoggedIn} />
-            </main>
-            <LandingFooter />
-        </div>
-    );
+  return (
+    <div className="min-h-screen overflow-x-clip">
+      <LandingHeader isLoggedIn={isLoggedIn} />
+      <main>
+        <Hero isLoggedIn={isLoggedIn} />
+        <Features />
+        <ViewsSection />
+        <HowItWorks />
+        <Faq />
+        <FinalCta isLoggedIn={isLoggedIn} />
+      </main>
+      <LandingFooter />
+    </div>
+  );
 }

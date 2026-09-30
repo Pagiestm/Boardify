@@ -1,5 +1,3 @@
 {
-    "conventionalCommits.scopes": [
-        "workspaces, config.ts"
-    ]
+  "conventionalCommits.scopes": ["workspaces, config.ts"]
 }

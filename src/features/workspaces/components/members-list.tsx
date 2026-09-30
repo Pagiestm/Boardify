@@ -1,12 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {
-  MoreHorizontalIcon,
-  ShieldCheckIcon,
-  UserIcon,
-  UserMinusIcon,
-} from "lucide-react";
+import { MoreHorizontalIcon, ShieldCheckIcon, UserIcon, UserMinusIcon } from "lucide-react";
 
 import { MemberRole } from "@/features/members/types";
 import { useGetMembers } from "@/features/members/api/use-get-members";
@@ -37,14 +32,12 @@ export const MembersList = () => {
   const [ConfirmDialog, confirm] = useConfirm(
     "Retirer le membre",
     "Ce membre perdra l'accès à l'espace de travail et à ses projets.",
-    "destructive"
+    "destructive",
   );
 
   const { data, isLoading } = useGetMembers({ workspaceId });
-  const { mutate: deleteMember, isPending: isDeletingMember } =
-    useDeleteMember();
-  const { mutate: updateMember, isPending: isUpdatingMember } =
-    useUpdateMember();
+  const { mutate: deleteMember, isPending: isDeletingMember } = useDeleteMember();
+  const { mutate: updateMember, isPending: isUpdatingMember } = useUpdateMember();
 
   const handleUpdateMember = (memberId: string, role: MemberRole) => {
     updateMember({
@@ -63,7 +56,7 @@ export const MembersList = () => {
         onSuccess: () => {
           window.location.reload();
         },
-      }
+      },
     );
   };
 
@@ -99,22 +92,13 @@ export const MembersList = () => {
           const isAdmin = member.role === MemberRole.ADMIN;
 
           return (
-            <li
-              key={member.$id}
-              className="flex items-center gap-3 px-6 py-3"
-            >
-              <MemberAvatar
-                className="size-8"
-                fallbackClassName="text-xs"
-                name={member.name}
-              />
+            <li key={member.$id} className="flex items-center gap-3 px-6 py-3">
+              <MemberAvatar className="size-8" fallbackClassName="text-xs" name={member.name} />
               <div className="flex min-w-0 flex-1 flex-col">
                 <p className="truncate text-sm font-medium">{member.name}</p>
                 <p className="truncate text-xs text-muted-foreground">{member.email}</p>
               </div>
-              <Badge variant={isAdmin ? "soft" : "secondary"}>
-                {isAdmin ? "Admin" : "Membre"}
-              </Badge>
+              <Badge variant={isAdmin ? "soft" : "secondary"}>{isAdmin ? "Admin" : "Membre"}</Badge>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon-sm" aria-label={`Actions pour ${member.name}`}>

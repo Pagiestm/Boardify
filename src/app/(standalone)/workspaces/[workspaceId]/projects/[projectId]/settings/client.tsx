@@ -8,20 +8,20 @@ import { PageLoader } from "@/components/page-loader";
 import { PageError } from "@/components/page-error";
 
 export const ProjectIdSettingsClient = () => {
-    const projectId = useProjectId()
-    const { data: initialValues, isLoading } = useGetProject({ projectId })
+  const projectId = useProjectId();
+  const { data: initialValues, isLoading } = useGetProject({ projectId });
 
-    if (isLoading) {
-        return <PageLoader />
-    }
+  if (isLoading) {
+    return <PageLoader />;
+  }
 
-    if (!initialValues) {
-        return <PageError message="Projet non trouvé" />
-    }
+  if (!initialValues) {
+    return <PageError message="Projet non trouvé" />;
+  }
 
-    return (
-        <div className="w-full max-w-2xl">
-            <EditProjectForm initialValues={initialValues} />
-        </div>
-    )
-}
+  return (
+    <div className="w-full max-w-2xl">
+      <EditProjectForm initialValues={initialValues} />
+    </div>
+  );
+};

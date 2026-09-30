@@ -4,30 +4,31 @@ import { useQuery } from "@tanstack/react-query";
 import { client } from "@/lib/rpc";
 
 interface useGetProjectAnalyticsProps {
-    projectId: string;
+  projectId: string;
 }
 
-export type ProjectAnalyticsResponseType = InferResponseType<typeof client.api.projects[":projectId"]["analytics"]["$get"], 200>;
+export type ProjectAnalyticsResponseType = InferResponseType<
+  (typeof client.api.projects)[":projectId"]["analytics"]["$get"],
+  200
+>;
 
-export const useGetProjectAnalytics = ({
-    projectId,
-}: useGetProjectAnalyticsProps) => {
-    const query = useQuery({
-        queryKey: ["project-analytics", projectId],
-        queryFn: async () => {
-            const response = await client.api.projects[":projectId"]["analytics"].$get({
-                param: { projectId },
-            });
+export const useGetProjectAnalytics = ({ projectId }: useGetProjectAnalyticsProps) => {
+  const query = useQuery({
+    queryKey: ["project-analytics", projectId],
+    queryFn: async () => {
+      const response = await client.api.projects[":projectId"]["analytics"].$get({
+        param: { projectId },
+      });
 
-            if (!response.ok) {
-                throw new Error("Erreur lors de la récupération des données du projet");
-            }
+      if (!response.ok) {
+        throw new Error("Erreur lors de la récupération des données du projet");
+      }
 
-            const { data } = await response.json();
+      const { data } = await response.json();
 
-            return data;
-        }
-    })
+      return data;
+    },
+  });
 
-    return query;
-}
+  return query;
+};

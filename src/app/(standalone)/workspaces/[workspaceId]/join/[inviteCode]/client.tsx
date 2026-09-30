@@ -8,20 +8,20 @@ import { PageError } from "@/components/page-error";
 import { PageLoader } from "@/components/page-loader";
 
 export const WorkspaceIdJoinClient = () => {
-    const workspaceId = useWorkspaceId()
-    const { data: initialValues, isLoading } = useGetWorkspaceInfo({ workspaceId })
+  const workspaceId = useWorkspaceId();
+  const { data: initialValues, isLoading } = useGetWorkspaceInfo({ workspaceId });
 
-    if (isLoading) {
-        return <PageLoader />
-    }
+  if (isLoading) {
+    return <PageLoader />;
+  }
 
-    if (!initialValues) {
-        return <PageError message="Espace de travail non trouvé" />
-    }
+  if (!initialValues) {
+    return <PageError message="Espace de travail non trouvé" />;
+  }
 
-    return (
-        <div className="w-full max-w-lg">
-            <JoinWorkspaceForm initialValues={initialValues} />
-        </div>
-    )
-}
+  return (
+    <div className="w-full max-w-lg">
+      <JoinWorkspaceForm initialValues={initialValues} />
+    </div>
+  );
+};
