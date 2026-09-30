@@ -36,7 +36,7 @@ export const TaskDate = ({
   const endDate = value ? new Date(value) : null;
 
   if (!endDate || Number.isNaN(endDate.getTime())) {
-    return <span className={cn("text-muted-foreground", className)}>—</span>;
+    return <span className={cn("text-muted-foreground", className)}>-</span>;
   }
 
   const diffInDays = differenceInCalendarDays(endDate, new Date());
@@ -58,7 +58,7 @@ export const TaskDate = ({
 
   return (
     <span
-      title={flag ? `${relative} — ${flag}` : relative}
+      title={flag ? `${relative} - ${flag}` : relative}
       className={cn("inline-flex items-center gap-1 truncate tabular-nums", tone, className)}
     >
       {showIcon && <CalendarIcon aria-hidden className="size-3.5 shrink-0" />}

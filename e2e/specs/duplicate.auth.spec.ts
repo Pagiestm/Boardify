@@ -5,9 +5,9 @@ import { createProject, createTask, gotoTasks, gotoWorkspace } from "../helpers"
 test.describe("Duplication de tâche", () => {
   test("une tâche dupliquée apparaît avec le suffixe (copie)", async ({ page }) => {
     await gotoWorkspace(page);
-    await createProject(page);
+    const projectName = await createProject(page);
     await gotoTasks(page);
-    const name = await createTask(page);
+    const name = await createTask(page, projectName);
 
     await page.getByRole("tab", { name: "Kanban" }).click();
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
@@ -22,9 +22,9 @@ test.describe("Duplication de tâche", () => {
 
   test("la copie conserve le statut de l'originale", async ({ page }) => {
     await gotoWorkspace(page);
-    await createProject(page);
+    const projectName = await createProject(page);
     await gotoTasks(page);
-    const name = await createTask(page);
+    const name = await createTask(page, projectName);
 
     await page.getByRole("tab", { name: "Kanban" }).click();
     const original = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });

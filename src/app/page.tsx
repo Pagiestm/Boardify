@@ -13,7 +13,7 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Boardify — Gestion de projets simple pour les équipes",
+    absolute: "Boardify - Gestion de projets simple pour les équipes",
   },
 };
 

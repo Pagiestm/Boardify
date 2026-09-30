@@ -17,3 +17,10 @@ export const pickToday = async (scope: Locator) => {
 
 export const expectDialogClosed = async (dialog: Locator) =>
   expect(dialog).toBeHidden({ timeout: 30_000 });
+
+export const selectOptionByName = async (scope: Locator, label: string, name: string) => {
+  await scope.getByLabel(label).click();
+  const option = scope.page().getByRole("option").filter({ hasText: name }).first();
+  await expect(option).toBeVisible();
+  await option.click();
+};

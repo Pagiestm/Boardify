@@ -5,9 +5,9 @@ import { createProject, createTask, gotoTasks, gotoWorkspace } from "../helpers"
 test.describe("Kanban", () => {
   test("une tâche change de colonne au clavier et la position est persistée", async ({ page }) => {
     await gotoWorkspace(page);
-    await createProject(page);
+    const projectName = await createProject(page);
     await gotoTasks(page);
-    const name = await createTask(page);
+    const name = await createTask(page, projectName);
 
     await page.getByRole("tab", { name: "Kanban" }).click();
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });

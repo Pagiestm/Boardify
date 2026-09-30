@@ -1,9 +1,9 @@
 import { expect, type Page } from "@playwright/test";
 
 import { uniqueName } from "./data";
-import { expectDialogClosed, pickToday, selectFirstOption } from "./forms";
+import { expectDialogClosed, pickToday, selectFirstOption, selectOptionByName } from "./forms";
 
-export const createTask = async (page: Page) => {
+export const createTask = async (page: Page, projectName?: string) => {
   const name = uniqueName("Tâche");
   await page.getByRole("button", { name: "Nouvelle tâche" }).first().click();
 
@@ -12,7 +12,11 @@ export const createTask = async (page: Page) => {
   await dialog.getByLabel("Nom de la tâche").fill(name);
   await selectFirstOption(dialog, "Statut");
   await selectFirstOption(dialog, "Priorité");
-  await selectFirstOption(dialog, "Projet");
+  if (projectName) {
+    await selectOptionByName(dialog, "Projet", projectName);
+  } else {
+    await selectFirstOption(dialog, "Projet");
+  }
   await selectFirstOption(dialog, "Assigné à");
   await pickToday(dialog);
   await dialog.getByRole("button", { name: "Créer", exact: true }).click();
