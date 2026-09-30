@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/Pagiestm/Boardify/compare/v1.1.1...v1.2.0) (2026-09-30)
+
+### Features
+
+* **lint:** passe à eslint 10 ([9323c89](https://github.com/Pagiestm/Boardify/commit/9323c894bd0c62f4e386b191fb711dd66407d360))
+
 ## [1.1.1](https://github.com/Pagiestm/Boardify/compare/v1.1.0...v1.1.1) (2026-09-30)
 
 ### Bug Fixes
