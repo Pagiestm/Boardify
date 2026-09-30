@@ -5,7 +5,6 @@ interface AuthPaneProps {
   footer?: React.ReactNode;
 }
 
-/** Frames the sign-in / sign-up forms. */
 export const AuthPane = ({ title, description, children, footer }: AuthPaneProps) => {
   return (
     <div className="w-full max-w-sm">

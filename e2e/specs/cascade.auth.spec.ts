@@ -29,7 +29,6 @@ test.describe("Suppression en cascade", () => {
     await page.getByRole("button", { name: "Confirmer" }).click();
     await page.waitForURL(/\/workspaces\/[^/]+$/, { timeout: 30_000 });
 
-    // Les tâches ne doivent pas survivre à leur projet.
     const after = await (
       await request.get(`/api/tasks?workspaceId=${workspaceId}&projectId=${projectId}`)
     ).json();

@@ -3,12 +3,6 @@ import { expect, type Page } from "@playwright/test";
 import { uniqueName } from "./data";
 import { expectDialogClosed, pickToday, selectFirstOption } from "./forms";
 
-/**
- * Crée une tâche depuis la vue « Mes tâches » et renvoie son nom.
- *
- * Tous les champs renseignés ici sont requis par `createtaskSchema`, aligné sur
- * les attributs exigés par la collection Appwrite.
- */
 export const createTask = async (page: Page) => {
   const name = uniqueName("Tâche");
   await page.getByRole("button", { name: "Nouvelle tâche" }).first().click();

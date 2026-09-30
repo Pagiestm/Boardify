@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-const MAX_SIZE = 1048576; // 1 Mo
+const MAX_SIZE = 1048576;
 
 interface ImageUploadFieldProps {
   value?: File | string | null;
@@ -17,7 +17,6 @@ interface ImageUploadFieldProps {
   hint?: string;
 }
 
-/** Image picker: square preview + import / remove buttons. */
 export const ImageUploadField = ({
   value,
   onChange,

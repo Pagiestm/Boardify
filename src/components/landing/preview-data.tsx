@@ -17,11 +17,9 @@ export interface SampleTask {
   priority: TaskPriority;
   assignee: string;
   project: string;
-  /** Day of month in the sample month */
   day: number;
 }
 
-/** Illustrative data for the product previews. */
 export const SAMPLE_TASKS: SampleTask[] = [
   {
     id: "t1",

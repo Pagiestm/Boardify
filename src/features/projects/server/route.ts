@@ -14,7 +14,6 @@ import { createProjectSchema, updateProjectSchema } from "../schemas";
 
 import { Project } from "../types";
 
-/** Supprime les tâches d'un projet, par lots de 100. */
 const deleteProjectTasks = async (databases: Databases, projectId: string): Promise<void> => {
   let cursor: string | undefined;
 
@@ -185,8 +184,6 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    // Appwrite ne cascade pas : les tâches du projet resteraient sinon en base,
-    // rattachées à un projet disparu.
     await deleteProjectTasks(databases, projectId);
 
     await databases.deleteDocument(DATABASE_ID, PROJECTS_ID, projectId);

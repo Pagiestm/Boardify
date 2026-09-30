@@ -104,7 +104,6 @@ export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) =
     dueDate,
   });
 
-  // 1 / 2 / 3 switch views (ignored while typing or with modifiers)
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey || isTypingTarget(event.target)) return;

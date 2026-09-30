@@ -34,9 +34,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 import { useShortcutsHelp } from "./shortcuts-help";
 
-// Tiny shared store: the navbar trigger, hotkeys and the palette share one open state.
 let isOpen = false;
-// How many instances of the dialog are mounted (0 outside the dashboard layout).
 let mounted = 0;
 const listeners = new Set<() => void>();
 const notify = () => listeners.forEach((listener) => listener());
@@ -71,7 +69,6 @@ export const useCommandPalette = () => {
   };
 };
 
-/** Registers the global keyboard shortcuts of the dashboard. */
 export const GlobalHotkeys = () => {
   const router = useRouter();
   const workspaceId = useWorkspaceId();
@@ -293,7 +290,6 @@ export const CommandPalette = () => {
   );
 };
 
-/** Search entry at the bottom of the sidebar. */
 export const SidebarSearch = () => {
   const palette = useCommandPalette();
 

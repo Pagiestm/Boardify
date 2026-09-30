@@ -8,8 +8,6 @@ test.describe("Validation des tâches", () => {
     await createProject(page);
     await gotoTasks(page);
 
-    // Aucune requête ne doit partir : la validation Zod bloque avant l'appel,
-    // là où l'API répondait 500 sur des attributs pourtant exigés en base.
     let posted = false;
     page.on("request", (request) => {
       if (request.url().includes("/api/tasks") && request.method() === "POST") posted = true;

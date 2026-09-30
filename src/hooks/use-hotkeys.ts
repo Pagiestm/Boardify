@@ -1,15 +1,5 @@
 import { useEffect, useRef } from "react";
 
-/**
- * Global keyboard bindings.
- *
- * Supported key formats:
- * - single key: "n", "p", "?"
- * - sequence (vim/gmail style): "g h" — second key within 1s
- * - modifier combo: "mod+k" (⌘ on macOS, Ctrl elsewhere)
- *
- * Single keys and sequences are ignored while the user types in a field.
- */
 export type HotkeyMap = Record<string, (event: KeyboardEvent) => void>;
 
 const SEQUENCE_TIMEOUT = 1000;
@@ -27,7 +17,6 @@ const isEditableTarget = (target: EventTarget | null) => {
 };
 
 export const useHotkeys = (bindings: HotkeyMap, enabled = true) => {
-  // Keep the latest bindings without re-subscribing the listener each render.
   const bindingsRef = useRef(bindings);
   useEffect(() => {
     bindingsRef.current = bindings;
@@ -50,7 +39,6 @@ export const useHotkeys = (bindings: HotkeyMap, enabled = true) => {
       const map = bindingsRef.current;
       const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
 
-      // Modifier combos work everywhere, even inside inputs.
       if (event.metaKey || event.ctrlKey) {
         const handler = map[`mod+${key}`];
         if (handler) {
@@ -62,7 +50,6 @@ export const useHotkeys = (bindings: HotkeyMap, enabled = true) => {
       }
 
       if (event.altKey || isEditableTarget(event.target)) return;
-      // Ignore keys typed while a dialog/menu has focus, except "?" (help).
       const inOverlay =
         event.target instanceof HTMLElement &&
         event.target.closest("[role=dialog],[role=menu],[role=listbox]");

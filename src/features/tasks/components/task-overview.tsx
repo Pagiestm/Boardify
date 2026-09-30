@@ -25,7 +25,6 @@ const Empty = () => <span className="text-muted-foreground">—</span>;
 export const TaskOverview = ({ task }: TaskOverviewProps) => {
   const { open } = useEditTaskModal();
 
-  // `e` opens the edit modal
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (

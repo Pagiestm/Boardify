@@ -18,7 +18,6 @@ const HIGHLIGHTS = [
 const inProgress = SAMPLE_TASKS.filter((task) => task.status === TaskStatus.IN_PROGRESS);
 const todo = SAMPLE_TASKS.filter((task) => task.status === TaskStatus.TODO);
 
-/** Right-hand panel of the auth pages: a calm product preview. */
 export const AuthShowcase = () => {
   return (
     <aside className="relative hidden overflow-hidden border-l bg-muted/40 lg:flex lg:flex-col lg:justify-center">

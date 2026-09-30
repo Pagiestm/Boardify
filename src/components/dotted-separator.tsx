@@ -9,10 +9,6 @@ interface DottedSeparatorProps {
   direction?: "horizontal" | "vertical";
 }
 
-/**
- * Thin separator line. Kept under its historical name/props so existing call
- * sites don't change; `dotSize`/`gapSize` are accepted but the line is solid.
- */
 export const DottedSeparator = ({
   className,
   color,

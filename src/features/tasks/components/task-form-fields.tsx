@@ -39,7 +39,6 @@ interface TaskFormFieldsProps extends TaskFormOptions {
 
 const PRIORITY_ORDER = [TaskPriority.HIGH, TaskPriority.MEDIUM, TaskPriority.LOW];
 
-/** Small colored dot shown before status / priority labels. */
 const Dot = ({ className }: { className: string }) => (
   <span aria-hidden className={cn("size-2 shrink-0 rounded-full", className)} />
 );

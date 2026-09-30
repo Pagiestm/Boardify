@@ -5,7 +5,6 @@ interface AppVersionProps {
   className?: string;
 }
 
-/** Current release number, linking to its GitHub release notes. */
 export const AppVersion = ({ className }: AppVersionProps) => {
   return (
     <a

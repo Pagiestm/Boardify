@@ -22,7 +22,6 @@ import {
 import { Workspace } from "../types";
 import { createWorkspaceSchema, updateWorkspaceSchema } from "../schemas";
 
-/** Supprime tout ce qui dépend d'un espace de travail, par lots de 100. */
 const deleteWorkspaceChildren = async (
   databases: Databases,
   workspaceId: string,
@@ -202,8 +201,6 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    // Appwrite ne cascade pas : sans ce nettoyage, tâches, projets et membres
-    // survivraient à leur espace de travail et resteraient inatteignables.
     await deleteWorkspaceChildren(databases, workspaceId);
 
     await databases.deleteDocument(DATABASE_ID, WORKSPACES_ID, workspaceId);

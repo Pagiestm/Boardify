@@ -11,7 +11,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { Input, type InputProps } from "@/components/ui/input";
 import { signUpWithGithub, signUpWithGoogle } from "@/lib/oauth";
 
-/** Password input with a show/hide toggle. */
 export const PasswordInput = ({ className, ...props }: InputProps) => {
   const [visible, setVisible] = useState(false);
 

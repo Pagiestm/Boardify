@@ -6,7 +6,6 @@ interface LogoMarkProps {
   className?: string;
 }
 
-/** Rounded square with three columns of decreasing height — a board. */
 export const LogoMark = ({ className }: LogoMarkProps) => {
   return (
     <svg
