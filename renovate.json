@@ -32,6 +32,12 @@
       "enabled": false
     },
     {
+      "description": "ESLint tenu en majeure 9 : la 10 retire une API dont dépend encore eslint-plugin-react, embarqué par eslint-config-next. Le lint s'interrompt sur « contextOrFilename.getFilename is not a function ». À rouvrir quand Next livre un plugin compatible.",
+      "matchPackageNames": ["eslint"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
       "description": "Preset de changelog tenu en majeure 9 : la 10 exige un writer que semantic-release ne fournit pas. Voir c1fdda5.",
       "matchPackageNames": ["conventional-changelog-conventionalcommits"],
       "matchUpdateTypes": ["major"],
