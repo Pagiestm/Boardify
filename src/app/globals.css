@@ -100,8 +100,15 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Défilement fluide vers les ancres de la landing, sauf si l'utilisateur
+     a demandé à réduire les animations. */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background font-sans text-foreground antialiased;
     font-feature-settings: "cv11", "ss01";
   }
   button:not(:disabled),
