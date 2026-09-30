@@ -4,6 +4,13 @@ import { Card } from "@/components/ui/card";
 import { getCurrent } from "@/features/auth/queries";
 import { CreateWorkspaceForm } from "@/features/workspaces/components/create-workspace-form";
 
+import { privatePage } from "@/lib/metadata";
+
+export const metadata = privatePage(
+  "Nouvel espace de travail",
+  "Créez un espace de travail pour votre équipe.",
+);
+
 const WorkspaceCreatePage = async () => {
   const user = await getCurrent();
   if (!user) redirect("/sign-in");

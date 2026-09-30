@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import { cn } from "@/lib/utils";
+import { SITE_URL } from "@/lib/metadata";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/query-provider";
 
@@ -14,13 +15,39 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const DESCRIPTION =
+  "Boardify réunit vos espaces de travail, projets et tâches : kanban, calendrier, tableau et statistiques pour avancer ensemble.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Boardify — Gestion de projets simple pour les équipes",
+    default: "Boardify - Gestion de projets simple pour les équipes",
     template: "%s · Boardify",
   },
-  description:
-    "Boardify réunit vos espaces de travail, projets et tâches : kanban, calendrier, tableau et statistiques pour avancer ensemble.",
+  description: DESCRIPTION,
+  applicationName: "Boardify",
+  keywords: [
+    "gestion de projet",
+    "kanban",
+    "tâches",
+    "espace de travail",
+    "collaboration",
+    "équipe",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    url: "/",
+    siteName: "Boardify",
+    title: "Boardify - Gestion de projets simple pour les équipes",
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Boardify - Gestion de projets simple pour les équipes",
+    description: DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = {
