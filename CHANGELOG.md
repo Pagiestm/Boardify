@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/Pagiestm/Boardify/compare/v1.0.0...v1.1.0) (2026-09-30)
+
+### Features
+
+* **landing:** fluidifie la navigation du menu et l'ouverture de la FAQ ([3bec044](https://github.com/Pagiestm/Boardify/commit/3bec044949189e3d41375ec78b4a11d78f05c9c3))
+
 ## 1.0.0 (2026-09-29)
 
 ### Features
