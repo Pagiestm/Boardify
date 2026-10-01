@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
 import { TaskDate } from "./task-date";
+import { LabelBadge } from "@/features/labels/components/label-badge";
+
 import { TaskActions } from "./task-actions";
 
 import { PopulatedTask, TaskStatus } from "../types";
@@ -47,6 +49,13 @@ export const KanbanCard = ({ task, isDragging }: KanbanCardProps) => {
           </button>
         </TaskActions>
       </div>
+      {task.labels && task.labels.length > 0 && (
+        <div className="flex flex-wrap gap-1">
+          {task.labels.map((label) => (
+            <LabelBadge key={label.$id} label={label} />
+          ))}
+        </div>
+      )}
       <div className="flex items-center gap-2">
         {task.priority && (
           <Badge variant={task.priority} dot>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useQueryState } from "nuqs";
 import { CalendarDaysIcon, KanbanIcon, PlusIcon, TableIcon } from "lucide-react";
 
@@ -16,10 +16,14 @@ import { DataFilters } from "./data-filters";
 
 import { columns } from "./columns";
 import { DataTable } from "./data-table";
+import { useGetProject } from "@/features/projects/api/use-get-project";
+import { BoardColumn } from "@/features/projects/types";
+import { parseBoardColumns, serializeBoardColumns } from "@/features/projects/utils";
+import { useUpdateBoardColumns } from "@/features/projects/api/use-update-board-columns";
+
 import { DataKanban } from "./data-kanban";
 import { DataCalendar } from "./data-calendar";
 
-import { TaskStatus } from "../types";
 import { useGetTasks } from "../api/use-get-tasks";
 import { useTaskFilters } from "../hooks/use-task-filters";
 import { useCreateTaskModal } from "../hooks/use-create-task-modal";
@@ -27,6 +31,7 @@ import { useBulkUpdateTasks } from "../api/use-bulk-update-tasks";
 
 interface TaskViewSwitcherProps {
   hideProjectFilter?: boolean;
+  hideKanban?: boolean;
 }
 
 const views = [
@@ -83,16 +88,42 @@ export const isTypingTarget = (target: EventTarget | null) => {
   );
 };
 
-export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) => {
-  const [{ status, assigneeId, projectId, dueDate }] = useTaskFilters();
+export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwitcherProps) => {
+  const [{ status, assigneeId, projectId, dueDate, labelId }] = useTaskFilters();
 
   const [view, setView] = useQueryState("task-view", {
     defaultValue: "table",
   });
 
+  const availableViews = hideKanban ? views.filter((item) => item.value !== "kanban") : views;
+  const activeView = hideKanban && view === "kanban" ? "table" : view;
+
   const workspaceId = useWorkspaceId();
   const paramProjectId = useProjectId();
   const { open } = useCreateTaskModal();
+
+  const { data: project } = useGetProject({
+    projectId: paramProjectId,
+    enabled: Boolean(paramProjectId),
+  });
+  const boardColumns = useMemo(
+    () => (paramProjectId ? parseBoardColumns(project?.columnConfig) : undefined),
+    [paramProjectId, project?.columnConfig],
+  );
+
+  const { mutate: saveColumns } = useUpdateBoardColumns();
+
+  const onColumnsChange = useCallback(
+    (columns: BoardColumn[]) => {
+      if (!paramProjectId) return;
+
+      saveColumns({
+        param: { projectId: paramProjectId },
+        json: { columnConfig: serializeBoardColumns(columns) },
+      });
+    },
+    [paramProjectId, saveColumns],
+  );
 
   const { mutate: bulkUpdate } = useBulkUpdateTasks();
 
@@ -102,9 +133,9 @@ export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) =
     assigneeId,
     status,
     dueDate,
+    labelId,
   });
 
-  // 1 / 2 / 3 switch views (ignored while typing or with modifiers)
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey || isTypingTarget(event.target)) return;
@@ -121,7 +152,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) =
   }, [setView]);
 
   const onKanbanChange = useCallback(
-    (tasks: { $id: string; status: TaskStatus; position: number }[]) => {
+    (tasks: { $id: string; status: string; position: number }[]) => {
       bulkUpdate({
         json: { tasks },
       });
@@ -131,13 +162,13 @@ export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) =
 
   return (
     <Tabs
-      value={view}
+      value={activeView}
       onValueChange={setView}
       className="w-full flex-1 rounded-lg border bg-card shadow-xs"
     >
       <div className="flex flex-col gap-3 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
         <TabsList className="w-full lg:w-auto">
-          {views.map(({ value, key, label, icon: Icon }) => (
+          {availableViews.map(({ value, key, label, icon: Icon }) => (
             <TabsTrigger
               key={value}
               value={value}
@@ -149,7 +180,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) =
             </TabsTrigger>
           ))}
         </TabsList>
-        <Button onClick={open} size="sm" className="w-full lg:w-auto">
+        <Button onClick={() => open()} size="sm" className="w-full lg:w-auto">
           <PlusIcon />
           Nouvelle tâche
           <Kbd className="ml-1 hidden border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground lg:inline-flex">
@@ -168,9 +199,16 @@ export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) =
             <TabsContent value="table" className="mt-0">
               <DataTable columns={columns} data={tasks?.documents ?? []} />
             </TabsContent>
-            <TabsContent value="kanban" className="mt-0">
-              <DataKanban onChange={onKanbanChange} data={tasks?.documents ?? []} />
-            </TabsContent>
+            {hideKanban ? null : (
+              <TabsContent value="kanban" className="mt-0">
+                <DataKanban
+                  onChange={onKanbanChange}
+                  data={tasks?.documents ?? []}
+                  columns={boardColumns}
+                  onColumnsChange={paramProjectId ? onColumnsChange : undefined}
+                />
+              </TabsContent>
+            )}
             <TabsContent value="calendar" className="mt-0 h-full">
               <DataCalendar data={tasks?.documents ?? []} />
             </TabsContent>

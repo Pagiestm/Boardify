@@ -1,15 +1,16 @@
 import { test, expect } from "@playwright/test";
 
-import { createProject, createTask, gotoTasks, gotoWorkspace } from "../helpers";
+import { createProject, createTask, gotoProjectKanban, gotoTasks, gotoWorkspace } from "../helpers";
 
 test.describe("Suppressions", () => {
   test("une tâche est supprimée après confirmation", async ({ page }) => {
     await gotoWorkspace(page);
-    await createProject(page);
+    const projectName = await createProject(page);
+    const projectUrl = page.url();
     await gotoTasks(page);
-    const name = await createTask(page);
+    const name = await createTask(page, projectName);
 
-    await page.getByRole("tab", { name: "Kanban" }).click();
+    await gotoProjectKanban(page, projectUrl);
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
     await expect(card).toBeVisible();
 
@@ -22,11 +23,12 @@ test.describe("Suppressions", () => {
 
   test("la confirmation peut être annulée", async ({ page }) => {
     await gotoWorkspace(page);
-    await createProject(page);
+    const projectName = await createProject(page);
+    const projectUrl = page.url();
     await gotoTasks(page);
-    const name = await createTask(page);
+    const name = await createTask(page, projectName);
 
-    await page.getByRole("tab", { name: "Kanban" }).click();
+    await gotoProjectKanban(page, projectUrl);
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
 
     await card.getByRole("button", { name: "Actions de la tâche" }).click();

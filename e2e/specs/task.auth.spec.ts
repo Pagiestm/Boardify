@@ -1,10 +1,29 @@
 import { test, expect } from "@playwright/test";
 
-import { createProject, createTask, gotoTasks, gotoWorkspace } from "../helpers";
+import {
+  createIsolatedWorkspace,
+  createProject,
+  createTask,
+  gotoIsolatedTasks,
+  gotoTasks,
+} from "../helpers";
 
 test.describe("Tâches", () => {
-  test("les trois vues sont accessibles", async ({ page }) => {
+  test("l'espace propose le tableau et le calendrier, sans kanban", async ({ page }) => {
     await gotoTasks(page);
+
+    for (const view of ["Tableau", "Calendrier"]) {
+      await page.getByRole("tab", { name: view }).click();
+      await expect(page.getByRole("tab", { name: view })).toHaveAttribute("data-state", "active");
+    }
+
+    await expect(page.getByRole("tab", { name: "Kanban" })).toHaveCount(0);
+  });
+
+  test("un projet propose les trois vues", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    await createProject(page);
 
     for (const view of ["Tableau", "Kanban", "Calendrier"]) {
       await page.getByRole("tab", { name: view }).click();
@@ -15,8 +34,11 @@ test.describe("Tâches", () => {
   test("les vues changent aussi au clavier", async ({ page }) => {
     await gotoTasks(page);
 
-    await page.keyboard.press("2");
-    await expect(page.getByRole("tab", { name: "Kanban" })).toHaveAttribute("data-state", "active");
+    await page.keyboard.press("3");
+    await expect(page.getByRole("tab", { name: "Calendrier" })).toHaveAttribute(
+      "data-state",
+      "active",
+    );
 
     await page.keyboard.press("1");
     await expect(page.getByRole("tab", { name: "Tableau" })).toHaveAttribute(
@@ -25,25 +47,27 @@ test.describe("Tâches", () => {
     );
   });
 
-  test("on crée une tâche et elle apparaît dans la liste", async ({ page }) => {
-    // Une tâche exige un projet : la spec crée le sien pour ne dépendre
-    // d'aucune autre, ni de l'état laissé par un run précédent.
-    await gotoWorkspace(page);
-    await createProject(page);
-    await gotoTasks(page);
+  test("on crée une tâche et elle apparaît dans la liste", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    const projectName = await createProject(page);
+    await gotoIsolatedTasks(page, workspaceId);
 
-    const name = await createTask(page);
+    const name = await createTask(page, projectName);
 
-    await expect(page.getByText(name).first()).toBeVisible();
+    await expect(page.getByText(name).first()).toBeVisible({ timeout: 30_000 });
   });
 
   test("la vue est conservée dans l'URL", async ({ page }) => {
     await gotoTasks(page);
 
-    await page.getByRole("tab", { name: "Kanban" }).click();
-    await expect(page).toHaveURL(/task-view=kanban/);
+    await page.getByRole("tab", { name: "Calendrier" }).click();
+    await expect(page).toHaveURL(/task-view=calendar/);
 
     await page.reload();
-    await expect(page.getByRole("tab", { name: "Kanban" })).toHaveAttribute("data-state", "active");
+    await expect(page.getByRole("tab", { name: "Calendrier" })).toHaveAttribute(
+      "data-state",
+      "active",
+    );
   });
 });

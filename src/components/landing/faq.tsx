@@ -70,8 +70,6 @@ const FaqItem = ({ question, answer }: { question: string; answer: string }) => 
           <motion.div
             id={id}
             role="region"
-            // La hauteur « auto » est interpolée par Motion : le contenu peut
-            // tenir sur une ou plusieurs lignes sans valeur en dur.
             initial={reduceMotion ? false : { height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}

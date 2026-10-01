@@ -7,13 +7,8 @@ import { cn } from "@/lib/utils";
 interface TaskDateProps {
   value?: string;
   className?: string;
-  /** Prefix with a small calendar icon */
   showIcon?: boolean;
-  /** Tasks already done should not be highlighted as late */
   muted?: boolean;
-  /**
-   * short → `12 oct` · long → `12 oct 2026` · full → `12 oct 2026 (dans 3 j)`
-   */
   variant?: "short" | "long" | "full";
 }
 
@@ -41,7 +36,7 @@ export const TaskDate = ({
   const endDate = value ? new Date(value) : null;
 
   if (!endDate || Number.isNaN(endDate.getTime())) {
-    return <span className={cn("text-muted-foreground", className)}>—</span>;
+    return <span className={cn("text-muted-foreground", className)}>-</span>;
   }
 
   const diffInDays = differenceInCalendarDays(endDate, new Date());
@@ -63,7 +58,7 @@ export const TaskDate = ({
 
   return (
     <span
-      title={flag ? `${relative} — ${flag}` : relative}
+      title={flag ? `${relative} - ${flag}` : relative}
       className={cn("inline-flex items-center gap-1 truncate tabular-nums", tone, className)}
     >
       {showIcon && <CalendarIcon aria-hidden className="size-3.5 shrink-0" />}

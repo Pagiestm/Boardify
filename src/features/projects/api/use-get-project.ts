@@ -4,10 +4,12 @@ import { client } from "@/lib/rpc";
 
 interface useGetProjectProps {
   projectId: string;
+  enabled?: boolean;
 }
 
-export const useGetProject = ({ projectId }: useGetProjectProps) => {
+export const useGetProject = ({ projectId, enabled = true }: useGetProjectProps) => {
   const query = useQuery({
+    enabled: enabled && Boolean(projectId),
     queryKey: ["project", projectId],
     queryFn: async () => {
       const response = await client.api.projects[":projectId"].$get({

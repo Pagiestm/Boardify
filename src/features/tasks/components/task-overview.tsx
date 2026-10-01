@@ -9,10 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { TaskDate } from "./task-date";
+import { LabelBadge } from "@/features/labels/components/label-badge";
+
 import { OverviewProperty } from "./overview-property";
+import { TaskStatusBadge } from "./task-status-badge";
 
 import { PopulatedTask, TaskStatus } from "../types";
-import { TASK_PRIORITY_CONFIG, TASK_STATUS_CONFIG } from "../constants";
+import { TASK_PRIORITY_CONFIG } from "../constants";
 import { useEditTaskModal } from "../hooks/use-edit-task-modal";
 import { isTypingTarget } from "./task-view-switcher";
 
@@ -20,12 +23,11 @@ interface TaskOverviewProps {
   task: PopulatedTask;
 }
 
-const Empty = () => <span className="text-muted-foreground">—</span>;
+const Empty = () => <span className="text-muted-foreground">-</span>;
 
 export const TaskOverview = ({ task }: TaskOverviewProps) => {
   const { open } = useEditTaskModal();
 
-  // `e` opens the edit modal
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (
@@ -44,7 +46,6 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open, task.$id]);
 
-  const status = TASK_STATUS_CONFIG[task.status];
   const priority = task.priority ? TASK_PRIORITY_CONFIG[task.priority] : undefined;
 
   return (
@@ -81,13 +82,7 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
             />
           </OverviewProperty>
           <OverviewProperty label="Statut">
-            {status ? (
-              <Badge variant={task.status} dot>
-                {status.label}
-              </Badge>
-            ) : (
-              <Empty />
-            )}
+            <TaskStatusBadge status={task.status} column={task.statusColumn} />
           </OverviewProperty>
           <OverviewProperty label="Priorité">
             {priority && task.priority ? (
@@ -108,6 +103,17 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
                 />
                 <span className="truncate">{task.project.name}</span>
               </>
+            ) : (
+              <Empty />
+            )}
+          </OverviewProperty>
+          <OverviewProperty label="Étiquettes">
+            {task.labels && task.labels.length > 0 ? (
+              <span className="flex flex-wrap gap-1">
+                {task.labels.map((label) => (
+                  <LabelBadge key={label.$id} label={label} />
+                ))}
+              </span>
             ) : (
               <Empty />
             )}

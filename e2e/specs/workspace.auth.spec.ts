@@ -31,7 +31,6 @@ test.describe("Espace de travail", () => {
 
     await page.keyboard.press("g");
     await page.keyboard.press("t");
-    // « g t » est une séquence : les deux touches comptent dans la même fenêtre.
 
     await expect(page).toHaveURL(/\/tasks$/);
   });

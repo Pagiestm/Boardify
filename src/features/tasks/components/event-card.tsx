@@ -7,21 +7,30 @@ import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
 import { cn } from "@/lib/utils";
 
-import { TaskStatus } from "../types";
-import { TASK_STATUS_CONFIG } from "../constants";
+import { BoardColumn } from "@/features/projects/types";
+
+import { resolveStatus } from "./task-status-badge";
 
 interface EventCardProps {
   title: string;
   assignee?: Member;
   project?: Project;
-  status: TaskStatus;
+  status: string;
+  statusColumn?: BoardColumn;
   id: string;
 }
 
-export const EventCard = ({ title, assignee, project, status, id }: EventCardProps) => {
+export const EventCard = ({
+  title,
+  assignee,
+  project,
+  status,
+  statusColumn,
+  id,
+}: EventCardProps) => {
   const workspaceId = useWorkspaceId();
   const router = useRouter();
-  const config = TASK_STATUS_CONFIG[status];
+  const config = resolveStatus(status, statusColumn);
 
   const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -36,12 +45,11 @@ export const EventCard = ({ title, assignee, project, status, id }: EventCardPro
       <button
         type="button"
         onClick={onClick}
-        title={`${title}${meta ? ` — ${meta}` : ""}`}
+        title={`${title}${meta ? ` - ${meta}` : ""}`}
         className={cn(
           "flex w-full items-center rounded-sm border-l-2 bg-muted px-1.5 py-0.5 text-left text-xs text-foreground transition-colors",
           "hover:bg-accent",
           config?.border,
-          status === TaskStatus.DONE && "text-muted-foreground line-through",
         )}
       >
         <span className="truncate">{title}</span>

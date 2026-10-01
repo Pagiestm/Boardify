@@ -8,32 +8,24 @@ import { UserButton } from "@/features/auth/components/user-button";
 import { Kbd } from "@/components/ui/kbd";
 import { Button } from "@/components/ui/button";
 
+import { Breadcrumbs } from "./breadcrumbs";
 import { ThemeToggle } from "./theme-toggle";
 import { MobileSidebar } from "./mobile-sidebar";
 import { useCommandPalette } from "./command-palette";
 
-const pathnameMap: Record<string, { title: string; description: string }> = {
-  tasks: {
-    title: "Mes tâches",
-    description: "Retrouvez toutes vos tâches.",
-  },
-  projects: {
-    title: "Projet",
-    description: "Les tâches de ce projet.",
-  },
+const pathnameMap: Record<string, string> = {
+  tasks: "Mes tâches",
+  projects: "Projet",
 };
 
-const defaultMap = {
-  title: "Accueil",
-  description: "Vue d'ensemble de vos projets et tâches.",
-};
+const DEFAULT_TITLE = "Accueil";
 
 export const Navbar = () => {
   const pathname = usePathname();
   const { open } = useCommandPalette();
 
   const section = pathname.split("/")[3];
-  const { title, description } = pathnameMap[section] ?? defaultMap;
+  const title = pathnameMap[section] ?? DEFAULT_TITLE;
 
   return (
     <header className="sticky top-0 z-30 border-b bg-background">
@@ -42,7 +34,9 @@ export const Navbar = () => {
           <MobileSidebar />
           <div className="min-w-0">
             <h1 className="truncate text-sm font-semibold">{title}</h1>
-            <p className="hidden truncate text-xs text-muted-foreground md:block">{description}</p>
+            <div className="hidden md:block">
+              <Breadcrumbs />
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-1.5">

@@ -15,7 +15,6 @@ export const useCreateWorkspace = () => {
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async ({ form }) => {
       if (form.image instanceof File && form.image.size > 1048576) {
-        // 1MB = 1048576 bytes
         throw new Error("L'image dépasse 1Mo");
       }
 

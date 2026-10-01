@@ -17,48 +17,51 @@ const json = async <T>(request: APIRequestContext, url: string): Promise<T> => {
 
 const isMarked = (document: Document) => document.name?.startsWith(E2E_MARKER);
 
-/**
- * Supprime les données produites par les tests, via l'API de l'application et
- * la session du compte de test — aucun scope Appwrite supplémentaire requis.
- *
- * Le garde-fou est le marqueur porté par le nom : projets et tâches sont
- * balayés dans tous les espaces du compte (les tests écrivent dans celui qui
- * existe déjà, marqué ou non), mais seuls ceux qui le portent sont supprimés.
- * Un espace n'est supprimé que s'il le porte lui-même.
- *
- * L'ordre est imposé par l'application : `DELETE /workspaces/:id` ne supprime
- * pas ses projets ni ses tâches, qui resteraient orphelins.
- */
 export const cleanupTestData = async (request: APIRequestContext) => {
   const workspaces = await json<{ documents: Document[] }>(request, "/api/workspaces");
 
   let tasks = 0;
   let projects = 0;
 
-  for (const workspace of workspaces.documents) {
-    const taskList = await json<{ documents: Document[] }>(
-      request,
-      `/api/tasks?workspaceId=${workspace.$id}`,
-    );
-    for (const task of taskList.documents.filter(isMarked)) {
-      await request.delete(`/api/tasks/${task.$id}`);
-      tasks += 1;
-    }
+  await Promise.all(
+    workspaces.documents.map(async (workspace) => {
+      const taskList = await json<{ documents: Document[] }>(
+        request,
+        `/api/tasks?workspaceId=${workspace.$id}`,
+      );
+      const markedTasks = taskList.documents.filter(isMarked);
+      await Promise.all(markedTasks.map((task) => request.delete(`/api/tasks/${task.$id}`)));
+      tasks += markedTasks.length;
 
-    const projectList = await json<{ documents: Document[] }>(
-      request,
-      `/api/projects?workspaceId=${workspace.$id}`,
-    );
-    for (const project of projectList.documents.filter(isMarked)) {
-      await request.delete(`/api/projects/${project.$id}`);
-      projects += 1;
-    }
-  }
+      const projectList = await json<{ documents: Document[] }>(
+        request,
+        `/api/projects?workspaceId=${workspace.$id}`,
+      );
+      const markedProjects = projectList.documents.filter(isMarked);
+      await Promise.all(
+        markedProjects.map((project) => request.delete(`/api/projects/${project.$id}`)),
+      );
+      projects += markedProjects.length;
+    }),
+  );
+
+  let labels = 0;
+  await Promise.all(
+    workspaces.documents.map(async (workspace) => {
+      const labelList = await json<{ documents: Document[] }>(
+        request,
+        `/api/labels?workspaceId=${workspace.$id}`,
+      );
+      const marked = labelList.documents.filter(isMarked);
+      await Promise.all(marked.map((label) => request.delete(`/api/labels/${label.$id}`)));
+      labels += marked.length;
+    }),
+  );
 
   const markedWorkspaces = workspaces.documents.filter(isMarked);
-  for (const workspace of markedWorkspaces) {
-    await request.delete(`/api/workspaces/${workspace.$id}`);
-  }
+  await Promise.all(
+    markedWorkspaces.map((workspace) => request.delete(`/api/workspaces/${workspace.$id}`)),
+  );
 
-  return { workspaces: markedWorkspaces.length, projects, tasks };
+  return { workspaces: markedWorkspaces.length, projects, tasks, labels };
 };

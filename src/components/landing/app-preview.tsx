@@ -26,7 +26,6 @@ const projects = [
   { name: "Refonte du logo", color: "bg-amber-500" },
 ];
 
-/** Static, illustrative preview of the app: sidebar + kanban board. */
 export const AppPreview = () => {
   return (
     <div

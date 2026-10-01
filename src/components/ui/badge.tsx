@@ -40,7 +40,6 @@ const dotClasses = Object.fromEntries([
 
 export interface BadgeProps
   extends React.ComponentProps<"span">, VariantProps<typeof badgeVariants> {
-  /** Leading colored dot */
   dot?: boolean;
 }
 

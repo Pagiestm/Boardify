@@ -8,7 +8,6 @@ interface AnalyticsCardProps {
   variant: "up" | "down";
   increaseValue: number;
   icon?: LucideIcon;
-  /** When true, an increase is bad news (e.g. overdue tasks). */
   inverse?: boolean;
   className?: string;
 }

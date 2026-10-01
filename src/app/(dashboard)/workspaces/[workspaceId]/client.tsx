@@ -24,12 +24,13 @@ import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { useCreateTaskModal } from "@/features/tasks/hooks/use-create-task-modal";
 import { useCreateProjectModal } from "@/features/projects/hooks/use-create-project-modal";
 import { useGetWorkspaceAnalytics } from "@/features/workspaces/api/use-get-workspace-analytics";
-import { TASK_STATUS_CONFIG } from "@/features/tasks/constants";
+import { resolveStatus, TaskStatusBadge } from "@/features/tasks/components/task-status-badge";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Analytics } from "@/components/analytics";
+import { WorkloadBars } from "@/components/charts/workload-bars";
 import { PageError } from "@/components/page-error";
 import { PageLoader } from "@/components/page-loader";
 
@@ -56,6 +57,7 @@ export const WorkspaceIdClient = () => {
   return (
     <div className="flex h-full flex-col gap-6">
       <Analytics data={analytics} />
+      <WorkloadBars tasks={tasks.documents} />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
         <TaskList
           data={tasks.documents}
@@ -132,7 +134,7 @@ export const TaskList = ({ data, total, className }: TaskListProps) => {
       count={total}
       className={className}
       action={
-        <Button variant="ghost" size="sm" onClick={createTask}>
+        <Button variant="ghost" size="sm" onClick={() => createTask()}>
           <PlusIcon />
           Nouvelle tâche
         </Button>
@@ -144,7 +146,7 @@ export const TaskList = ({ data, total, className }: TaskListProps) => {
           title="Aucune tâche"
           description="Créez une première tâche pour commencer à suivre votre travail."
           action={
-            <Button size="sm" onClick={createTask}>
+            <Button size="sm" onClick={() => createTask()}>
               <PlusIcon />
               Nouvelle tâche
             </Button>
@@ -154,7 +156,6 @@ export const TaskList = ({ data, total, className }: TaskListProps) => {
         <>
           <ul className="divide-y">
             {data.slice(0, 8).map((task) => {
-              const status = TASK_STATUS_CONFIG[task.status];
               const dueDate = task.dueDate ? new Date(task.dueDate) : null;
               const isLate =
                 !!dueDate &&
@@ -168,7 +169,13 @@ export const TaskList = ({ data, total, className }: TaskListProps) => {
                     href={`/workspaces/${workspaceId}/tasks/${task.$id}`}
                     className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/60"
                   >
-                    <span aria-hidden className={cn("size-2 shrink-0 rounded-full", status.dot)} />
+                    <span
+                      aria-hidden
+                      className={cn(
+                        "size-2 shrink-0 rounded-full",
+                        resolveStatus(task.status, task.statusColumn).dot,
+                      )}
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{task.name}</p>
                       <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
@@ -196,9 +203,11 @@ export const TaskList = ({ data, total, className }: TaskListProps) => {
                         )}
                       </div>
                     </div>
-                    <Badge variant={task.status} className="hidden sm:inline-flex">
-                      {status.label}
-                    </Badge>
+                    <TaskStatusBadge
+                      status={task.status}
+                      column={task.statusColumn}
+                      className="hidden sm:inline-flex"
+                    />
                     <MemberAvatar
                       name={task.assignee?.name}
                       className="size-6"

@@ -1,7 +1,14 @@
-import { FolderIcon, ListChecksIcon, UserIcon, XIcon } from "lucide-react";
+import { FolderIcon, ListChecksIcon, TagIcon, UserIcon, XIcon } from "lucide-react";
 
 import { useGetMembers } from "@/features/members/api/use-get-members";
 import { useGetProjects } from "@/features/projects/api/use-get-projects";
+import { useGetLabels } from "@/features/labels/api/use-get-labels";
+import { useGetProject } from "@/features/projects/api/use-get-project";
+import { useProjectId } from "@/features/projects/hooks/use-project-id";
+import { parseBoardColumns } from "@/features/projects/utils";
+import { useWorkspaceColumns } from "@/features/projects/hooks/use-workspace-columns";
+import { COLUMN_COLOR_CONFIG } from "@/features/projects/constants";
+import { LabelBadge } from "@/features/labels/components/label-badge";
 import { MemberAvatar } from "@/features/members/components/member-avatar";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
@@ -13,14 +20,14 @@ import { DatePicker } from "@/components/date-picker";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 
-import { TaskStatus } from "../types";
-import { TASK_STATUS_CONFIG, TASK_STATUS_ORDER } from "../constants";
 import { useTaskFilters } from "../hooks/use-task-filters";
 
 interface DataFiltersProps {
@@ -33,21 +40,27 @@ const activeClassName = "border-primary/40 bg-primary/5";
 
 export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
   const workspaceId = useWorkspaceId();
+  const paramProjectId = useProjectId();
+  const { data: currentProject } = useGetProject({
+    projectId: paramProjectId,
+    enabled: Boolean(paramProjectId),
+  });
+  const boardColumns = paramProjectId
+    ? parseBoardColumns(currentProject?.columnConfig).filter((column) => !column.hidden)
+    : undefined;
+  const workspaceColumns = useWorkspaceColumns(workspaceId);
 
   const { data: projects, isLoading: isLoadingProjects } = useGetProjects({ workspaceId });
   const { data: members, isLoading: isLoadingMembers } = useGetMembers({ workspaceId });
+  const { data: labels } = useGetLabels({ workspaceId });
 
   const isLoading = isLoadingProjects || isLoadingMembers;
 
-  const [{ status, assigneeId, projectId, dueDate }, setFilters] = useTaskFilters();
+  const [{ assigneeId, projectId, dueDate, labelId, status }, setFilters] = useTaskFilters();
 
   const hasActiveFilters = Boolean(
-    status || assigneeId || dueDate || (!hideProjectFilter && projectId),
+    assigneeId || dueDate || labelId || status || (!hideProjectFilter && projectId),
   );
-
-  const onStatusChange = (value: string) => {
-    setFilters({ status: value === "all" ? null : (value as TaskStatus) });
-  };
 
   const onAssigneeChange = (value: string) => {
     setFilters({ assigneeId: value === "all" ? null : value });
@@ -57,11 +70,20 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
     setFilters({ projectId: value === "all" ? null : value });
   };
 
+  const onStatusChange = (value: string) => {
+    setFilters({ status: value === "all" ? null : value });
+  };
+
+  const onLabelChange = (value: string) => {
+    setFilters({ labelId: value === "all" ? null : value });
+  };
+
   const onReset = () => {
     setFilters({
-      status: null,
       assigneeId: null,
       dueDate: null,
+      labelId: null,
+      status: null,
       ...(hideProjectFilter ? {} : { projectId: null }),
     });
   };
@@ -89,16 +111,30 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
         <SelectContent>
           <SelectItem value="all">Tous les statuts</SelectItem>
           <SelectSeparator />
-          {TASK_STATUS_ORDER.map((taskStatus) => {
-            const config = TASK_STATUS_CONFIG[taskStatus];
-
-            return (
-              <SelectItem key={taskStatus} value={taskStatus}>
-                <span className={cn("size-2 rounded-full", config.dot)} />
-                {config.label}
-              </SelectItem>
-            );
-          })}
+          {boardColumns
+            ? boardColumns.map((column) => (
+                <SelectItem key={column.id} value={column.id}>
+                  <span
+                    aria-hidden
+                    className={cn("size-2 rounded-full", COLUMN_COLOR_CONFIG[column.color].dot)}
+                  />
+                  {column.label}
+                </SelectItem>
+              ))
+            : workspaceColumns.map((entry) => (
+                <SelectGroup key={entry.projectId}>
+                  <SelectLabel>{entry.projectName}</SelectLabel>
+                  {entry.columns.map((column) => (
+                    <SelectItem key={`${entry.projectId}-${column.id}`} value={column.id}>
+                      <span
+                        aria-hidden
+                        className={cn("size-2 rounded-full", COLUMN_COLOR_CONFIG[column.color].dot)}
+                      />
+                      {column.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              ))}
         </SelectContent>
       </Select>
       <Select value={assigneeId ?? "all"} onValueChange={onAssigneeChange}>
@@ -136,6 +172,26 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
               <SelectItem key={project.$id} value={project.$id}>
                 <ProjectAvatar name={project.name} image={project.imageUrl} className="size-5" />
                 {project.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+      {labels && labels.documents.length > 0 && (
+        <Select value={labelId ?? "all"} onValueChange={onLabelChange}>
+          <SelectTrigger
+            aria-label="Filtrer par étiquette"
+            className={cn(triggerClassName, labelId && activeClassName)}
+          >
+            <TagIcon />
+            <SelectValue placeholder="Toutes les étiquettes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les étiquettes</SelectItem>
+            <SelectSeparator />
+            {labels.documents.map((label) => (
+              <SelectItem key={label.$id} value={label.$id}>
+                <LabelBadge label={label} />
               </SelectItem>
             ))}
           </SelectContent>

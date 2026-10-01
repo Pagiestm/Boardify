@@ -55,7 +55,6 @@ const TablePreview = () => (
 const WEEKDAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 
 const CalendarPreview = () => {
-  // October 2026 starts on a Thursday
   const offset = 3;
   const cells = Array.from({ length: 35 }, (_, index) => index - offset + 1);
 
@@ -113,7 +112,7 @@ const views = [
     value: "kanban",
     label: "Kanban",
     icon: KanbanSquareIcon,
-    description: "Faites glisser les tâches d'une colonne à l'autre pour changer leur statut.",
+    description: "Faites glisser les tâches d'un statut à l'autre pour les faire avancer.",
   },
   {
     value: "table",

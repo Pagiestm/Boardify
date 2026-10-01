@@ -97,6 +97,15 @@
 }
 
 @layer base {
+  :root {
+    --color-column-teal: #0d9488;
+    --color-column-blue: #2563eb;
+    --color-column-amber: #d97706;
+    --color-column-violet: #7c3aed;
+    --color-column-green: #16a34a;
+    --color-column-rose: #e11d48;
+    --color-column-zinc: #52525b;
+  }
   * {
     @apply border-border outline-ring/50;
   }

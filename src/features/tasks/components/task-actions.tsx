@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation";
-import { ExternalLinkIcon, FolderIcon, PencilIcon, TrashIcon } from "lucide-react";
+import { CopyIcon, ExternalLinkIcon, FolderIcon, PencilIcon, TrashIcon } from "lucide-react";
 
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useDeleteTask } from "../api/use-delete-task";
+import { useDuplicateTask } from "../api/use-duplicate-task";
 import { useEditTaskModal } from "../hooks/use-edit-task-modal";
 
 interface TaskActionsProps {
@@ -33,6 +34,7 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
     "destructive",
   );
   const { mutate, isPending } = useDeleteTask();
+  const { mutate: duplicate, isPending: isDuplicating } = useDuplicateTask();
 
   const onDelete = async () => {
     const ok = await confirm();
@@ -66,6 +68,10 @@ export const TaskActions = ({ id, projectId, children }: TaskActionsProps) => {
           <DropdownMenuItem onClick={() => open(id)}>
             <PencilIcon className="text-muted-foreground" />
             Modifier
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => duplicate({ taskId: id })} disabled={isDuplicating}>
+            <CopyIcon className="text-muted-foreground" />
+            Dupliquer
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onClick={onDelete} disabled={isPending}>

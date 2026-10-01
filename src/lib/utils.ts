@@ -30,7 +30,6 @@ const AVATAR_COLORS = [
   "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300",
 ];
 
-/** Deterministic soft color classes derived from a name, for avatar fallbacks. */
 export function getAvatarColor(name = "") {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {

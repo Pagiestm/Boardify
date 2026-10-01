@@ -1,25 +1,20 @@
 import { TaskPriority, TaskStatus } from "./types";
 
 interface StatusConfig {
-  /** Human label (French) */
   label: string;
-  /** Text color class */
   text: string;
-  /** Small round marker background */
   dot: string;
-  /** Soft badge styles */
   badge: string;
-  /** Left border accent (calendar events) */
   border: string;
 }
 
 export const TASK_STATUS_CONFIG: Record<TaskStatus, StatusConfig> = {
   [TaskStatus.BACKLOG]: {
     label: "Backlog",
-    text: "text-zinc-500",
-    dot: "bg-zinc-400",
-    badge: "bg-zinc-100 text-zinc-700 dark:bg-zinc-500/15 dark:text-zinc-300",
-    border: "border-l-zinc-400",
+    text: "text-teal-600 dark:text-teal-400",
+    dot: "bg-teal-500",
+    badge: "bg-teal-50 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300",
+    border: "border-l-teal-500",
   },
   [TaskStatus.TODO]: {
     label: "À faire",

@@ -4,6 +4,7 @@ import { fr } from "date-fns/locale";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 import { EventCard } from "./event-card";
@@ -11,7 +12,6 @@ import { EventCard } from "./event-card";
 import { PopulatedTask } from "../types";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import "./data-calendar.css";
 
 const locales = {
   fr,
@@ -79,6 +79,7 @@ export const DataCalendar = ({ data }: DataCalendarProps) => {
     project: task.project,
     assignee: task.assignee,
     status: task.status,
+    statusColumn: task.statusColumn,
     id: task.$id,
   }));
 
@@ -93,7 +94,12 @@ export const DataCalendar = ({ data }: DataCalendarProps) => {
   };
 
   return (
-    <div className="boardify-calendar overflow-x-auto">
+    <div
+      className={cn(
+        "boardify-calendar overflow-x-auto",
+        "[&_.rbc-button-link]:inline-flex! [&_.rbc-button-link]:h-6! [&_.rbc-button-link]:min-w-6! [&_.rbc-button-link]:items-center! [&_.rbc-button-link]:justify-center! [&_.rbc-button-link]:rounded-full! [&_.rbc-button-link]:px-1! [&_.rbc-button-link]:text-xs! [&_.rbc-button-link]:text-foreground! [&_.rbc-button-link]:tabular-nums! [&_.rbc-date-cell]:px-2! [&_.rbc-date-cell]:pt-1.5! [&_.rbc-date-cell]:pb-1! [&_.rbc-date-cell]:text-left! [&_.rbc-day-bg+.rbc-day-bg]:border-l! [&_.rbc-header]:border-b! [&_.rbc-header]:px-2.5! [&_.rbc-header]:py-2! [&_.rbc-header]:text-left! [&_.rbc-header]:text-xs! [&_.rbc-header]:font-medium! [&_.rbc-header]:text-muted-foreground! [&_.rbc-header]:capitalize! [&_.rbc-header+.rbc-header]:border-l! [&_.rbc-month-header]:bg-muted! [&_.rbc-month-row]:min-h-32! [&_.rbc-month-row]:overflow-visible! [&_.rbc-month-row+.rbc-month-row]:border-t! [&_.rbc-month-view]:min-h-[34rem]! [&_.rbc-month-view]:overflow-hidden! [&_.rbc-month-view]:rounded-[var(--radius)]! [&_.rbc-month-view]:border! [&_.rbc-month-view]:bg-card! [&_.rbc-now_.rbc-button-link]:bg-primary! [&_.rbc-now_.rbc-button-link]:font-semibold! [&_.rbc-now_.rbc-button-link]:text-primary-foreground! [&_.rbc-off-range_.rbc-button-link]:text-muted-foreground/60! [&_.rbc-off-range-bg]:bg-muted/50! [&_.rbc-row-segment]:px-1.5! [&_.rbc-row-segment]:pb-1! [&_.rbc-show-more]:bg-transparent! [&_.rbc-show-more]:px-2! [&_.rbc-show-more]:text-xs! [&_.rbc-show-more]:font-medium! [&_.rbc-show-more]:text-muted-foreground! [&_.rbc-show-more]:hover:text-foreground! [&_.rbc-show-more]:hover:underline! [&_.rbc-today]:bg-transparent!",
+      )}
+    >
       <div className="min-w-[720px]">
         <Calendar
           localizer={localizer}
@@ -104,7 +110,7 @@ export const DataCalendar = ({ data }: DataCalendarProps) => {
           defaultView="month"
           toolbar
           showAllEvents
-          className="h-full"
+          className="h-[42rem]"
           max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
           formats={{
             weekdayFormat: (date, culture, localizer) =>
@@ -118,6 +124,7 @@ export const DataCalendar = ({ data }: DataCalendarProps) => {
                 assignee={event.assignee}
                 project={event.project}
                 status={event.status}
+                statusColumn={event.statusColumn}
               />
             ),
             toolbar: () => <CustomToolbar date={value} onNavigate={handleNavigate} />,

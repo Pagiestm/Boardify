@@ -6,7 +6,6 @@ interface LogoMarkProps {
   className?: string;
 }
 
-/** Rounded square with three columns of decreasing height — a board. */
 export const LogoMark = ({ className }: LogoMarkProps) => {
   return (
     <svg
@@ -34,7 +33,7 @@ export const Logo = ({ href = "/", className, markClassName, textClassName }: Lo
   return (
     <Link
       href={href}
-      aria-label="Boardify — accueil"
+      aria-label="Boardify - accueil"
       className={cn("inline-flex items-center gap-2", className)}
     >
       <LogoMark className={markClassName} />
