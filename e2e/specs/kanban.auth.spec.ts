@@ -1,15 +1,16 @@
 import { test, expect } from "@playwright/test";
 
-import { createProject, createTask, gotoTasks, gotoWorkspace } from "../helpers";
+import { createProject, createTask, gotoProjectKanban, gotoTasks, gotoWorkspace } from "../helpers";
 
 test.describe("Kanban", () => {
   test("une tâche change de colonne au clavier et la position est persistée", async ({ page }) => {
     await gotoWorkspace(page);
     const projectName = await createProject(page);
+    const projectUrl = page.url();
     await gotoTasks(page);
     const name = await createTask(page, projectName);
 
-    await page.getByRole("tab", { name: "Kanban" }).click();
+    await gotoProjectKanban(page, projectUrl);
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
     await expect(card).toBeVisible();
 

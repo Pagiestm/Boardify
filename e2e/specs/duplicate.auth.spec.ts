@@ -1,15 +1,16 @@
 import { test, expect } from "@playwright/test";
 
-import { createProject, createTask, gotoTasks, gotoWorkspace } from "../helpers";
+import { createProject, createTask, gotoProjectKanban, gotoTasks, gotoWorkspace } from "../helpers";
 
 test.describe("Duplication de tâche", () => {
   test("une tâche dupliquée apparaît avec le suffixe (copie)", async ({ page }) => {
     await gotoWorkspace(page);
     const projectName = await createProject(page);
+    const projectUrl = page.url();
     await gotoTasks(page);
     const name = await createTask(page, projectName);
 
-    await page.getByRole("tab", { name: "Kanban" }).click();
+    await gotoProjectKanban(page, projectUrl);
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
     await expect(card).toBeVisible();
 
@@ -23,10 +24,11 @@ test.describe("Duplication de tâche", () => {
   test("la copie conserve le statut de l'originale", async ({ page }) => {
     await gotoWorkspace(page);
     const projectName = await createProject(page);
+    const projectUrl = page.url();
     await gotoTasks(page);
     const name = await createTask(page, projectName);
 
-    await page.getByRole("tab", { name: "Kanban" }).click();
+    await gotoProjectKanban(page, projectUrl);
     const original = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
     await original.getByRole("button", { name: "Actions de la tâche" }).click();
     await page.getByRole("menuitem", { name: "Dupliquer" }).click();
@@ -36,7 +38,10 @@ test.describe("Duplication de tâche", () => {
       .filter({ hasText: `${name} (copie)` });
     await expect(copy).toBeVisible({ timeout: 30_000 });
 
-    const column = page.locator("[data-rfd-droppable-id]").filter({ has: original });
+    const column = page
+      .locator("[data-rfd-droppable-id]")
+      .filter({ hasNot: page.locator("[data-rfd-droppable-id]") })
+      .filter({ has: original });
     await expect(column.filter({ has: copy })).toHaveCount(1);
   });
 });
