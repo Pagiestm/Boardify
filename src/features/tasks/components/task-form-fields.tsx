@@ -5,6 +5,8 @@ import { Control } from "react-hook-form";
 
 import { MemberAvatar } from "@/features/members/components/member-avatar";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
+import { LabelPicker } from "@/features/labels/components/label-picker";
+import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -44,6 +46,8 @@ const Dot = ({ className }: { className: string }) => (
 );
 
 export const TaskFormFields = ({ control, projectOptions, memberOptions }: TaskFormFieldsProps) => {
+  const workspaceId = useWorkspaceId();
+
   return (
     <div className="grid gap-5 px-6 pb-6 sm:grid-cols-2">
       <FormField
@@ -175,6 +179,23 @@ export const TaskFormFields = ({ control, projectOptions, memberOptions }: TaskF
                 ))}
               </SelectContent>
             </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
+        name="labelIds"
+        render={({ field }) => (
+          <FormItem className="sm:col-span-2">
+            <FormLabel>Étiquettes</FormLabel>
+            <FormControl>
+              <LabelPicker
+                workspaceId={workspaceId}
+                value={field.value ?? []}
+                onChange={field.onChange}
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}

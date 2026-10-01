@@ -2,6 +2,7 @@ import { Models } from "node-appwrite";
 
 import type { Member } from "@/features/members/types";
 import type { Project } from "@/features/projects/types";
+import type { Label } from "@/features/labels/types";
 
 export enum TaskStatus {
   BACKLOG = "BACKLOG",
@@ -27,9 +28,11 @@ export type Task = Models.Document & {
   dueDate: string;
   priority: TaskPriority;
   description?: string;
+  labelIds?: string[];
 };
 
 export type PopulatedTask = Task & {
   project?: Project;
   assignee?: Member;
+  labels?: Label[];
 };

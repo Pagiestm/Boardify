@@ -43,10 +43,22 @@ export const cleanupTestData = async (request: APIRequestContext) => {
     }
   }
 
+  let labels = 0;
+  for (const workspace of workspaces.documents) {
+    const labelList = await json<{ documents: Document[] }>(
+      request,
+      `/api/labels?workspaceId=${workspace.$id}`,
+    );
+    for (const label of labelList.documents.filter(isMarked)) {
+      await request.delete(`/api/labels/${label.$id}`);
+      labels += 1;
+    }
+  }
+
   const markedWorkspaces = workspaces.documents.filter(isMarked);
   for (const workspace of markedWorkspaces) {
     await request.delete(`/api/workspaces/${workspace.$id}`);
   }
 
-  return { workspaces: markedWorkspaces.length, projects, tasks };
+  return { workspaces: markedWorkspaces.length, projects, tasks, labels };
 };

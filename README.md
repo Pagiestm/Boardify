@@ -27,15 +27,15 @@ L'application est disponible sur [http://localhost:3000](http://localhost:3000).
 
 Toutes les valeurs se trouvent dans la console Appwrite :
 
-| Variable                                                                         | Où la trouver                                                          |
-| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `NEXT_PUBLIC_APP_URL`                                                            | `http://localhost:3000` en local                                       |
-| `NEXT_PUBLIC_APPWRITE_ENDPOINT`                                                  | _Settings_ du projet → API Endpoint (se termine par `/v1`)             |
-| `NEXT_PUBLIC_APPWRITE_PROJECT`                                                   | _Settings_ du projet → Project ID                                      |
-| `NEXT_APPWRITE_KEY`                                                              | _Overview → Integrations → API Keys_ (scopes auth, databases, storage) |
-| `NEXT_PUBLIC_APPWRITE_DATABASE_ID`                                               | _Databases_ → ID de la base                                            |
-| `NEXT_PUBLIC_APPWRITE_WORKSPACES_ID` / `MEMBERS_ID` / `PROJECTS_ID` / `TASKS_ID` | ID de chaque collection                                                |
-| `NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID`                                          | _Storage_ → ID du bucket d'images                                      |
+| Variable                                                                                       | Où la trouver                                                          |
+| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `NEXT_PUBLIC_APP_URL`                                                                          | `http://localhost:3000` en local                                       |
+| `NEXT_PUBLIC_APPWRITE_ENDPOINT`                                                                | _Settings_ du projet → API Endpoint (se termine par `/v1`)             |
+| `NEXT_PUBLIC_APPWRITE_PROJECT`                                                                 | _Settings_ du projet → Project ID                                      |
+| `NEXT_APPWRITE_KEY`                                                                            | _Overview → Integrations → API Keys_ (scopes auth, databases, storage) |
+| `NEXT_PUBLIC_APPWRITE_DATABASE_ID`                                                             | _Databases_ → ID de la base                                            |
+| `NEXT_PUBLIC_APPWRITE_WORKSPACES_ID` / `MEMBERS_ID` / `PROJECTS_ID` / `TASKS_ID` / `LABELS_ID` | ID de chaque collection                                                |
+| `NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID`                                                        | _Storage_ → ID du bucket d'images                                      |
 
 Pour la connexion Google / GitHub, activez les providers dans _Auth → Settings_ et ajoutez une plateforme Web `localhost` dans le projet Appwrite.
 
