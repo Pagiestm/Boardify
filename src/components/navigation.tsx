@@ -11,8 +11,8 @@ import { cn } from "@/lib/utils";
 const routes = [
   { label: "Accueil", href: "", icon: HomeIcon },
   { label: "Mes tâches", href: "/tasks", icon: ListChecksIcon },
-  { label: "Paramètres", href: "/settings", icon: SettingsIcon },
   { label: "Membres", href: "/members", icon: UsersIcon },
+  { label: "Paramètres", href: "/settings", icon: SettingsIcon },
 ];
 
 export const Navigation = () => {
