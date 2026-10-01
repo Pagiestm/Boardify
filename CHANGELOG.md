@@ -1,3 +1,21 @@
+## [1.3.0](https://github.com/Pagiestm/Boardify/compare/v1.2.0...v1.3.0) (2026-10-01)
+
+### Features
+
+* **dashboard:** ajoute la répartition par statut et la charge par personne ([d42e24d](https://github.com/Pagiestm/Boardify/commit/d42e24d480629061676f389ad49c973083d60b43))
+* **labels:** affiche les étiquettes dans le détail et permet d'y filtrer ([0752df8](https://github.com/Pagiestm/Boardify/commit/0752df8cbbb386831c3f5c165d56c7ccfe8a6f0c))
+* **labels:** ajoute les étiquettes aux tâches ([a32522e](https://github.com/Pagiestm/Boardify/commit/a32522e10627a2c555a0e5b62424d83c75c2dfdd))
+* **navbar:** affiche le fil d'Ariane de la route courante ([422f6d0](https://github.com/Pagiestm/Boardify/commit/422f6d0bbe04ac44678848594459a5505231ddc5))
+* **seo:** donne à chaque route son titre et ses métadonnées ([de6290c](https://github.com/Pagiestm/Boardify/commit/de6290c7d7014a33405d5134eb560064cb411ea9))
+* **tasks:** des statuts propres à chaque projet ([d7433f9](https://github.com/Pagiestm/Boardify/commit/d7433f956e0c2b0d54c6a9aef126f75b4f05a170))
+* **tasks:** permet de dupliquer une tâche ([aff193c](https://github.com/Pagiestm/Boardify/commit/aff193c0213d4307b1546198490ada073328e33a))
+
+### Bug Fixes
+
+* **auth:** fait démarrer le parcours OAuth depuis le navigateur ([88446d9](https://github.com/Pagiestm/Boardify/commit/88446d9e56ef21429be400e45d1414d5559792cc))
+* **tasks:** aligne la validation et la suppression sur la base ([77e83e3](https://github.com/Pagiestm/Boardify/commit/77e83e35ced3255ef7c70e114a8449ddbecbc442))
+* **tasks:** rétablit l'affichage du calendrier ([e80c4af](https://github.com/Pagiestm/Boardify/commit/e80c4af2a9fc3a3439211cc830d747623a8ac6bb))
+
 ## [1.2.0](https://github.com/Pagiestm/Boardify/compare/v1.1.1...v1.2.0) (2026-09-30)
 
 ### Features
