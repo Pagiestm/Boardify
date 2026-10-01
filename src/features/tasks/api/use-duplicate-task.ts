@@ -28,6 +28,7 @@ export const useDuplicateTask = () => {
           projectId: task.projectId,
           assigneeId: task.assigneeId,
           dueDate: task.dueDate,
+          startDate: task.startDate ?? task.dueDate,
           priority: task.priority,
           description: task.description ?? undefined,
         },

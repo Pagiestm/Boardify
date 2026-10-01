@@ -10,6 +10,7 @@ export const defaultBoardColumns = (): BoardColumn[] =>
     label: TASK_STATUS_CONFIG[status].label,
     color: DEFAULT_COLUMN_COLORS[status],
     hidden: false,
+    done: status === TaskStatus.DONE,
   }));
 
 export const createColumnId = () =>
@@ -60,6 +61,7 @@ export const parseBoardColumns = (raw?: string | null): BoardColumn[] => {
           : (fallback?.label ?? "Colonne"),
       color: isColor(candidate.color) ? candidate.color : (fallback?.color ?? "zinc"),
       hidden: candidate.hidden === true,
+      done: typeof candidate.done === "boolean" ? candidate.done : (fallback?.done ?? false),
     });
   }
 
@@ -67,7 +69,6 @@ export const parseBoardColumns = (raw?: string | null): BoardColumn[] => {
 };
 
 export const serializeBoardColumns = (columns: BoardColumn[]) =>
-  JSON.stringify(columns.map(({ id, label, color, hidden }) => ({ id, label, color, hidden })));
-
-export const columnIdOfTask = (task: { columnId?: string | null; status: TaskStatus }) =>
-  task.columnId && task.columnId.length > 0 ? task.columnId : task.status;
+  JSON.stringify(
+    columns.map(({ id, label, color, hidden, done }) => ({ id, label, color, hidden, done })),
+  );

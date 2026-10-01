@@ -27,6 +27,7 @@ export type Task = Models.Document & {
   projectId: string;
   position: number;
   dueDate: string;
+  startDate: string;
   priority: TaskPriority;
   description?: string;
   labelIds?: string[];

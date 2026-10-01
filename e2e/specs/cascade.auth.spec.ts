@@ -1,22 +1,16 @@
 import { test, expect } from "@playwright/test";
 
-import {
-  createProject,
-  createTask,
-  gotoTasks,
-  gotoWorkspace,
-  workspaceIdFromUrl,
-} from "../helpers";
+import { createIsolatedWorkspace, createProject, createTask, gotoIsolatedTasks } from "../helpers";
 
 test.describe("Suppression en cascade", () => {
   test("supprimer un projet supprime ses tâches", async ({ page, request }) => {
-    await gotoWorkspace(page);
-    const workspaceId = workspaceIdFromUrl(page);
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
     const projectName = await createProject(page);
     const projectUrl = page.url();
     const projectId = projectUrl.split("/projects/")[1];
 
-    await gotoTasks(page);
+    await gotoIsolatedTasks(page, workspaceId);
     await createTask(page, projectName);
 
     const before = await (

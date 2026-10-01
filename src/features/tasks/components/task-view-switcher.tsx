@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo } from "react";
 import { useQueryState } from "nuqs";
-import { CalendarDaysIcon, KanbanIcon, PlusIcon, TableIcon } from "lucide-react";
+import { CalendarDaysIcon, GanttChartIcon, KanbanIcon, PlusIcon, TableIcon } from "lucide-react";
 
 import { useProjectId } from "@/features/projects/hooks/use-project-id";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
@@ -21,6 +21,7 @@ import { BoardColumn } from "@/features/projects/types";
 import { parseBoardColumns, serializeBoardColumns } from "@/features/projects/utils";
 import { useUpdateBoardColumns } from "@/features/projects/api/use-update-board-columns";
 
+import { DataGantt } from "./data-gantt";
 import { DataKanban } from "./data-kanban";
 import { DataCalendar } from "./data-calendar";
 
@@ -38,6 +39,7 @@ const views = [
   { value: "table", key: "1", label: "Tableau", icon: TableIcon },
   { value: "kanban", key: "2", label: "Kanban", icon: KanbanIcon },
   { value: "calendar", key: "3", label: "Calendrier", icon: CalendarDaysIcon },
+  { value: "gantt", key: "4", label: "Frise", icon: GanttChartIcon },
 ] as const;
 
 const TasksSkeleton = ({ view }: { view: string }) => {
@@ -211,6 +213,9 @@ export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwit
             )}
             <TabsContent value="calendar" className="mt-0 h-full">
               <DataCalendar data={tasks?.documents ?? []} />
+            </TabsContent>
+            <TabsContent value="gantt" className="mt-0">
+              <DataGantt data={tasks?.documents ?? []} />
             </TabsContent>
           </>
         )}

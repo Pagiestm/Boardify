@@ -5,6 +5,7 @@ import { type DraggableProvidedDragHandleProps } from "@hello-pangea/dnd";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
+  CheckCircleIcon,
   EyeOffIcon,
   GripVerticalIcon,
   MoreHorizontalIcon,
@@ -34,6 +35,7 @@ export interface ColumnActions {
   onRename: (label: string) => void;
   onRecolor: (color: ColumnColor) => void;
   onHide: () => void;
+  onToggleDone: () => void;
   onDelete: () => void;
   onMove: (direction: -1 | 1) => void;
   canMoveLeft: boolean;
@@ -112,6 +114,12 @@ export const KanbanColumnHeader = ({
       ) : null}
       <span aria-hidden className={cn("size-2 shrink-0 rounded-full", dot)} />
       <h2 className="truncate text-sm font-medium">{label}</h2>
+      {column.done && (
+        <CheckCircleIcon
+          aria-label="Statut final"
+          className="size-3.5 shrink-0 text-muted-foreground"
+        />
+      )}
       <span className="text-xs text-muted-foreground tabular-nums">{taskCount}</span>
 
       <Button
@@ -172,6 +180,10 @@ export const KanbanColumnHeader = ({
             </div>
 
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={actions.onToggleDone}>
+              <CheckCircleIcon className="text-muted-foreground" />
+              {column.done ? "Ne plus clôturer ici" : "Marquer comme statut final"}
+            </DropdownMenuItem>
             <DropdownMenuItem disabled={!actions.canHide} onClick={actions.onHide}>
               <EyeOffIcon className="text-muted-foreground" />
               Masquer le statut

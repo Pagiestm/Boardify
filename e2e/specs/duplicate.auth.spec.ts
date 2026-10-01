@@ -1,13 +1,20 @@
 import { test, expect } from "@playwright/test";
 
-import { createProject, createTask, gotoProjectKanban, gotoTasks, gotoWorkspace } from "../helpers";
+import {
+  createIsolatedWorkspace,
+  createProject,
+  createTask,
+  gotoIsolatedTasks,
+  gotoProjectKanban,
+} from "../helpers";
 
 test.describe("Duplication de tâche", () => {
-  test("une tâche dupliquée apparaît avec le suffixe (copie)", async ({ page }) => {
-    await gotoWorkspace(page);
+  test("une tâche dupliquée apparaît avec le suffixe (copie)", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
     const projectName = await createProject(page);
     const projectUrl = page.url();
-    await gotoTasks(page);
+    await gotoIsolatedTasks(page, workspaceId);
     const name = await createTask(page, projectName);
 
     await gotoProjectKanban(page, projectUrl);
@@ -21,11 +28,12 @@ test.describe("Duplication de tâche", () => {
     await expect(page.getByText(name, { exact: true })).toBeVisible();
   });
 
-  test("la copie conserve le statut de l'originale", async ({ page }) => {
-    await gotoWorkspace(page);
+  test("la copie conserve le statut de l'originale", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
     const projectName = await createProject(page);
     const projectUrl = page.url();
-    await gotoTasks(page);
+    await gotoIsolatedTasks(page, workspaceId);
     const name = await createTask(page, projectName);
 
     await gotoProjectKanban(page, projectUrl);

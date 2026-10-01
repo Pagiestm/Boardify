@@ -1,13 +1,21 @@
 import { test, expect } from "@playwright/test";
 
-import { createProject, createTask, gotoProjectKanban, gotoTasks, gotoWorkspace } from "../helpers";
+import {
+  createIsolatedWorkspace,
+  createProject,
+  createTask,
+  gotoIsolatedTasks,
+  gotoProjectKanban,
+  gotoWorkspace,
+} from "../helpers";
 
 test.describe("Suppressions", () => {
-  test("une tâche est supprimée après confirmation", async ({ page }) => {
-    await gotoWorkspace(page);
+  test("une tâche est supprimée après confirmation", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
     const projectName = await createProject(page);
     const projectUrl = page.url();
-    await gotoTasks(page);
+    await gotoIsolatedTasks(page, workspaceId);
     const name = await createTask(page, projectName);
 
     await gotoProjectKanban(page, projectUrl);
@@ -21,11 +29,12 @@ test.describe("Suppressions", () => {
     await expect(card).toBeHidden({ timeout: 30_000 });
   });
 
-  test("la confirmation peut être annulée", async ({ page }) => {
-    await gotoWorkspace(page);
+  test("la confirmation peut être annulée", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
     const projectName = await createProject(page);
     const projectUrl = page.url();
-    await gotoTasks(page);
+    await gotoIsolatedTasks(page, workspaceId);
     const name = await createTask(page, projectName);
 
     await gotoProjectKanban(page, projectUrl);

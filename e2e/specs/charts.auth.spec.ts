@@ -9,7 +9,10 @@ import {
 } from "../helpers";
 
 test.describe("Graphiques du tableau de bord", () => {
-  test("la charge par personne montre une barre par assigné", async ({ page, request }) => {
+  test("la charge par personne montre une barre par assigné non terminé", async ({
+    page,
+    request,
+  }) => {
     const workspaceId = await createIsolatedWorkspace(request);
     await page.goto(`/workspaces/${workspaceId}`);
     const projectName = await createProject(page);
@@ -20,6 +23,7 @@ test.describe("Graphiques du tableau de bord", () => {
     const card = page.getByRole("region").filter({ hasText: "Charge par personne" });
 
     await expect(card).toBeVisible({ timeout: 30_000 });
+    await expect(card.getByText("Tâches non terminées")).toBeVisible();
     await expect(card.locator("svg .recharts-bar-rectangle")).toHaveCount(1);
   });
   test("le graphique reste lisible en thème sombre", async ({ page }) => {
