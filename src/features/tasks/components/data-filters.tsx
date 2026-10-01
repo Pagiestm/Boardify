@@ -1,7 +1,9 @@
-import { FolderIcon, ListChecksIcon, UserIcon, XIcon } from "lucide-react";
+import { FolderIcon, ListChecksIcon, TagIcon, UserIcon, XIcon } from "lucide-react";
 
 import { useGetMembers } from "@/features/members/api/use-get-members";
 import { useGetProjects } from "@/features/projects/api/use-get-projects";
+import { useGetLabels } from "@/features/labels/api/use-get-labels";
+import { LabelBadge } from "@/features/labels/components/label-badge";
 import { MemberAvatar } from "@/features/members/components/member-avatar";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
@@ -36,13 +38,14 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
 
   const { data: projects, isLoading: isLoadingProjects } = useGetProjects({ workspaceId });
   const { data: members, isLoading: isLoadingMembers } = useGetMembers({ workspaceId });
+  const { data: labels } = useGetLabels({ workspaceId });
 
   const isLoading = isLoadingProjects || isLoadingMembers;
 
-  const [{ status, assigneeId, projectId, dueDate }, setFilters] = useTaskFilters();
+  const [{ status, assigneeId, projectId, dueDate, labelId }, setFilters] = useTaskFilters();
 
   const hasActiveFilters = Boolean(
-    status || assigneeId || dueDate || (!hideProjectFilter && projectId),
+    status || assigneeId || dueDate || labelId || (!hideProjectFilter && projectId),
   );
 
   const onStatusChange = (value: string) => {
@@ -57,11 +60,16 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
     setFilters({ projectId: value === "all" ? null : value });
   };
 
+  const onLabelChange = (value: string) => {
+    setFilters({ labelId: value === "all" ? null : value });
+  };
+
   const onReset = () => {
     setFilters({
       status: null,
       assigneeId: null,
       dueDate: null,
+      labelId: null,
       ...(hideProjectFilter ? {} : { projectId: null }),
     });
   };
@@ -136,6 +144,26 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
               <SelectItem key={project.$id} value={project.$id}>
                 <ProjectAvatar name={project.name} image={project.imageUrl} className="size-5" />
                 {project.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+      {labels && labels.documents.length > 0 && (
+        <Select value={labelId ?? "all"} onValueChange={onLabelChange}>
+          <SelectTrigger
+            aria-label="Filtrer par étiquette"
+            className={cn(triggerClassName, labelId && activeClassName)}
+          >
+            <TagIcon />
+            <SelectValue placeholder="Toutes les étiquettes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les étiquettes</SelectItem>
+            <SelectSeparator />
+            {labels.documents.map((label) => (
+              <SelectItem key={label.$id} value={label.$id}>
+                <LabelBadge label={label} />
               </SelectItem>
             ))}
           </SelectContent>

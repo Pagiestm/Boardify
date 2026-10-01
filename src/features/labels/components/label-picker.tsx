@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
-import { LABEL_COLORS } from "../types";
-import { LABEL_COLOR_CONFIG } from "../constants";
+import { LABEL_COLORS, type LabelColor } from "../types";
+import { LABEL_COLOR_CONFIG, SUGGESTED_LABELS } from "../constants";
 import { useGetLabels } from "../api/use-get-labels";
 import { useCreateLabel } from "../api/use-create-label";
 import { useDeleteLabel } from "../api/use-delete-label";
@@ -23,7 +23,7 @@ interface LabelPickerProps {
 
 export const LabelPicker = ({ workspaceId, value, onChange }: LabelPickerProps) => {
   const [name, setName] = useState("");
-  const [color, setColor] = useState<(typeof LABEL_COLORS)[number]>("teal");
+  const [color, setColor] = useState<LabelColor>("teal");
 
   const { data: labels } = useGetLabels({ workspaceId });
   const { mutate: create, isPending: isCreating } = useCreateLabel();
@@ -33,6 +33,13 @@ export const LabelPicker = ({ workspaceId, value, onChange }: LabelPickerProps) 
 
   const toggle = (labelId: string) => {
     onChange(value.includes(labelId) ? value.filter((id) => id !== labelId) : [...value, labelId]);
+  };
+
+  const createFromSuggestion = (suggestion: { name: string; color: LabelColor }) => {
+    create(
+      { json: { name: suggestion.name, color: suggestion.color, workspaceId } },
+      { onSuccess: ({ data }) => onChange([...value, data.$id]) },
+    );
   };
 
   const onCreate = () => {
@@ -95,8 +102,28 @@ export const LabelPicker = ({ workspaceId, value, onChange }: LabelPickerProps) 
             );
           })}
           {labels?.documents.length === 0 && (
-            <li className="px-2 py-3 text-center text-xs text-muted-foreground">
-              Aucune étiquette pour le moment
+            <li className="flex flex-col gap-2 px-2 py-3">
+              <p className="text-xs text-muted-foreground">
+                Aucune étiquette. Les étiquettes traversent les projets : elles regroupent des
+                tâches par nature plutôt que par appartenance.
+              </p>
+              <div className="flex flex-wrap gap-1">
+                {SUGGESTED_LABELS.map((suggestion) => (
+                  <button
+                    key={suggestion.name}
+                    type="button"
+                    disabled={isCreating}
+                    onClick={() => createFromSuggestion(suggestion)}
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] font-medium transition-opacity hover:opacity-80 disabled:opacity-50",
+                      LABEL_COLOR_CONFIG[suggestion.color].badge,
+                    )}
+                  >
+                    <PlusIcon className="size-2.5" />
+                    {suggestion.name}
+                  </button>
+                ))}
+              </div>
             </li>
           )}
         </ul>

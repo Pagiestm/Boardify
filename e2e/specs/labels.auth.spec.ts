@@ -2,9 +2,12 @@ import { test, expect } from "@playwright/test";
 
 import {
   createProject,
+  createTask,
   createTaskWithLabel,
   gotoTasks,
   gotoWorkspace,
+  createIsolatedWorkspace,
+  gotoIsolatedTasks,
   openLabelPicker,
   uniqueName,
   workspaceIdFromUrl,
@@ -75,5 +78,58 @@ test.describe("Étiquettes", () => {
     const tasks = await (await request.get(`/api/tasks?workspaceId=${workspaceId}`)).json();
     const task = tasks.data.documents.find((item: { name: string }) => item.name === name);
     expect(task.labelIds).not.toContain(label.$id);
+  });
+
+  test("des exemples sont proposés quand aucune étiquette n'existe", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await gotoIsolatedTasks(page, workspaceId);
+    await page.getByRole("button", { name: "Nouvelle tâche" }).first().click();
+    const picker = await openLabelPicker(page.getByRole("dialog").first());
+
+    for (const name of ["bug", "urgent", "évolution"]) {
+      await expect(picker.getByRole("button", { name })).toBeVisible();
+    }
+
+    await picker.getByRole("button", { name: "bug" }).click();
+
+    await expect(picker.getByText("bug")).toBeVisible({ timeout: 30_000 });
+    await expect(picker.getByRole("button", { name: "urgent" })).toBeHidden();
+  });
+
+  test("le détail d'une tâche affiche ses étiquettes", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    const projectName = await createProject(page);
+    await gotoIsolatedTasks(page, workspaceId);
+
+    const { name, labelName } = await createTaskWithLabel(page, projectName);
+
+    await page.getByRole("tab", { name: "Kanban" }).click();
+    const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
+    await card.getByRole("button", { name: "Actions de la tâche" }).click();
+    await page.getByRole("menuitem", { name: "Voir la tâche" }).click();
+    await page.waitForURL(/\/tasks\/[^/]+$/, { timeout: 30_000 });
+
+    await expect(page.getByText("Étiquettes")).toBeVisible();
+    await expect(page.getByText(labelName).first()).toBeVisible();
+  });
+
+  test("le filtre par étiquette ne garde que les tâches concernées", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    const projectName = await createProject(page);
+    await gotoIsolatedTasks(page, workspaceId);
+
+    const withLabel = await createTaskWithLabel(page, projectName);
+    const without = await createTask(page, projectName);
+
+    await expect(page.getByText(without).first()).toBeVisible();
+
+    await page.getByLabel("Filtrer par étiquette").click();
+    await page.getByRole("option").filter({ hasText: withLabel.labelName }).click();
+
+    await expect(page).toHaveURL(/labelId=/);
+    await expect(page.getByText(withLabel.name).first()).toBeVisible();
+    await expect(page.getByText(without)).toHaveCount(0);
   });
 });

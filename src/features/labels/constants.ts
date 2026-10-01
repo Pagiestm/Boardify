@@ -33,3 +33,11 @@ export const LABEL_COLOR_CONFIG: Record<LabelColor, { label: string; dot: string
       badge: "bg-rose-50 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
     },
   };
+
+export const SUGGESTED_LABELS: { name: string; color: LabelColor }[] = [
+  { name: "bug", color: "rose" },
+  { name: "urgent", color: "amber" },
+  { name: "évolution", color: "blue" },
+  { name: "à relire", color: "violet" },
+  { name: "documentation", color: "teal" },
+];

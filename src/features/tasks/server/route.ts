@@ -48,6 +48,7 @@ const app = new Hono()
         assigneeId: z.string().nullish(),
         status: z.nativeEnum(TaskStatus).nullish(),
         search: z.string().nullish(),
+        labelId: z.string().nullish(),
         dueDate: z.string().nullish(),
         priority: z.nativeEnum(TaskPriority).nullish(),
       }),
@@ -57,7 +58,7 @@ const app = new Hono()
       const databases = c.get("databases");
       const user = c.get("user");
 
-      const { workspaceId, projectId, status, search, assigneeId, dueDate, priority } =
+      const { workspaceId, projectId, status, search, assigneeId, dueDate, priority, labelId } =
         c.req.valid("query");
 
       const member = await getMember({
@@ -90,6 +91,10 @@ const app = new Hono()
 
       if (priority) {
         query.push(Query.equal("priority", priority));
+      }
+
+      if (labelId) {
+        query.push(Query.contains("labelIds", labelId));
       }
 
       if (search) {
@@ -261,11 +266,23 @@ const app = new Hono()
       email: user.email,
     };
 
+    const labelIds = task.labelIds ?? [];
+    const labels =
+      labelIds.length > 0
+        ? (
+            await databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
+              Query.equal("$id", labelIds),
+              Query.limit(100),
+            ])
+          ).documents
+        : [];
+
     return c.json({
       data: {
         ...task,
         project,
         assignee,
+        labels,
       },
     });
   })
