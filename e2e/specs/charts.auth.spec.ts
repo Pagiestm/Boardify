@@ -1,23 +1,27 @@
 import { test, expect } from "@playwright/test";
 
-import { createProject, createTask, gotoTasks, gotoWorkspace } from "../helpers";
+import {
+  createIsolatedWorkspace,
+  createProject,
+  createTask,
+  gotoIsolatedTasks,
+  gotoWorkspace,
+} from "../helpers";
 
 test.describe("Graphiques du tableau de bord", () => {
-  test("la charge par personne liste les tâches non terminées", async ({ page }) => {
-    await gotoWorkspace(page);
-    await createProject(page);
-    await gotoTasks(page);
-    await createTask(page);
-    await gotoWorkspace(page);
+  test("la charge par personne montre une barre par assigné", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    const projectName = await createProject(page);
+    await gotoIsolatedTasks(page, workspaceId);
+    await createTask(page, projectName);
 
+    await page.goto(`/workspaces/${workspaceId}`);
     const card = page.getByRole("region").filter({ hasText: "Charge par personne" });
-    await expect(card).toBeVisible();
-    await expect(card.getByText("Tâches non terminées")).toBeVisible();
 
-    const rows = card.getByRole("listitem");
-    await expect(rows.first()).toBeVisible();
+    await expect(card).toBeVisible({ timeout: 30_000 });
+    await expect(card.locator("svg .recharts-bar-rectangle")).toHaveCount(1);
   });
-
   test("le graphique reste lisible en thème sombre", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await gotoWorkspace(page);
@@ -29,5 +33,64 @@ test.describe("Graphiques du tableau de bord", () => {
     await gotoWorkspace(page);
 
     await expect(page.getByText("Répartition par statut")).toHaveCount(0);
+  });
+
+  test("les échéances se répartissent par urgence", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    const projectName = await createProject(page);
+    await gotoIsolatedTasks(page, workspaceId);
+    await createTask(page, projectName);
+
+    await page.goto(`/workspaces/${workspaceId}`);
+    const card = page.getByRole("region").filter({ hasText: "Échéances" });
+
+    await expect(card).toBeVisible({ timeout: 30_000 });
+    await expect(card.getByText(/tâches? datées?/)).toBeVisible();
+    await expect(card.locator("svg .recharts-bar-rectangle").first()).toBeVisible();
+    await expect(card.getByText("Auj.")).toBeVisible();
+  });
+
+  test("les tâches se répartissent par projet", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    const projectName = await createProject(page);
+    await gotoIsolatedTasks(page, workspaceId);
+    await createTask(page, projectName);
+
+    await page.goto(`/workspaces/${workspaceId}`);
+    const card = page.getByRole("region").filter({ hasText: "Tâches par projet" });
+
+    await expect(card).toBeVisible({ timeout: 30_000 });
+    await expect(card.getByText("Où se concentre le travail")).toBeVisible();
+    await expect(card.locator("svg .recharts-bar-rectangle")).toHaveCount(1);
+  });
+
+  test("les couleurs d'échéance sont définies au niveau du document", async ({ page }) => {
+    await gotoWorkspace(page);
+
+    const missing = await page.evaluate(() => {
+      const styles = getComputedStyle(document.documentElement);
+      return ["overdue", "today", "week", "later"].filter(
+        (name) => !styles.getPropertyValue(`--color-due-${name}`).trim(),
+      );
+    });
+
+    expect(missing).toEqual([]);
+  });
+
+  test("l'activité trace les tâches créées sur trente jours", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    const projectName = await createProject(page);
+    await gotoIsolatedTasks(page, workspaceId);
+    await createTask(page, projectName);
+
+    await page.goto(`/workspaces/${workspaceId}`);
+    const card = page.getByRole("region").filter({ hasText: "Activité" });
+
+    await expect(card).toBeVisible({ timeout: 30_000 });
+    await expect(card.getByText(/créée.* sur 30 jours/)).toBeVisible();
+    await expect(card.locator("svg .recharts-area-curve")).toBeVisible();
   });
 });
