@@ -1,19 +1,27 @@
 "use client";
 
-import { isPast, isToday, isWithinInterval, addDays, startOfDay } from "date-fns";
-import { AlertTriangleIcon, CalendarClockIcon, CalendarDaysIcon, CalendarIcon } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { addDays, isPast, isToday, isWithinInterval, startOfDay } from "date-fns";
 
 import { PopulatedTask } from "@/features/tasks/types";
 
-import { cn } from "@/lib/utils";
-
 import { ChartCard } from "./chart-card";
+import { ChartTooltip } from "./chart-tooltip";
 
 const BUCKETS = [
-  { id: "overdue", label: "En retard", fill: "var(--color-due-overdue)", icon: AlertTriangleIcon },
-  { id: "today", label: "Aujourd'hui", fill: "var(--color-due-today)", icon: CalendarClockIcon },
-  { id: "week", label: "7 prochains jours", fill: "var(--color-due-week)", icon: CalendarDaysIcon },
-  { id: "later", label: "Plus tard", fill: "var(--color-due-later)", icon: CalendarIcon },
+  { id: "overdue", label: "En retard", short: "Retard", fill: "var(--color-due-overdue)" },
+  { id: "today", label: "Aujourd'hui", short: "Auj.", fill: "var(--color-due-today)" },
+  { id: "week", label: "7 prochains jours", short: "7 j", fill: "var(--color-due-week)" },
+  { id: "later", label: "Plus tard", short: "Plus tard", fill: "var(--color-due-later)" },
 ] as const;
 
 type BucketId = (typeof BUCKETS)[number]["id"];
@@ -41,55 +49,48 @@ export const DueDates = ({ tasks }: DueDatesProps) => {
     counts.set(id, (counts.get(id) ?? 0) + 1);
   }
 
-  const total = dated.length;
-  const segments = BUCKETS.map((bucket) => ({
-    ...bucket,
+  const data = BUCKETS.map((bucket) => ({
+    short: bucket.short,
+    label: bucket.label,
+    fill: bucket.fill,
     count: counts.get(bucket.id) ?? 0,
-  })).filter((segment) => segment.count > 0);
+  }));
 
   return (
     <ChartCard
       title="Échéances"
       description={
-        total > 0 ? `${total} tâche${total > 1 ? "s" : ""} datée${total > 1 ? "s" : ""}` : undefined
+        dated.length > 0
+          ? `${dated.length} tâche${dated.length > 1 ? "s" : ""} datée${dated.length > 1 ? "s" : ""}`
+          : undefined
       }
-      isEmpty={total === 0}
+      isEmpty={dated.length === 0}
       emptyLabel="Aucune échéance pour le moment"
     >
-      <div
-        role="img"
-        aria-label={`Échéances : ${segments.map((s) => `${s.label} ${s.count}`).join(", ")}`}
-        className="flex h-3 w-full gap-0.5 overflow-hidden"
-      >
-        {segments.map((segment) => (
-          <div
-            key={segment.id}
-            title={`${segment.label} : ${segment.count}`}
-            style={{
-              width: `${(segment.count / total) * 100}%`,
-              backgroundColor: segment.fill,
-            }}
-            className="h-full rounded-[2px] transition-[width] duration-300"
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
+          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="short"
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
           />
-        ))}
-      </div>
-
-      <ul className="mt-4 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2">
-        {segments.map((segment) => (
-          <li key={segment.id} className="flex items-center gap-2 text-xs">
-            <segment.icon aria-hidden className="size-3.5 shrink-0 text-muted-foreground" />
-            <span
-              aria-hidden
-              style={{ backgroundColor: segment.fill }}
-              className={cn("size-2 shrink-0 rounded-[2px]")}
-            />
-            <span className="truncate text-muted-foreground">{segment.label}</span>
-            <span className="ml-auto font-medium text-foreground tabular-nums">
-              {segment.count}
-            </span>
-          </li>
-        ))}
-      </ul>
+          <YAxis
+            allowDecimals={false}
+            tickLine={false}
+            axisLine={false}
+            width={44}
+            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+          />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)" }} />
+          <Bar dataKey="count" radius={[4, 4, 0, 0]} maxBarSize={48}>
+            {data.map((entry) => (
+              <Cell key={entry.label} fill={entry.fill} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
     </ChartCard>
   );
 };

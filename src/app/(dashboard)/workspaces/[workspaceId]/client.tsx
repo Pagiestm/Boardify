@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Analytics } from "@/components/analytics";
+import { ActivityChart } from "@/components/charts/activity-chart";
 import { DueDates } from "@/components/charts/due-dates";
 import { TasksByProject } from "@/components/charts/tasks-by-project";
 import { WorkloadBars } from "@/components/charts/workload-bars";
@@ -59,6 +60,7 @@ export const WorkspaceIdClient = () => {
   return (
     <div className="flex h-full flex-col gap-6">
       <Analytics data={analytics} />
+      <ActivityChart tasks={tasks.documents} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <DueDates tasks={tasks.documents} />
         <TasksByProject tasks={tasks.documents} />

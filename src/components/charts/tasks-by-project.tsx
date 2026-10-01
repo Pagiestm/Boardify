@@ -1,10 +1,13 @@
 "use client";
 
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
 import { PopulatedTask } from "@/features/tasks/types";
 
 import { ChartCard } from "./chart-card";
+import { ChartTooltip } from "./chart-tooltip";
 
-const MAX_ROWS = 6;
+const MAX_BARS = 6;
 
 interface TasksByProjectProps {
   tasks: PopulatedTask[];
@@ -19,19 +22,22 @@ export const TasksByProject = ({ tasks }: TasksByProjectProps) => {
   }
 
   const sorted = [...counts.entries()]
-    .map(([name, count]) => ({ name, count }))
+    .map(([label, count]) => ({ label, count }))
     .sort((a, b) => b.count - a.count);
 
-  const rows = sorted.slice(0, MAX_ROWS);
-  const rest = sorted.slice(MAX_ROWS);
+  const data = sorted.slice(0, MAX_BARS);
+  const rest = sorted.slice(MAX_BARS);
   if (rest.length > 0) {
-    rows.push({
-      name: `${rest.length} autre${rest.length > 1 ? "s" : ""}`,
+    data.push({
+      label: `${rest.length} autre${rest.length > 1 ? "s" : ""}`,
       count: rest.reduce((sum, entry) => sum + entry.count, 0),
     });
   }
 
-  const max = Math.max(...rows.map((row) => row.count), 1);
+  const chartData = data.map((entry) => ({
+    ...entry,
+    short: entry.label.length > 12 ? `${entry.label.slice(0, 11)}…` : entry.label,
+  }));
 
   return (
     <ChartCard
@@ -40,25 +46,31 @@ export const TasksByProject = ({ tasks }: TasksByProjectProps) => {
       isEmpty={tasks.length === 0}
       emptyLabel="Aucune tâche pour le moment"
     >
-      <ul className="flex flex-col gap-3">
-        {rows.map((row) => (
-          <li key={row.name} className="grid grid-cols-[7rem_1fr_2rem] items-center gap-3">
-            <span className="truncate text-xs text-muted-foreground" title={row.name}>
-              {row.name}
-            </span>
-            <span className="h-2.5 w-full overflow-hidden rounded-[2px] bg-muted">
-              <span
-                title={`${row.name} : ${row.count}`}
-                style={{ width: `${(row.count / max) * 100}%` }}
-                className="block h-full rounded-[2px] bg-[var(--color-column-teal)] transition-[width] duration-300"
-              />
-            </span>
-            <span className="text-right text-xs font-medium text-foreground tabular-nums">
-              {row.count}
-            </span>
-          </li>
-        ))}
-      </ul>
+      <ResponsiveContainer width="100%" height={180}>
+        <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
+          <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" vertical={false} />
+          <XAxis
+            dataKey="short"
+            tickLine={false}
+            axisLine={false}
+            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+          />
+          <YAxis
+            allowDecimals={false}
+            tickLine={false}
+            axisLine={false}
+            width={44}
+            tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+          />
+          <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)" }} />
+          <Bar
+            dataKey="count"
+            fill="var(--color-column-blue)"
+            radius={[4, 4, 0, 0]}
+            maxBarSize={48}
+          />
+        </BarChart>
+      </ResponsiveContainer>
     </ChartCard>
   );
 };
