@@ -166,8 +166,17 @@ const app = new Hono()
   .post("/", sessionMiddleware, zValidator("json", createtaskSchema), async (c) => {
     const user = c.get("user");
     const databases = c.get("databases");
-    const { name, status, workspaceId, projectId, dueDate, assigneeId, priority, labelIds } =
-      c.req.valid("json");
+    const {
+      name,
+      status,
+      workspaceId,
+      projectId,
+      dueDate,
+      startDate,
+      assigneeId,
+      priority,
+      labelIds,
+    } = c.req.valid("json");
 
     const member = await getMember({
       databases,
@@ -197,6 +206,7 @@ const app = new Hono()
       workspaceId,
       projectId,
       dueDate,
+      startDate,
       assigneeId,
       priority,
       labelIds: labelIds ?? [],

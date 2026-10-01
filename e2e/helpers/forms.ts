@@ -8,11 +8,20 @@ export const selectFirstOption = async (scope: Locator, label: string) => {
 };
 
 export const pickToday = async (scope: Locator) => {
-  await scope.getByRole("button", { name: "Choisir une date" }).click();
-  const grid = scope.page().getByRole("grid");
+  await scope.getByRole("button", { name: "Choisir une période" }).click();
+  const page = scope.page();
+  const grid = page.getByRole("grid").first();
   await expect(grid).toBeVisible();
-  await grid.getByText(String(new Date().getDate()), { exact: true }).first().click();
-  await expect(grid).toBeHidden();
+
+  const today = new Date();
+  const end = new Date(today);
+  end.setDate(today.getDate() + 2);
+
+  await grid.getByText(String(today.getDate()), { exact: true }).first().click();
+  await page.waitForTimeout(400);
+  await page.getByRole("grid").getByText(String(end.getDate()), { exact: true }).first().click();
+
+  await expect(page.getByRole("grid")).toHaveCount(0, { timeout: 10_000 });
 };
 
 export const expectDialogClosed = async (dialog: Locator) =>

@@ -105,6 +105,10 @@
     --color-column-green: #16a34a;
     --color-column-rose: #e11d48;
     --color-column-zinc: #52525b;
+    --color-due-overdue: #e11d48;
+    --color-due-today: #d97706;
+    --color-due-week: #2563eb;
+    --color-due-later: #0d9488;
   }
   * {
     @apply border-border outline-ring/50;

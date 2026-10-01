@@ -40,8 +40,15 @@ export const EditTaskForm = ({
   const form = useForm<z.input<typeof taskFormSchema>, unknown, z.output<typeof taskFormSchema>>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: {
-      ...initialValues,
+      name: initialValues.name,
+      status: initialValues.status,
+      projectId: initialValues.projectId,
+      assigneeId: initialValues.assigneeId,
+      priority: initialValues.priority,
+      description: initialValues.description ?? undefined,
+      labelIds: initialValues.labelIds ?? [],
       dueDate: initialValues.dueDate ? new Date(initialValues.dueDate) : undefined,
+      startDate: new Date(initialValues.startDate ?? initialValues.dueDate),
     },
   });
 

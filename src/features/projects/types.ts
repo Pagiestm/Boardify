@@ -16,4 +16,5 @@ export interface BoardColumn {
   label: string;
   color: ColumnColor;
   hidden: boolean;
+  done: boolean;
 }

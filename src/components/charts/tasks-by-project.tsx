@@ -3,23 +3,21 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { PopulatedTask } from "@/features/tasks/types";
-import { isTaskDone } from "@/features/tasks/utils";
 
 import { ChartCard } from "./chart-card";
 import { ChartTooltip } from "./chart-tooltip";
 
 const MAX_BARS = 6;
 
-interface WorkloadBarsProps {
+interface TasksByProjectProps {
   tasks: PopulatedTask[];
 }
 
-export const WorkloadBars = ({ tasks }: WorkloadBarsProps) => {
-  const open = tasks.filter((task) => !isTaskDone(task));
+export const TasksByProject = ({ tasks }: TasksByProjectProps) => {
   const counts = new Map<string, number>();
 
-  for (const task of open) {
-    const name = task.assignee?.name ?? task.assignee?.email ?? "Non assignée";
+  for (const task of tasks) {
+    const name = task.project?.name ?? "Sans projet";
     counts.set(name, (counts.get(name) ?? 0) + 1);
   }
 
@@ -43,10 +41,10 @@ export const WorkloadBars = ({ tasks }: WorkloadBarsProps) => {
 
   return (
     <ChartCard
-      title="Charge par personne"
-      description={open.length > 0 ? "Tâches non terminées" : undefined}
-      isEmpty={open.length === 0}
-      emptyLabel="Aucune tâche en cours"
+      title="Tâches par projet"
+      description={tasks.length > 0 ? "Où se concentre le travail" : undefined}
+      isEmpty={tasks.length === 0}
+      emptyLabel="Aucune tâche pour le moment"
     >
       <ResponsiveContainer width="100%" height={180}>
         <BarChart data={chartData} margin={{ top: 4, right: 4, bottom: 0, left: -24 }}>
@@ -67,7 +65,7 @@ export const WorkloadBars = ({ tasks }: WorkloadBarsProps) => {
           <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)" }} />
           <Bar
             dataKey="count"
-            fill="var(--color-column-violet)"
+            fill="var(--color-column-blue)"
             radius={[4, 4, 0, 0]}
             maxBarSize={48}
           />

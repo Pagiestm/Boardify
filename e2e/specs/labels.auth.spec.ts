@@ -63,12 +63,12 @@ test.describe("Étiquettes", () => {
     page,
     request,
   }) => {
-    await gotoWorkspace(page);
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
     const projectName = await createProject(page);
-    await gotoTasks(page);
+    await gotoIsolatedTasks(page, workspaceId);
 
     const { name, labelName } = await createTaskWithLabel(page, projectName);
-    const workspaceId = workspaceIdFromUrl(page);
 
     const labels = await (await request.get(`/api/labels?workspaceId=${workspaceId}`)).json();
     const label = labels.data.documents.find((item: { name: string }) => item.name === labelName);

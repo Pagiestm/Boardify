@@ -86,6 +86,7 @@ export const DataKanban = ({ data, columns, onColumnsChange, onChange }: DataKan
         label: "Nouveau statut",
         color: "zinc",
         hidden: false,
+        done: false,
       },
     ]);
   };
@@ -113,6 +114,7 @@ export const DataKanban = ({ data, columns, onColumnsChange, onChange }: DataKan
       onRename: (label) => patchColumn(column.id, { label }),
       onRecolor: (color) => patchColumn(column.id, { color }),
       onHide: () => patchColumn(column.id, { hidden: true }),
+      onToggleDone: () => patchColumn(column.id, { done: !column.done }),
       onDelete: () => setColumnToDelete(column),
       onMove: (direction) => moveColumn(column.id, direction),
       canMoveLeft: index > 0,

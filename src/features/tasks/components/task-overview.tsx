@@ -14,7 +14,8 @@ import { LabelBadge } from "@/features/labels/components/label-badge";
 import { OverviewProperty } from "./overview-property";
 import { TaskStatusBadge } from "./task-status-badge";
 
-import { PopulatedTask, TaskStatus } from "../types";
+import { PopulatedTask } from "../types";
+import { isTaskDone } from "../utils";
 import { TASK_PRIORITY_CONFIG } from "../constants";
 import { useEditTaskModal } from "../hooks/use-edit-task-modal";
 import { isTypingTarget } from "./task-view-switcher";
@@ -74,12 +75,7 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
             )}
           </OverviewProperty>
           <OverviewProperty label="Échéance">
-            <TaskDate
-              value={task.dueDate}
-              variant="full"
-              showIcon
-              muted={task.status === TaskStatus.DONE}
-            />
+            <TaskDate value={task.dueDate} variant="full" showIcon muted={isTaskDone(task)} />
           </OverviewProperty>
           <OverviewProperty label="Statut">
             <TaskStatusBadge status={task.status} column={task.statusColumn} />

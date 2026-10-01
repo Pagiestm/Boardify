@@ -297,8 +297,23 @@ test.describe("Colonnes du tableau", () => {
     await page.getByLabel("Filtrer par statut").click();
     await page.getByRole("option").filter({ hasText: "Nouveau statut" }).click();
 
-    await expect(page).toHaveURL(/columnId=col_/);
+    await expect(page).toHaveURL(/status=col_/);
     await expect(page.getByText(customTask).first()).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(backlogTask)).toHaveCount(0);
+  });
+  test("on marque une colonne comme statut final et cela persiste", async ({ page, request }) => {
+    const { projectUrl } = await openProject(page, request);
+    await gotoKanban(page, projectUrl);
+
+    await page.getByRole("button", { name: "Personnaliser le statut Backlog" }).click();
+    await page.getByRole("menuitem", { name: "Marquer comme statut final" }).click();
+
+    await expect(page.getByText("Colonnes mises à jour")).toBeVisible({ timeout: 30_000 });
+
+    await page.reload();
+    await expect(page.getByLabel("Statut final")).toHaveCount(2, { timeout: 30_000 });
+
+    await page.getByRole("button", { name: "Personnaliser le statut Backlog" }).click();
+    await expect(page.getByRole("menuitem", { name: "Ne plus clôturer ici" })).toBeVisible();
   });
 });

@@ -11,7 +11,8 @@ import { LabelBadge } from "@/features/labels/components/label-badge";
 
 import { TaskActions } from "./task-actions";
 
-import { PopulatedTask, TaskStatus } from "../types";
+import { PopulatedTask } from "../types";
+import { isTaskDone } from "../utils";
 import { TASK_PRIORITY_CONFIG } from "../constants";
 
 interface KanbanCardProps {
@@ -20,7 +21,7 @@ interface KanbanCardProps {
 }
 
 export const KanbanCard = ({ task, isDragging }: KanbanCardProps) => {
-  const isDone = task.status === TaskStatus.DONE;
+  const isDone = isTaskDone(task);
 
   return (
     <div

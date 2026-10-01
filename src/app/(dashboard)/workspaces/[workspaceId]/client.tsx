@@ -12,7 +12,8 @@ import {
   UsersIcon,
 } from "lucide-react";
 
-import { PopulatedTask, TaskStatus } from "@/features/tasks/types";
+import { PopulatedTask } from "@/features/tasks/types";
+import { isTaskDone } from "@/features/tasks/utils";
 import { Member, MemberRole } from "@/features/members/types";
 import { Project } from "@/features/projects/types";
 import { useGetTasks } from "@/features/tasks/api/use-get-tasks";
@@ -30,6 +31,9 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Analytics } from "@/components/analytics";
+import { ActivityChart } from "@/components/charts/activity-chart";
+import { DueDates } from "@/components/charts/due-dates";
+import { TasksByProject } from "@/components/charts/tasks-by-project";
 import { WorkloadBars } from "@/components/charts/workload-bars";
 import { PageError } from "@/components/page-error";
 import { PageLoader } from "@/components/page-loader";
@@ -57,7 +61,12 @@ export const WorkspaceIdClient = () => {
   return (
     <div className="flex h-full flex-col gap-6">
       <Analytics data={analytics} />
-      <WorkloadBars tasks={tasks.documents} />
+      <ActivityChart tasks={tasks.documents} />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <DueDates tasks={tasks.documents} />
+        <TasksByProject tasks={tasks.documents} />
+        <WorkloadBars tasks={tasks.documents} />
+      </div>
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
         <TaskList
           data={tasks.documents}
@@ -157,11 +166,7 @@ export const TaskList = ({ data, total, className }: TaskListProps) => {
           <ul className="divide-y">
             {data.slice(0, 8).map((task) => {
               const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-              const isLate =
-                !!dueDate &&
-                task.status !== TaskStatus.DONE &&
-                isPast(dueDate) &&
-                !isToday(dueDate);
+              const isLate = !!dueDate && !isTaskDone(task) && isPast(dueDate) && !isToday(dueDate);
 
               return (
                 <li key={task.$id}>
