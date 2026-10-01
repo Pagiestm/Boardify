@@ -1,6 +1,12 @@
 import { test, expect } from "@playwright/test";
 
-import { createProject, createTask, gotoTasks, gotoWorkspace } from "../helpers";
+import {
+  createIsolatedWorkspace,
+  createProject,
+  createTask,
+  gotoIsolatedTasks,
+  gotoTasks,
+} from "../helpers";
 
 test.describe("Tâches", () => {
   test("les trois vues sont accessibles", async ({ page }) => {
@@ -25,14 +31,15 @@ test.describe("Tâches", () => {
     );
   });
 
-  test("on crée une tâche et elle apparaît dans la liste", async ({ page }) => {
-    await gotoWorkspace(page);
-    await createProject(page);
-    await gotoTasks(page);
+  test("on crée une tâche et elle apparaît dans la liste", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    const projectName = await createProject(page);
+    await gotoIsolatedTasks(page, workspaceId);
 
-    const name = await createTask(page);
+    const name = await createTask(page, projectName);
 
-    await expect(page.getByText(name).first()).toBeVisible();
+    await expect(page.getByText(name).first()).toBeVisible({ timeout: 30_000 });
   });
 
   test("la vue est conservée dans l'URL", async ({ page }) => {

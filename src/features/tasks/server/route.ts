@@ -4,12 +4,13 @@ import { ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { getMember } from "@/features/members/utils";
+import { Label } from "@/features/labels/types";
 import { Member } from "@/features/members/types";
 import { Project } from "@/features/projects/types";
 
 import { createAdminClient } from "@/lib/appwrite";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from "@/config";
+import { DATABASE_ID, LABELS_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from "@/config";
 
 import { Task, TaskStatus, TaskPriority } from "../types";
 import { createtaskSchema } from "../schemas";
@@ -47,6 +48,7 @@ const app = new Hono()
         assigneeId: z.string().nullish(),
         status: z.nativeEnum(TaskStatus).nullish(),
         search: z.string().nullish(),
+        labelId: z.string().nullish(),
         dueDate: z.string().nullish(),
         priority: z.nativeEnum(TaskPriority).nullish(),
       }),
@@ -56,7 +58,7 @@ const app = new Hono()
       const databases = c.get("databases");
       const user = c.get("user");
 
-      const { workspaceId, projectId, status, search, assigneeId, dueDate, priority } =
+      const { workspaceId, projectId, status, search, assigneeId, dueDate, priority, labelId } =
         c.req.valid("query");
 
       const member = await getMember({
@@ -89,6 +91,10 @@ const app = new Hono()
 
       if (priority) {
         query.push(Query.equal("priority", priority));
+      }
+
+      if (labelId) {
+        query.push(Query.contains("labelIds", labelId));
       }
 
       if (search) {
@@ -124,14 +130,23 @@ const app = new Hono()
         }),
       );
 
+      const workspaceLabels = await databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
+        Query.equal("workspaceId", workspaceId),
+        Query.limit(100),
+      ]);
+
       const populatedTasks = tasks.documents.map((task) => {
         const project = projects.documents.find((project) => project.$id === task.projectId);
         const assignee = assignees.find((assignee) => assignee.$id === task.assigneeId);
+        const labels = (task.labelIds ?? [])
+          .map((labelId) => workspaceLabels.documents.find((label) => label.$id === labelId))
+          .filter((label): label is Label => Boolean(label));
 
         return {
           ...task,
           project,
           assignee,
+          labels,
         };
       });
 
@@ -146,7 +161,7 @@ const app = new Hono()
   .post("/", sessionMiddleware, zValidator("json", createtaskSchema), async (c) => {
     const user = c.get("user");
     const databases = c.get("databases");
-    const { name, status, workspaceId, projectId, dueDate, assigneeId, priority } =
+    const { name, status, workspaceId, projectId, dueDate, assigneeId, priority, labelIds } =
       c.req.valid("json");
 
     const member = await getMember({
@@ -179,6 +194,7 @@ const app = new Hono()
       dueDate,
       assigneeId,
       priority,
+      labelIds: labelIds ?? [],
       position: newPosition,
     });
 
@@ -250,11 +266,23 @@ const app = new Hono()
       email: user.email,
     };
 
+    const labelIds = task.labelIds ?? [];
+    const labels =
+      labelIds.length > 0
+        ? (
+            await databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
+              Query.equal("$id", labelIds),
+              Query.limit(100),
+            ])
+          ).documents
+        : [];
+
     return c.json({
       data: {
         ...task,
         project,
         assignee,
+        labels,
       },
     });
   })

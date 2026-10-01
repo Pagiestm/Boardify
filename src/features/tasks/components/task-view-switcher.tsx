@@ -84,7 +84,7 @@ export const isTypingTarget = (target: EventTarget | null) => {
 };
 
 export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) => {
-  const [{ status, assigneeId, projectId, dueDate }] = useTaskFilters();
+  const [{ status, assigneeId, projectId, dueDate, labelId }] = useTaskFilters();
 
   const [view, setView] = useQueryState("task-view", {
     defaultValue: "table",
@@ -102,6 +102,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter }: TaskViewSwitcherProps) =
     assigneeId,
     status,
     dueDate,
+    labelId,
   });
 
   useEffect(() => {

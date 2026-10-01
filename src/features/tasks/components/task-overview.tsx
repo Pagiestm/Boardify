@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { TaskDate } from "./task-date";
+import { LabelBadge } from "@/features/labels/components/label-badge";
+
 import { OverviewProperty } from "./overview-property";
 
 import { PopulatedTask, TaskStatus } from "../types";
@@ -107,6 +109,17 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
                 />
                 <span className="truncate">{task.project.name}</span>
               </>
+            ) : (
+              <Empty />
+            )}
+          </OverviewProperty>
+          <OverviewProperty label="Étiquettes">
+            {task.labels && task.labels.length > 0 ? (
+              <span className="flex flex-wrap gap-1">
+                {task.labels.map((label) => (
+                  <LabelBadge key={label.$id} label={label} />
+                ))}
+              </span>
             ) : (
               <Empty />
             )}

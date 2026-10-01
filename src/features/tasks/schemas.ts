@@ -12,6 +12,7 @@ export const createtaskSchema = z.object({
   assigneeId: z.string({ error: "Requis" }).trim().min(1, "Requis"),
   priority: z.nativeEnum(TaskPriority, { error: "Requis" }),
   description: z.string().optional(),
+  labelIds: z.array(z.string()).optional(),
 });
 
 export const taskFormSchema = createtaskSchema.omit({ workspaceId: true });
