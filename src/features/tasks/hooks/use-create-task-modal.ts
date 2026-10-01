@@ -1,4 +1,4 @@
-import { useQueryState, parseAsBoolean } from "nuqs";
+import { useQueryState, useQueryStates, parseAsBoolean, parseAsString } from "nuqs";
 
 export const useCreateTaskModal = () => {
   const [isOpen, setIsOpen] = useQueryState(
@@ -6,11 +6,23 @@ export const useCreateTaskModal = () => {
     parseAsBoolean.withDefault(false).withOptions({ clearOnDefault: true }),
   );
 
-  const open = () => setIsOpen(true);
-  const close = () => setIsOpen(false);
+  const [{ "create-task-column": columnId }, setColumn] = useQueryStates({
+    "create-task-column": parseAsString,
+  });
+
+  const open = (targetColumnId?: string) => {
+    setColumn({ "create-task-column": targetColumnId ?? null });
+    setIsOpen(true);
+  };
+
+  const close = () => {
+    setColumn({ "create-task-column": null });
+    setIsOpen(false);
+  };
 
   return {
     isOpen,
+    columnId,
     open,
     close,
     setIsOpen,

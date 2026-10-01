@@ -51,7 +51,7 @@ export const WorkloadBars = ({ tasks }: WorkloadBarsProps) => {
               <span
                 title={`${row.name} : ${row.count}`}
                 style={{ width: `${(row.count / max) * 100}%` }}
-                className="block h-full rounded-[2px] bg-[var(--color-chart-todo)] transition-[width] duration-300"
+                className="block h-full rounded-[2px] bg-[var(--color-column-blue)] transition-[width] duration-300"
               />
             </span>
             <span className="text-right text-xs font-medium text-foreground tabular-nums">

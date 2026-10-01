@@ -112,7 +112,7 @@ const views = [
     value: "kanban",
     label: "Kanban",
     icon: KanbanSquareIcon,
-    description: "Faites glisser les tâches d'une colonne à l'autre pour changer leur statut.",
+    description: "Faites glisser les tâches d'un statut à l'autre pour les faire avancer.",
   },
   {
     value: "table",

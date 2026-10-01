@@ -22,3 +22,7 @@ export const updateProjectSchema = z.object({
     ])
     .optional(),
 });
+
+export const updateBoardColumnsSchema = z.object({
+  columnConfig: z.string().min(2).max(4000),
+});

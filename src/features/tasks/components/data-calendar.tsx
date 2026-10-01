@@ -79,6 +79,7 @@ export const DataCalendar = ({ data }: DataCalendarProps) => {
     project: task.project,
     assignee: task.assignee,
     status: task.status,
+    statusColumn: task.statusColumn,
     id: task.$id,
   }));
 
@@ -123,6 +124,7 @@ export const DataCalendar = ({ data }: DataCalendarProps) => {
                 assignee={event.assignee}
                 project={event.project}
                 status={event.status}
+                statusColumn={event.statusColumn}
               />
             ),
             toolbar: () => <CustomToolbar date={value} onNavigate={handleNavigate} />,

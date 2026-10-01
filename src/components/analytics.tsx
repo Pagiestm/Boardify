@@ -1,10 +1,4 @@
-import {
-  AlertCircleIcon,
-  CheckCircle2Icon,
-  CircleDotIcon,
-  ListTodoIcon,
-  UserCheckIcon,
-} from "lucide-react";
+import { ListTodoIcon, UserCheckIcon } from "lucide-react";
 
 import { ProjectAnalyticsResponseType } from "@/features/projects/api/use-get-project-analytics";
 
@@ -27,28 +21,6 @@ export const Analytics = ({ data }: ProjectAnalyticsResponseType) => {
           value={data.assignedTaskCount}
           variant={data.assignedTaskDifference > 0 ? "up" : "down"}
           increaseValue={data.assignedTaskDifference}
-        />
-        <AnalyticsCard
-          title="Terminées"
-          icon={CheckCircle2Icon}
-          value={data.completedTaskCount}
-          variant={data.completedTaskDifference > 0 ? "up" : "down"}
-          increaseValue={data.completedTaskDifference}
-        />
-        <AnalyticsCard
-          title="En retard"
-          icon={AlertCircleIcon}
-          inverse
-          value={data.overdueTaskCount}
-          variant={data.overdueTaskDifference > 0 ? "up" : "down"}
-          increaseValue={data.overdueTaskDifference}
-        />
-        <AnalyticsCard
-          title="En cours"
-          icon={CircleDotIcon}
-          value={data.incompleteTaskCount}
-          variant={data.incompleteTaskDifference > 0 ? "up" : "down"}
-          increaseValue={data.incompleteTaskDifference}
         />
       </div>
     </div>

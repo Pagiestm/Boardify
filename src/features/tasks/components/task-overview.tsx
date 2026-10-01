@@ -12,9 +12,10 @@ import { TaskDate } from "./task-date";
 import { LabelBadge } from "@/features/labels/components/label-badge";
 
 import { OverviewProperty } from "./overview-property";
+import { TaskStatusBadge } from "./task-status-badge";
 
 import { PopulatedTask, TaskStatus } from "../types";
-import { TASK_PRIORITY_CONFIG, TASK_STATUS_CONFIG } from "../constants";
+import { TASK_PRIORITY_CONFIG } from "../constants";
 import { useEditTaskModal } from "../hooks/use-edit-task-modal";
 import { isTypingTarget } from "./task-view-switcher";
 
@@ -45,7 +46,6 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open, task.$id]);
 
-  const status = TASK_STATUS_CONFIG[task.status];
   const priority = task.priority ? TASK_PRIORITY_CONFIG[task.priority] : undefined;
 
   return (
@@ -82,13 +82,7 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
             />
           </OverviewProperty>
           <OverviewProperty label="Statut">
-            {status ? (
-              <Badge variant={task.status} dot>
-                {status.label}
-              </Badge>
-            ) : (
-              <Empty />
-            )}
+            <TaskStatusBadge status={task.status} column={task.statusColumn} />
           </OverviewProperty>
           <OverviewProperty label="Priorité">
             {priority && task.priority ? (
