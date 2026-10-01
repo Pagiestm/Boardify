@@ -1,7 +1,7 @@
 "use client";
 
 import { z } from "zod";
-import { Control } from "react-hook-form";
+import { Control, useFormContext, useWatch } from "react-hook-form";
 
 import { MemberAvatar } from "@/features/members/components/member-avatar";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
@@ -12,7 +12,7 @@ import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/date-picker";
+import { DateRangePicker } from "@/components/date-range-picker";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import {
   Select,
@@ -57,6 +57,8 @@ export const TaskFormFields = ({
   hideProjectField,
 }: TaskFormFieldsProps) => {
   const workspaceId = useWorkspaceId();
+  const { setValue } = useFormContext<z.input<typeof taskFormSchema>>();
+  const startDate = useWatch({ control, name: "startDate" });
 
   return (
     <div className="grid gap-5 px-6 pb-6 sm:grid-cols-2">
@@ -183,12 +185,16 @@ export const TaskFormFields = ({
         control={control}
         name="dueDate"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel>Date d&apos;échéance</FormLabel>
+          <FormItem className="sm:col-span-2">
+            <FormLabel>Période</FormLabel>
             <FormControl>
-              <DatePicker
-                value={field.value ? new Date(field.value) : undefined}
-                onChange={(date) => field.onChange(date || "")}
+              <DateRangePicker
+                from={startDate ? new Date(startDate as string) : undefined}
+                to={field.value ? new Date(field.value as string) : undefined}
+                onChange={(range) => {
+                  setValue("startDate", range.from ?? "", { shouldValidate: true });
+                  field.onChange(range.to ?? "");
+                }}
               />
             </FormControl>
             <FormMessage />

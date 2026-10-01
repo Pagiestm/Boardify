@@ -9,10 +9,18 @@ export const createtaskSchema = z.object({
   dueDate: z.coerce
     .date<Date | string>({ error: "Requis" })
     .refine((date) => !isNaN(date.getTime()), { message: "Date invalide" }),
+  startDate: z.coerce
+    .date<Date | string>({ error: "Requis" })
+    .refine((date) => !isNaN(date.getTime()), { message: "Date invalide" }),
   assigneeId: z.string({ error: "Requis" }).trim().min(1, "Requis"),
   priority: z.nativeEnum(TaskPriority, { error: "Requis" }),
   description: z.string().optional(),
   labelIds: z.array(z.string()).optional(),
 });
 
-export const taskFormSchema = createtaskSchema.omit({ workspaceId: true });
+export const taskFormSchema = createtaskSchema
+  .omit({ workspaceId: true })
+  .refine((values) => values.startDate <= values.dueDate, {
+    message: "Le début doit précéder l'échéance",
+    path: ["startDate"],
+  });
