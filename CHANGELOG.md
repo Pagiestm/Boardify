@@ -1,3 +1,17 @@
+## [1.4.0](https://github.com/Pagiestm/Boardify/compare/v1.3.0...v1.4.0) (2026-10-01)
+
+### Features
+
+* **dashboard:** ajoute les échéances et la répartition par projet ([3472f41](https://github.com/Pagiestm/Boardify/commit/3472f41e09e923b6ea30dc3ff828a38bb28b54da))
+* **dashboard:** des graphiques lisibles pour l'espace de travail ([01de1ae](https://github.com/Pagiestm/Boardify/commit/01de1aec6c5dca9a8200867caadbdb194fdfc58e))
+* **projects:** permet de désigner les statuts finaux d'un tableau ([80372f3](https://github.com/Pagiestm/Boardify/commit/80372f35bf1ac4d0acae1d3908f57f7f5b840eb1))
+* **tasks:** ajoute la vue frise ([ee2cd45](https://github.com/Pagiestm/Boardify/commit/ee2cd45156673ba3daa545461ae16738a292d93d))
+* **tasks:** remplace les deux dates par un seul sélecteur de période ([418fe8f](https://github.com/Pagiestm/Boardify/commit/418fe8fb67d117858241d80a4e4070c31c956805))
+
+### Bug Fixes
+
+* **tasks:** répare l'enregistrement d'une tâche existante ([5813877](https://github.com/Pagiestm/Boardify/commit/58138770c352263c94f824af6f7622131d32e0f9))
+
 ## [1.3.0](https://github.com/Pagiestm/Boardify/compare/v1.2.0...v1.3.0) (2026-10-01)
 
 ### Features
