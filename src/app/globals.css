@@ -96,15 +96,16 @@
   --sidebar-border: oklch(1 0 0 / 8%);
 }
 
-@theme inline {
-  --color-chart-backlog: #0d9488;
-  --color-chart-todo: #2563eb;
-  --color-chart-in-progress: #d97706;
-  --color-chart-in-review: #7c3aed;
-  --color-chart-done: #16a34a;
-}
-
 @layer base {
+  :root {
+    --color-column-teal: #0d9488;
+    --color-column-blue: #2563eb;
+    --color-column-amber: #d97706;
+    --color-column-violet: #7c3aed;
+    --color-column-green: #16a34a;
+    --color-column-rose: #e11d48;
+    --color-column-zinc: #52525b;
+  }
   * {
     @apply border-border outline-ring/50;
   }

@@ -9,8 +9,21 @@ import {
 } from "../helpers";
 
 test.describe("Tâches", () => {
-  test("les trois vues sont accessibles", async ({ page }) => {
+  test("l'espace propose le tableau et le calendrier, sans kanban", async ({ page }) => {
     await gotoTasks(page);
+
+    for (const view of ["Tableau", "Calendrier"]) {
+      await page.getByRole("tab", { name: view }).click();
+      await expect(page.getByRole("tab", { name: view })).toHaveAttribute("data-state", "active");
+    }
+
+    await expect(page.getByRole("tab", { name: "Kanban" })).toHaveCount(0);
+  });
+
+  test("un projet propose les trois vues", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    await createProject(page);
 
     for (const view of ["Tableau", "Kanban", "Calendrier"]) {
       await page.getByRole("tab", { name: view }).click();
@@ -21,8 +34,11 @@ test.describe("Tâches", () => {
   test("les vues changent aussi au clavier", async ({ page }) => {
     await gotoTasks(page);
 
-    await page.keyboard.press("2");
-    await expect(page.getByRole("tab", { name: "Kanban" })).toHaveAttribute("data-state", "active");
+    await page.keyboard.press("3");
+    await expect(page.getByRole("tab", { name: "Calendrier" })).toHaveAttribute(
+      "data-state",
+      "active",
+    );
 
     await page.keyboard.press("1");
     await expect(page.getByRole("tab", { name: "Tableau" })).toHaveAttribute(
@@ -45,10 +61,13 @@ test.describe("Tâches", () => {
   test("la vue est conservée dans l'URL", async ({ page }) => {
     await gotoTasks(page);
 
-    await page.getByRole("tab", { name: "Kanban" }).click();
-    await expect(page).toHaveURL(/task-view=kanban/);
+    await page.getByRole("tab", { name: "Calendrier" }).click();
+    await expect(page).toHaveURL(/task-view=calendar/);
 
     await page.reload();
-    await expect(page.getByRole("tab", { name: "Kanban" })).toHaveAttribute("data-state", "active");
+    await expect(page.getByRole("tab", { name: "Calendrier" })).toHaveAttribute(
+      "data-state",
+      "active",
+    );
   });
 });

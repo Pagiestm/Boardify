@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { TaskStatus, TaskPriority } from "./types";
+import { TaskPriority } from "./types";
 
 export const createtaskSchema = z.object({
   name: z.string().trim().min(1, "Requis"),
-  status: z.nativeEnum(TaskStatus, { error: "Requis" }),
+  status: z.string().trim().min(1, "Requis").max(50),
   workspaceId: z.string().trim().min(1, "Requis"),
   projectId: z.string().trim().min(1, "Requis"),
   dueDate: z.coerce

@@ -13,6 +13,6 @@ export const createIsolatedWorkspace = async (request: APIRequestContext) => {
 
 export const gotoIsolatedTasks = async (page: Page, workspaceId: string) => {
   await page.goto(`/workspaces/${workspaceId}/tasks`);
-  await expect(page.getByRole("tab", { name: "Kanban" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Tableau" })).toBeVisible();
   await page.waitForLoadState("networkidle");
 };

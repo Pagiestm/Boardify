@@ -4,6 +4,7 @@ import {
   createProject,
   createTask,
   createTaskWithLabel,
+  gotoProjectKanban,
   gotoTasks,
   gotoWorkspace,
   createIsolatedWorkspace,
@@ -17,11 +18,12 @@ test.describe("Étiquettes", () => {
   test("une étiquette créée s'applique à la tâche et s'affiche sur sa carte", async ({ page }) => {
     await gotoWorkspace(page);
     const projectName = await createProject(page);
+    const projectUrl = page.url();
     await gotoTasks(page);
 
     const { name, labelName } = await createTaskWithLabel(page, projectName);
 
-    await page.getByRole("tab", { name: "Kanban" }).click();
+    await gotoProjectKanban(page, projectUrl);
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
     await expect(card).toBeVisible();
     await expect(card.getByText(labelName)).toBeVisible();
@@ -100,11 +102,12 @@ test.describe("Étiquettes", () => {
     const workspaceId = await createIsolatedWorkspace(request);
     await page.goto(`/workspaces/${workspaceId}`);
     const projectName = await createProject(page);
+    const projectUrl = page.url();
     await gotoIsolatedTasks(page, workspaceId);
 
     const { name, labelName } = await createTaskWithLabel(page, projectName);
 
-    await page.getByRole("tab", { name: "Kanban" }).click();
+    await gotoProjectKanban(page, projectUrl);
     const card = page.locator("[data-rfd-drag-handle-draggable-id]").filter({ hasText: name });
     await card.getByRole("button", { name: "Actions de la tâche" }).click();
     await page.getByRole("menuitem", { name: "Voir la tâche" }).click();

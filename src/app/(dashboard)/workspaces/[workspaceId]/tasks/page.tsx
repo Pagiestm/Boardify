@@ -16,7 +16,7 @@ const TasksPage = async () => {
 
   return (
     <div className="flex h-full flex-col">
-      <TaskViewSwitcher />
+      <TaskViewSwitcher hideKanban />
     </div>
   );
 };

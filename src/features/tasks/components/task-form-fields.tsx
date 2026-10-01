@@ -5,6 +5,8 @@ import { Control } from "react-hook-form";
 
 import { MemberAvatar } from "@/features/members/components/member-avatar";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
+import { BoardColumn } from "@/features/projects/types";
+import { COLUMN_COLOR_CONFIG } from "@/features/projects/constants";
 import { LabelPicker } from "@/features/labels/components/label-picker";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
@@ -37,6 +39,8 @@ export interface TaskFormOptions {
 
 interface TaskFormFieldsProps extends TaskFormOptions {
   control: TaskFormControl;
+  boardColumns?: BoardColumn[];
+  hideProjectField?: boolean;
 }
 
 const PRIORITY_ORDER = [TaskPriority.HIGH, TaskPriority.MEDIUM, TaskPriority.LOW];
@@ -45,7 +49,13 @@ const Dot = ({ className }: { className: string }) => (
   <span aria-hidden className={cn("size-2 shrink-0 rounded-full", className)} />
 );
 
-export const TaskFormFields = ({ control, projectOptions, memberOptions }: TaskFormFieldsProps) => {
+export const TaskFormFields = ({
+  control,
+  projectOptions,
+  memberOptions,
+  boardColumns,
+  hideProjectField,
+}: TaskFormFieldsProps) => {
   const workspaceId = useWorkspaceId();
 
   return (
@@ -63,31 +73,62 @@ export const TaskFormFields = ({ control, projectOptions, memberOptions }: TaskF
           </FormItem>
         )}
       />
-      <FormField
-        control={control}
-        name="status"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Statut</FormLabel>
-            <Select defaultValue={field.value} onValueChange={field.onChange}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choisir un statut" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {TASK_STATUS_ORDER.map((status) => (
-                  <SelectItem key={status} value={status}>
-                    <Dot className={TASK_STATUS_CONFIG[status].dot} />
-                    {TASK_STATUS_CONFIG[status].label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {boardColumns ? (
+        <FormField
+          control={control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Statut</FormLabel>
+              <Select
+                value={typeof field.value === "string" ? field.value : undefined}
+                onValueChange={field.onChange}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choisir un statut" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {boardColumns.map((column) => (
+                    <SelectItem key={column.id} value={column.id}>
+                      <Dot className={COLUMN_COLOR_CONFIG[column.color].dot} />
+                      {column.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      ) : (
+        <FormField
+          control={control}
+          name="status"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Statut</FormLabel>
+              <Select defaultValue={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choisir un statut" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {TASK_STATUS_ORDER.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      <Dot className={TASK_STATUS_CONFIG[status].dot} />
+                      {TASK_STATUS_CONFIG[status].label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
       <FormField
         control={control}
         name="priority"
@@ -154,35 +195,37 @@ export const TaskFormFields = ({ control, projectOptions, memberOptions }: TaskF
           </FormItem>
         )}
       />
-      <FormField
-        control={control}
-        name="projectId"
-        render={({ field }) => (
-          <FormItem className="sm:col-span-2">
-            <FormLabel>Projet</FormLabel>
-            <Select defaultValue={field.value} onValueChange={field.onChange}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choisir un projet" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {projectOptions.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    <ProjectAvatar
-                      className="size-5"
-                      name={project.name}
-                      image={project.imageUrl}
-                    />
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {hideProjectField ? null : (
+        <FormField
+          control={control}
+          name="projectId"
+          render={({ field }) => (
+            <FormItem className="sm:col-span-2">
+              <FormLabel>Projet</FormLabel>
+              <Select defaultValue={field.value} onValueChange={field.onChange}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choisir un projet" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {projectOptions.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      <ProjectAvatar
+                        className="size-5"
+                        name={project.name}
+                        image={project.imageUrl}
+                      />
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      )}
       <FormField
         control={control}
         name="labelIds"

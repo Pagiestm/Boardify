@@ -34,7 +34,7 @@ export const useHotkeys = (bindings: HotkeyMap, enabled = true) => {
     };
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || event.isComposing) return;
+      if (event.defaultPrevented || event.isComposing || typeof event.key !== "string") return;
 
       const map = bindingsRef.current;
       const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;

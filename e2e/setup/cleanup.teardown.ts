@@ -2,6 +2,8 @@ import { test as teardown } from "@playwright/test";
 
 import { cleanupTestData } from "../helpers/cleanup";
 
+teardown.setTimeout(180_000);
+
 teardown("nettoyage des données de test", async ({ request }) => {
   const removed = await cleanupTestData(request);
   console.log(

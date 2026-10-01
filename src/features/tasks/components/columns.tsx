@@ -12,10 +12,11 @@ import { Button } from "@/components/ui/button";
 
 import { TaskDate } from "./task-date";
 import { TaskActions } from "./task-actions";
+import { TaskStatusBadge } from "./task-status-badge";
 import type { TaskTableFeatures } from "./task-table-features";
 
 import { PopulatedTask, TaskStatus } from "../types";
-import { TASK_PRIORITY_CONFIG, TASK_STATUS_CONFIG } from "../constants";
+import { TASK_PRIORITY_CONFIG } from "../constants";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TaskColumn = Column<TaskTableFeatures, PopulatedTask, any>;
@@ -111,16 +112,9 @@ export const columns: ColumnDef<TaskTableFeatures, PopulatedTask, any>[] = [
   {
     accessorKey: "status",
     header: ({ column }) => <SortableHeader column={column} label="Statut" />,
-    cell: ({ row }) => {
-      const status = row.original.status;
-      if (!TASK_STATUS_CONFIG[status]) return <Empty />;
-
-      return (
-        <Badge variant={status} dot>
-          {TASK_STATUS_CONFIG[status].label}
-        </Badge>
-      );
-    },
+    cell: ({ row }) => (
+      <TaskStatusBadge status={row.original.status} column={row.original.statusColumn} />
+    ),
   },
   {
     id: "actions",

@@ -2,12 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/rpc";
 
-import { TaskStatus } from "../types";
-
 interface useGetTasksProps {
   workspaceId: string;
   projectId?: string | null;
-  status?: TaskStatus | null;
+  status?: string | null;
   search?: string | null;
   assigneeId?: string | null;
   dueDate?: string | null;
