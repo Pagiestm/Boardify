@@ -12,7 +12,8 @@ import {
   UsersIcon,
 } from "lucide-react";
 
-import { PopulatedTask, TaskStatus } from "@/features/tasks/types";
+import { PopulatedTask } from "@/features/tasks/types";
+import { isTaskDone } from "@/features/tasks/utils";
 import { Member, MemberRole } from "@/features/members/types";
 import { Project } from "@/features/projects/types";
 import { useGetTasks } from "@/features/tasks/api/use-get-tasks";
@@ -165,11 +166,7 @@ export const TaskList = ({ data, total, className }: TaskListProps) => {
           <ul className="divide-y">
             {data.slice(0, 8).map((task) => {
               const dueDate = task.dueDate ? new Date(task.dueDate) : null;
-              const isLate =
-                !!dueDate &&
-                task.status !== TaskStatus.DONE &&
-                isPast(dueDate) &&
-                !isToday(dueDate);
+              const isLate = !!dueDate && !isTaskDone(task) && isPast(dueDate) && !isToday(dueDate);
 
               return (
                 <li key={task.$id}>

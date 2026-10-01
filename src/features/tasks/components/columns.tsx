@@ -15,7 +15,8 @@ import { TaskActions } from "./task-actions";
 import { TaskStatusBadge } from "./task-status-badge";
 import type { TaskTableFeatures } from "./task-table-features";
 
-import { PopulatedTask, TaskStatus } from "../types";
+import { PopulatedTask } from "../types";
+import { isTaskDone } from "../utils";
 import { TASK_PRIORITY_CONFIG } from "../constants";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,7 +50,7 @@ export const columns: ColumnDef<TaskTableFeatures, PopulatedTask, any>[] = [
       <p
         className={cn(
           "line-clamp-1 max-w-[320px] font-medium",
-          row.original.status === TaskStatus.DONE && "text-muted-foreground line-through",
+          isTaskDone(row.original) && "text-muted-foreground line-through",
         )}
       >
         {row.original.name}
@@ -91,9 +92,7 @@ export const columns: ColumnDef<TaskTableFeatures, PopulatedTask, any>[] = [
   {
     accessorKey: "dueDate",
     header: ({ column }) => <SortableHeader column={column} label="Échéance" />,
-    cell: ({ row }) => (
-      <TaskDate value={row.original.dueDate} muted={row.original.status === TaskStatus.DONE} />
-    ),
+    cell: ({ row }) => <TaskDate value={row.original.dueDate} muted={isTaskDone(row.original)} />,
   },
   {
     accessorKey: "priority",
