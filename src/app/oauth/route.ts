@@ -10,18 +10,22 @@ export async function GET(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get("secret");
 
   if (!userId || !secret) {
-    return new NextResponse("Missing fields", { status: 400 });
+    return NextResponse.redirect(`${request.nextUrl.origin}/sign-up`);
   }
 
-  const { account } = await createAdminClient();
-  const session = await account.createSession(userId, secret);
+  try {
+    const { account } = await createAdminClient();
+    const session = await account.createSession(userId, secret);
 
-  (await cookies()).set(AUTH_COOKIE, session.secret, {
-    path: "/",
-    httpOnly: true,
-    sameSite: "strict",
-    secure: true,
-  });
+    (await cookies()).set(AUTH_COOKIE, session.secret, {
+      path: "/",
+      httpOnly: true,
+      sameSite: "strict",
+      secure: true,
+    });
 
-  return NextResponse.redirect(`${request.nextUrl.origin}/dashboard`);
+    return NextResponse.redirect(`${request.nextUrl.origin}/dashboard`);
+  } catch {
+    return NextResponse.redirect(`${request.nextUrl.origin}/sign-up`);
+  }
 }
