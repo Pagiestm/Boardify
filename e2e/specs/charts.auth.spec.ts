@@ -1,6 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-import { createProject, createTask, gotoTasks, gotoWorkspace } from "../helpers";
+import {
+  createIsolatedWorkspace,
+  createProject,
+  createTask,
+  gotoIsolatedTasks,
+  gotoTasks,
+  gotoWorkspace,
+} from "../helpers";
 
 test.describe("Graphiques du tableau de bord", () => {
   test("la charge par personne liste les tâches non terminées", async ({ page }) => {
@@ -29,5 +36,49 @@ test.describe("Graphiques du tableau de bord", () => {
     await gotoWorkspace(page);
 
     await expect(page.getByText("Répartition par statut")).toHaveCount(0);
+  });
+
+  test("les échéances se répartissent par urgence", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    const projectName = await createProject(page);
+    await gotoIsolatedTasks(page, workspaceId);
+    await createTask(page, projectName);
+
+    await page.goto(`/workspaces/${workspaceId}`);
+    const card = page.getByRole("region").filter({ hasText: "Échéances" });
+
+    await expect(card).toBeVisible({ timeout: 30_000 });
+    await expect(card.getByText(/tâches? datées?/)).toBeVisible();
+    await expect(card.getByRole("img")).toHaveAttribute("aria-label", /Échéances :/);
+    await expect(card.getByText("Aujourd'hui")).toBeVisible();
+  });
+
+  test("les tâches se répartissent par projet", async ({ page, request }) => {
+    const workspaceId = await createIsolatedWorkspace(request);
+    await page.goto(`/workspaces/${workspaceId}`);
+    const projectName = await createProject(page);
+    await gotoIsolatedTasks(page, workspaceId);
+    await createTask(page, projectName);
+
+    await page.goto(`/workspaces/${workspaceId}`);
+    const card = page.getByRole("region").filter({ hasText: "Tâches par projet" });
+
+    await expect(card).toBeVisible({ timeout: 30_000 });
+    await expect(card.getByText(projectName)).toBeVisible();
+    await expect(card.getByRole("listitem").first()).toBeVisible();
+  });
+
+  test("les couleurs d'échéance sont définies au niveau du document", async ({ page }) => {
+    await gotoWorkspace(page);
+
+    const missing = await page.evaluate(() => {
+      const styles = getComputedStyle(document.documentElement);
+      return ["overdue", "today", "week", "later"].filter(
+        (name) => !styles.getPropertyValue(`--color-due-${name}`).trim(),
+      );
+    });
+
+    expect(missing).toEqual([]);
   });
 });
