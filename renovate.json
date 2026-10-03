@@ -10,7 +10,6 @@
     ":prConcurrentLimitNone",
     ":prHourlyLimitNone"
   ],
-  "baseBranches": ["develop"],
   "timezone": "Europe/Paris",
   "minimumReleaseAge": "3 days",
   "platformAutomerge": false,
