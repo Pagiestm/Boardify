@@ -49,44 +49,12 @@ Pour la connexion Google / GitHub, activez les providers dans _Auth → Settings
 | `npm run lint`         | ESLint                                     |
 | `npm run format`       | Formate le projet avec Prettier            |
 | `npm run format:check` | Vérifie le formatage (utilisé par la CI)   |
-| `npm run test:e2e`     | Tests end-to-end Playwright                |
-| `npm run test:e2e:ui`  | Tests end-to-end en mode interactif        |
 | `npm run release`      | Lance semantic-release (utilisé par la CI) |
-
-## Tests
-
-Les tests end-to-end sont écrits avec [Playwright](https://playwright.dev) et
-pilotent un vrai navigateur contre un vrai backend Appwrite — aucun mock.
-
-> 📖 **[Documentation complète des tests → `e2e/README.md`](e2e/README.md)**
-> Arborescence, compte de test, nettoyage des données et marche à suivre pour
-> écrire un test.
-
-```bash
-npm run test:e2e        # toute la suite
-npm run test:e2e:ui     # mode interactif
-```
-
-| Fichier                                                              | Ce qui est couvert                                                  |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| [`specs/landing.public.spec.ts`](e2e/specs/landing.public.spec.ts)   | Landing, formulaire de connexion, boutons OAuth, garde `/dashboard` |
-| [`specs/workspace.auth.spec.ts`](e2e/specs/workspace.auth.spec.ts)   | Ouverture de l'espace, navigation, palette ⌘K, raccourci `g t`      |
-| [`specs/project.auth.spec.ts`](e2e/specs/project.auth.spec.ts)       | Création d'un projet, barre latérale, refus d'un nom vide           |
-| [`specs/task.auth.spec.ts`](e2e/specs/task.auth.spec.ts)             | Création d'une tâche, les trois vues, raccourcis, vue en URL        |
-| [`specs/kanban.auth.spec.ts`](e2e/specs/kanban.auth.spec.ts)         | Glisser-déposer au clavier et persistance de la position            |
-| [`specs/deletion.auth.spec.ts`](e2e/specs/deletion.auth.spec.ts)     | Suppression d'une tâche et d'un projet, annulation                  |
-| [`specs/validation.auth.spec.ts`](e2e/specs/validation.auth.spec.ts) | Champs requis d'une tâche, refus avant tout appel réseau            |
-| [`specs/cascade.auth.spec.ts`](e2e/specs/cascade.auth.spec.ts)       | Suppression en cascade des tâches d'un projet                       |
-
-Les parcours authentifiés exigent un compte de test (`E2E_EMAIL`,
-`E2E_PASSWORD`) ; sans ces variables, seuls les parcours publics s'exécutent.
-Les données créées portent le marqueur `[E2E]` et sont supprimées à la fin de
-la suite.
 
 ## Qualité et CI
 
 Chaque pull request déclenche [`ci.yml`](.github/workflows/ci.yml) :
-formatage, lint, build, puis tests end-to-end.
+formatage, lint et build.
 
 - **Prettier** (`.prettierrc.json`) formate le code, classes Tailwind comprises
 - **ESLint** (`eslint.config.mjs`) sur la configuration Next.js

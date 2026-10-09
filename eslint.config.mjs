@@ -23,13 +23,7 @@ const eslintConfig = [
   },
   prettier,
   {
-    ignores: [
-      ".next/**",
-      "node_modules/**",
-      "next-env.d.ts",
-      "playwright-report/**",
-      "test-results/**",
-    ],
+    ignores: [".next/**", "node_modules/**", "next-env.d.ts", "test-results/**"],
   },
 ];
 
