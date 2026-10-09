@@ -5,7 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 
 import { MemberRole } from "@/features/members/types";
-import { getMember } from "@/features/members/utils";
+import { forgetMembers, getMember } from "@/features/members/utils";
 
 import { generateInviteCode } from "@/lib/utils";
 import { sessionMiddleware } from "@/lib/session-middleware";
@@ -139,6 +139,8 @@ const app = new Hono()
       role: MemberRole.ADMIN,
     });
 
+    forgetMembers(workspace.$id);
+
     return c.json({ data: workspace });
   })
 
@@ -265,6 +267,8 @@ const app = new Hono()
         role: MemberRole.MEMBER,
       });
 
+      forgetMembers(workspaceId);
+
       return c.json({ data: workspace });
     },
   )
@@ -289,37 +293,28 @@ const app = new Hono()
     const lastMonthStart = startOfMonth(subMonths(now, 1));
     const lastMonthEnd = endOfMonth(subMonths(now, 1));
 
-    const thisMonthTasks = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
-      Query.equal("workspaceId", workspaceId),
-      Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
-      Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
-    ]);
+    const countTasks = (queries: string[]) =>
+      databases
+        .listDocuments(DATABASE_ID, TASKS_ID, [...queries, Query.limit(1)])
+        .then((result) => result.total);
 
-    const lastMonthTasks = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
-      Query.equal("workspaceId", workspaceId),
-      Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
-      Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
-    ]);
+    const inWorkspace = Query.equal("workspaceId", workspaceId);
+    const assignedToMe = Query.equal("assigneeId", member.$id);
+    const during = (from: Date, to: Date) => [
+      Query.greaterThanEqual("$createdAt", from.toISOString()),
+      Query.lessThanEqual("$createdAt", to.toISOString()),
+    ];
 
-    const taskCount = thisMonthTasks.total;
-    const taskDifference = taskCount - lastMonthTasks.total;
+    const [taskCount, lastMonthTaskCount, assignedTaskCount, lastMonthAssignedTaskCount] =
+      await Promise.all([
+        countTasks([inWorkspace, ...during(thisMonthStart, thisMonthEnd)]),
+        countTasks([inWorkspace, ...during(lastMonthStart, lastMonthEnd)]),
+        countTasks([inWorkspace, assignedToMe, ...during(thisMonthStart, thisMonthEnd)]),
+        countTasks([inWorkspace, assignedToMe, ...during(lastMonthStart, lastMonthEnd)]),
+      ]);
 
-    const thisMonthAssignedTasks = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
-      Query.equal("workspaceId", workspaceId),
-      Query.equal("assigneeId", member.$id),
-      Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
-      Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
-    ]);
-
-    const lastMonthAssignedTasks = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
-      Query.equal("workspaceId", workspaceId),
-      Query.equal("assigneeId", member.$id),
-      Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
-      Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
-    ]);
-
-    const assignedTaskCount = thisMonthAssignedTasks.total;
-    const assignedTaskDifference = assignedTaskCount - lastMonthAssignedTasks.total;
+    const taskDifference = taskCount - lastMonthTaskCount;
+    const assignedTaskDifference = assignedTaskCount - lastMonthAssignedTaskCount;
 
     return c.json({
       data: {

@@ -10,6 +10,7 @@ import { Member } from "@/features/members/types";
 import { Project } from "@/features/projects/types";
 
 import { createAdminClient } from "@/lib/appwrite";
+import { getUserIdentities, getUserIdentity } from "@/lib/users";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { DATABASE_ID, LABELS_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from "@/config";
 
@@ -107,34 +108,33 @@ const app = new Hono()
       const projectIds = tasks.documents.map((task) => task.projectId);
       const assigneeIds = tasks.documents.map((task) => task.assigneeId);
 
-      const projects = await databases.listDocuments<Project>(
-        DATABASE_ID,
-        PROJECTS_ID,
-        projectIds.length > 0 ? [Query.contains("$id", projectIds)] : [],
-      );
-
-      const members = await databases.listDocuments<Member>(
-        DATABASE_ID,
-        MEMBERS_ID,
-        assigneeIds.length > 0 ? [Query.contains("$id", assigneeIds)] : [],
-      );
-
-      const assignees = await Promise.all(
-        members.documents.map(async (member) => {
-          const user = await users.get(member.userId);
-
-          return {
-            ...member,
-            name: user.name || user.email,
-            email: user.email,
-          };
-        }),
-      );
-
-      const workspaceLabels = await databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
-        Query.equal("workspaceId", workspaceId),
-        Query.limit(100),
+      const [projects, members, workspaceLabels] = await Promise.all([
+        databases.listDocuments<Project>(
+          DATABASE_ID,
+          PROJECTS_ID,
+          projectIds.length > 0 ? [Query.contains("$id", projectIds)] : [],
+        ),
+        databases.listDocuments<Member>(
+          DATABASE_ID,
+          MEMBERS_ID,
+          assigneeIds.length > 0 ? [Query.contains("$id", assigneeIds)] : [],
+        ),
+        databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
+          Query.equal("workspaceId", workspaceId),
+          Query.limit(100),
+        ]),
       ]);
+
+      const identities = await getUserIdentities(
+        users,
+        members.documents.map((member) => member.userId),
+      );
+
+      const assignees = members.documents.map((member) => ({
+        ...member,
+        name: identities.get(member.userId)?.name ?? "",
+        email: identities.get(member.userId)?.email ?? "",
+      }));
 
       const populatedTasks = tasks.documents.map((task) => {
         const project = projects.documents.find((project) => project.$id === task.projectId);
@@ -269,28 +269,25 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const project = await databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, task.projectId);
-
-    const member = await databases.getDocument<Member>(DATABASE_ID, MEMBERS_ID, task.assigneeId);
-
-    const user = await users.get(member.userId);
-
-    const assignee = {
-      ...member,
-      name: user.name || user.email,
-      email: user.email,
-    };
-
     const labelIds = task.labelIds ?? [];
-    const labels =
+
+    const [project, member, labels] = await Promise.all([
+      databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, task.projectId),
+      databases.getDocument<Member>(DATABASE_ID, MEMBERS_ID, task.assigneeId),
       labelIds.length > 0
-        ? (
-            await databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
+        ? databases
+            .listDocuments<Label>(DATABASE_ID, LABELS_ID, [
               Query.equal("$id", labelIds),
               Query.limit(100),
             ])
-          ).documents
-        : [];
+            .then((response) => response.documents)
+        : Promise.resolve([]),
+    ]);
+
+    const assignee = {
+      ...member,
+      ...(await getUserIdentity(users, member.userId)),
+    };
 
     const statusColumn = parseBoardColumns(project.columnConfig).find(
       (column) => column.id === task.status,

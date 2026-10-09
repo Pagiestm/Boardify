@@ -12,10 +12,19 @@ import {
   type Users as UsersType,
 } from "node-appwrite";
 
+import { createHash } from "crypto";
+import { unstable_cache, revalidateTag } from "next/cache";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
 import { AUTH_COOKIE } from "@/features/auth/constants";
+
+const SESSION_TTL = 60;
+
+const sessionTag = (session: string) =>
+  `session:${createHash("sha256").update(session).digest("hex")}`;
+
+export const forgetSession = (session: string) => revalidateTag(sessionTag(session), { expire: 0 });
 
 type AdditionalContext = {
   Variables: {
@@ -44,7 +53,11 @@ export const sessionMiddleware = createMiddleware<AdditionalContext>(async (c, n
   const databases = new Databases(client);
   const storage = new Storage(client);
 
-  const user = await account.get();
+  const tag = sessionTag(session);
+  const user = await unstable_cache(() => account.get(), ["session", tag], {
+    revalidate: SESSION_TTL,
+    tags: [tag],
+  })();
 
   c.set("account", account);
   c.set("databases", databases);

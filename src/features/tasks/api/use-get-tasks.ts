@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/rpc";
+import { HttpError, httpErrorMessage } from "@/lib/http-error";
 
 interface useGetTasksProps {
   workspaceId: string;
@@ -37,7 +38,10 @@ export const useGetTasks = ({
       });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la récupération des tâches");
+        throw new HttpError(
+          response.status,
+          httpErrorMessage(response.status, "Erreur lors de la récupération des tâches"),
+        );
       }
 
       const { data } = await response.json();
