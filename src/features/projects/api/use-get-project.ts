@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/rpc";
+import { HttpError, httpErrorMessage } from "@/lib/http-error";
 
 interface useGetProjectProps {
   projectId: string;
@@ -17,7 +18,10 @@ export const useGetProject = ({ projectId, enabled = true }: useGetProjectProps)
       });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la récupération du projet");
+        throw new HttpError(
+          response.status,
+          httpErrorMessage(response.status, "Erreur lors de la récupération du projet"),
+        );
       }
 
       const { data } = await response.json();

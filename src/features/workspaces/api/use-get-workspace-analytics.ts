@@ -2,6 +2,7 @@ import { InferResponseType } from "hono";
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/rpc";
+import { HttpError, httpErrorMessage } from "@/lib/http-error";
 
 interface useGetWorkspaceAnalyticsProps {
   workspaceId: string;
@@ -21,7 +22,13 @@ export const useGetWorkspaceAnalytics = ({ workspaceId }: useGetWorkspaceAnalyti
       });
 
       if (!response.ok) {
-        throw new Error("Échec de la récupération des analyses de l'espace de travail");
+        throw new HttpError(
+          response.status,
+          httpErrorMessage(
+            response.status,
+            "Échec de la récupération des analyses de l'espace de travail",
+          ),
+        );
       }
 
       const { data } = await response.json();

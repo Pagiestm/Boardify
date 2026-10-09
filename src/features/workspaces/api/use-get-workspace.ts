@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/rpc";
+import { HttpError, httpErrorMessage } from "@/lib/http-error";
 
 interface useGetWorkspaceProps {
   workspaceId: string;
@@ -15,7 +16,10 @@ export const useGetWorkspace = ({ workspaceId }: useGetWorkspaceProps) => {
       });
 
       if (!response.ok) {
-        throw new Error("Échec de la récupération de l'espace de travail");
+        throw new HttpError(
+          response.status,
+          httpErrorMessage(response.status, "Échec de la récupération de l'espace de travail"),
+        );
       }
 
       const { data } = await response.json();

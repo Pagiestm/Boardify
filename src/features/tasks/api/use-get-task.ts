@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/rpc";
+import { HttpError, httpErrorMessage } from "@/lib/http-error";
 
 interface useGetTaskProps {
   taskId: string;
@@ -17,7 +18,10 @@ export const useGetTask = ({ taskId }: useGetTaskProps) => {
       });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la récupération de la tâche");
+        throw new HttpError(
+          response.status,
+          httpErrorMessage(response.status, "Erreur lors de la récupération de la tâche"),
+        );
       }
 
       const { data } = await response.json();
