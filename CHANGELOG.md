@@ -1,3 +1,14 @@
+## [1.4.1](https://github.com/Pagiestm/Boardify/compare/v1.4.0...v1.4.1) (2026-10-09)
+
+### Bug Fixes
+
+* **ui:** remplace le chargement sans fin par un message d'erreur ([0b45daa](https://github.com/Pagiestm/Boardify/commit/0b45daa686ea5e5b26ea75237628cf32e22d218d))
+
+### Performance Improvements
+
+* **api:** met en cache la session, les membres et les identités ([7264f3f](https://github.com/Pagiestm/Boardify/commit/7264f3fe201034fc733b172b7db490e277467421))
+* **tasks:** parallélise les lectures indépendantes ([7c0bb7e](https://github.com/Pagiestm/Boardify/commit/7c0bb7e21168ae7c7719d6bb050ffb9ac312388c))
+
 ## [1.4.0](https://github.com/Pagiestm/Boardify/compare/v1.3.0...v1.4.0) (2026-10-01)
 
 ### Features
