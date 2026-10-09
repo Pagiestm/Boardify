@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/rpc";
+import { HttpError, httpErrorMessage } from "@/lib/http-error";
 
 interface useGetMembersProps {
   workspaceId: string;
@@ -13,7 +14,10 @@ export const useGetMembers = ({ workspaceId }: useGetMembersProps) => {
       const response = await client.api.members.$get({ query: { workspaceId } });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la récupération des membres");
+        throw new HttpError(
+          response.status,
+          httpErrorMessage(response.status, "Erreur lors de la récupération des membres"),
+        );
       }
 
       const { data } = await response.json();
