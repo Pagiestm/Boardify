@@ -1,3 +1,9 @@
+## [1.4.2](https://github.com/Pagiestm/Boardify/compare/v1.4.1...v1.4.2) (2026-10-09)
+
+### Bug Fixes
+
+* **deps:** update dependency motion to v14 ([7e8d656](https://github.com/Pagiestm/Boardify/commit/7e8d65643c7dac6ea3cbf6fbf853b8a17bb5768c))
+
 ## [1.4.1](https://github.com/Pagiestm/Boardify/compare/v1.4.0...v1.4.1) (2026-10-09)
 
 ### Bug Fixes
