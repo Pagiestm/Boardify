@@ -13,6 +13,7 @@
   "timezone": "Europe/Paris",
   "minimumReleaseAge": "3 days",
   "platformAutomerge": false,
+  "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": {
     "minimumReleaseAge": null
   },
