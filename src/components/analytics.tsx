@@ -1,10 +1,10 @@
 import { ListTodoIcon, UserCheckIcon } from "lucide-react";
 
-import { ProjectAnalyticsResponseType } from "@/features/projects/api/use-get-project-analytics";
+import { WorkspaceAnalyticsResponseType } from "@/features/workspaces/api/use-get-workspace-analytics";
 
 import { AnalyticsCard } from "./analytics-card";
 
-export const Analytics = ({ data }: ProjectAnalyticsResponseType) => {
+export const Analytics = ({ data }: WorkspaceAnalyticsResponseType) => {
   return (
     <div className="hide-scrollbar -mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
       <div className="flex gap-3">

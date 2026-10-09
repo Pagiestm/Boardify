@@ -2,7 +2,6 @@ import { z } from "zod";
 import { Hono } from "hono";
 import { Databases, ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
-import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 
 import { getMember } from "@/features/members/utils";
 
@@ -222,70 +221,5 @@ const app = new Hono()
     await databases.deleteDocument(DATABASE_ID, PROJECTS_ID, projectId);
 
     return c.json({ data: { $id: existingProject.$id } });
-  })
-  .get("/:projectId/analytics", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
-    const user = c.get("user");
-    const { projectId } = c.req.param();
-
-    const project = await databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, projectId);
-
-    const member = await getMember({
-      databases,
-      workspaceId: project.workspaceId,
-      userId: user.$id,
-    });
-
-    if (!member) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
-
-    const now = new Date();
-    const thisMonthStart = startOfMonth(now);
-    const thisMonthEnd = endOfMonth(now);
-    const lastMonthStart = startOfMonth(subMonths(now, 1));
-    const lastMonthEnd = endOfMonth(subMonths(now, 1));
-
-    const thisMonthTasks = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
-      Query.equal("projectId", projectId),
-      Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
-      Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
-    ]);
-
-    const lastMonthTasks = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
-      Query.equal("projectId", projectId),
-      Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
-      Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
-    ]);
-
-    const taskCount = thisMonthTasks.total;
-    const taskDifference = taskCount - lastMonthTasks.total;
-
-    const thisMonthAssignedTasks = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
-      Query.equal("projectId", projectId),
-      Query.equal("assigneeId", member.$id),
-      Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
-      Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
-    ]);
-
-    const lastMonthAssignedTasks = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
-      Query.equal("projectId", projectId),
-      Query.equal("assigneeId", member.$id),
-      Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
-      Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
-    ]);
-
-    const assignedTaskCount = thisMonthAssignedTasks.total;
-    const assignedTaskDifference = assignedTaskCount - lastMonthAssignedTasks.total;
-
-    return c.json({
-      data: {
-        taskCount,
-        taskDifference,
-        assignedTaskCount,
-        assignedTaskDifference,
-      },
-    });
   });
-
 export default app;
