@@ -12,8 +12,6 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
     "release": "semantic-release",
     "prepare": "husky || true"
   },
@@ -65,7 +63,6 @@
     "@commitlint/config-conventional": "^21.2.3",
     "@eslint/js": "^10.0.1",
     "@next/eslint-plugin-next": "^16.3.7",
-    "@playwright/test": "^1.63.0",
     "@semantic-release/changelog": "^7.0.0",
     "@semantic-release/git": "^11.0.1",
     "@tailwindcss/postcss": "^4.3.3",
