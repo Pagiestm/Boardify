@@ -5,10 +5,11 @@ import { Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { createAdminClient } from "@/lib/appwrite";
+import { getUserIdentities } from "@/lib/users";
 import { DATABASE_ID, MEMBERS_ID } from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
 
-import { getMember } from "../utils";
+import { forgetMembers, getMember } from "../utils";
 import { Member, MemberRole } from "../types";
 
 const app = new Hono()
@@ -36,17 +37,16 @@ const app = new Hono()
         Query.equal("workspaceId", workspaceId),
       ]);
 
-      const populatedMembers = await Promise.all(
-        members.documents.map(async (member) => {
-          const user = await users.get(member.userId);
-
-          return {
-            ...member,
-            name: user.name || user.email,
-            email: user.email,
-          };
-        }),
+      const identities = await getUserIdentities(
+        users,
+        members.documents.map((member) => member.userId),
       );
+
+      const populatedMembers = members.documents.map((member) => ({
+        ...member,
+        name: identities.get(member.userId)?.name ?? "",
+        email: identities.get(member.userId)?.email ?? "",
+      }));
 
       return c.json({
         data: {
@@ -87,6 +87,8 @@ const app = new Hono()
 
     await databases.deleteDocument(DATABASE_ID, MEMBERS_ID, memberId);
 
+    forgetMembers(memberToDelete.workspaceId);
+
     return c.json({ data: { $id: memberToDelete.$id } });
   })
   .patch(
@@ -126,6 +128,8 @@ const app = new Hono()
       await databases.updateDocument(DATABASE_ID, MEMBERS_ID, memberId, {
         role,
       });
+
+      forgetMembers(memberToUpdate.workspaceId);
 
       return c.json({ data: { $id: memberToUpdate.$id } });
     },
