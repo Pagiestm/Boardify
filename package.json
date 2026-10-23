@@ -93,5 +93,8 @@
     "*.{json,css,md,yml,yaml}": [
       "prettier --write"
     ]
+  },
+  "overrides": {
+    "effect": "^4.0.0"
   }
 }
