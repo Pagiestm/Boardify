@@ -1,3 +1,10 @@
+## [1.4.3](https://github.com/Pagiestm/Boardify/compare/v1.4.2...v1.4.3) (2026-10-23)
+
+### Bug Fixes
+
+* **deps:** update dependency @hookform/resolvers to v6 ([a6a9cb1](https://github.com/Pagiestm/Boardify/commit/a6a9cb158cc636052870ca11d2679228b665e63c))
+* **deps:** update dependency node-appwrite to v30 ([6100dc4](https://github.com/Pagiestm/Boardify/commit/6100dc46953c0f0007919e6e3134f6b2e1c43050))
+
 ## [1.4.2](https://github.com/Pagiestm/Boardify/compare/v1.4.1...v1.4.2) (2026-10-09)
 
 ### Bug Fixes
