@@ -1,3 +1,9 @@
+## [1.6.1](https://github.com/Pagiestm/Boardify/compare/v1.6.0...v1.6.1) (2026-10-27)
+
+### Bug Fixes
+
+* **desktop:** lance le CLI Tauri avec npx dans la CI ([e3592ad](https://github.com/Pagiestm/Boardify/commit/e3592ad0c9819228888f328856f18fbe7ebd23d6))
+
 ## [1.6.0](https://github.com/Pagiestm/Boardify/compare/v1.5.0...v1.6.0) (2026-10-27)
 
 ### Features
