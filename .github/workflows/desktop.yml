@@ -81,4 +81,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           releaseId: ${{ steps.release.outputs.id }}
+          tauriScript: npx tauri
           args: --target ${{ matrix.target }}
