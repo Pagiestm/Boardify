@@ -41,5 +41,9 @@ export async function createAdminClient() {
     get users() {
       return new Users(client);
     },
+    // Réservé aux traitements sans session utilisateur (webhooks) : contourne les permissions
+    get databases() {
+      return new Databases(client);
+    },
   };
 }

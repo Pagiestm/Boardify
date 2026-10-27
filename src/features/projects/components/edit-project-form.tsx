@@ -19,6 +19,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+import { GithubRepoField } from "@/features/github/components/github-repo-field";
+import { GithubImportButton } from "@/features/github/components/github-import-button";
+
 import { Project } from "../types";
 import { updateProjectSchema } from "../schemas";
 import { useUpdateProject } from "../api/use-update-project";
@@ -49,6 +52,7 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
     defaultValues: {
       ...initialValues,
       image: initialValues.imageUrl ?? "",
+      githubRepo: initialValues.githubRepo ?? "",
     },
   });
 
@@ -94,7 +98,7 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
           title="Paramètres du projet"
           description={
             <>
-              Modifiez le nom et l&apos;icône de{" "}
+              Modifiez le nom, l&apos;icône et le dépôt GitHub de{" "}
               <strong className="font-medium text-foreground">{initialValues.name}</strong>.
             </>
           }
@@ -127,6 +131,21 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
                   />
                 )}
               />
+              <FormField
+                control={form.control}
+                name="githubRepo"
+                render={({ field }) => (
+                  <GithubRepoField
+                    workspaceId={initialValues.workspaceId}
+                    value={field.value}
+                    onChange={field.onChange}
+                    disabled={isPending}
+                  />
+                )}
+              />
+              {initialValues.githubRepo && (
+                <GithubImportButton projectId={initialValues.$id} repo={initialValues.githubRepo} />
+              )}
             </div>
             <FormFooter onCancel={onCancel} isPending={isPending} submitLabel="Enregistrer" />
           </form>
