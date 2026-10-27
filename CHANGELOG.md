@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/Pagiestm/Boardify/compare/v1.4.3...v1.5.0) (2026-10-27)
+
+### Features
+
+* **github:** synchronise les tâches avec les issues GitHub ([fc91bee](https://github.com/Pagiestm/Boardify/commit/fc91beeb4f9cbfa3ef39929b23c0aa09686cc5fd))
+
 ## [1.4.3](https://github.com/Pagiestm/Boardify/compare/v1.4.2...v1.4.3) (2026-10-23)
 
 ### Bug Fixes

@@ -1,6 +1,6 @@
 {
   "name": "boardify",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "private": true,
   "engines": {
     "node": ">=24"
