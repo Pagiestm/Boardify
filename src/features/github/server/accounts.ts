@@ -13,8 +13,6 @@ const loginTag = (userId: string) => `github-login:${userId}`;
 
 export const forgetGithubLogin = (userId: string) => revalidateTag(loginTag(userId), { expire: 0 });
 
-// Compte GitHub d'un utilisateur Boardify : celui qu'il a lié lui-même, sinon celui avec
-// lequel il s'est inscrit (identité GitHub Appwrite).
 export const resolveGithubAccount = (users: Users, userId: string, installationId?: string) =>
   unstable_cache(
     async (): Promise<{ login: string; linked: boolean } | null> => {

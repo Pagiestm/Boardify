@@ -159,7 +159,6 @@ const app = new Hono()
       uploadedImageUrl = image;
     }
 
-    // N'envoie githubRepo que s'il change : l'attribut peut ne pas encore exister dans Appwrite
     const nextGithubRepo = githubRepo === undefined ? undefined : githubRepo || null;
     const githubRepoChanged =
       nextGithubRepo !== undefined && nextGithubRepo !== (existingProject.githubRepo ?? null);

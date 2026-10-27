@@ -13,9 +13,6 @@ import { Button } from "@/components/ui/button";
 import { PageError } from "@/components/page-error";
 import { PageLoader } from "@/components/page-loader";
 
-// Une page atteinte par redirection depuis github.com reste « cross-site » : le navigateur
-// n'envoie pas le cookie de session (SameSite=Strict), même sur ses appels API. Recharger la
-// page depuis Boardify en fait une navigation same-site, qui porte le cookie.
 const SAME_SITE_PARAM = "same_site";
 
 export const GithubCallbackClient = () => {

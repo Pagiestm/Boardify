@@ -25,9 +25,6 @@ import { DATABASE_ID, LABELS_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID, WORKSPACES_I
 import { Task, TaskPriority } from "../types";
 import { isTaskDone } from "../utils";
 
-// Synchronisation à sens unique Boardify → GitHub : l'issue est entièrement réécrite à partir
-// de la tâche. Une erreur GitHub ne doit jamais faire échouer l'opération sur la tâche.
-
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "long",
   timeZone: "Europe/Paris",
@@ -35,7 +32,6 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 
 const formatDate = (value?: string) => (value ? dateFormatter.format(new Date(value)) : null);
 
-// Jour (AAAA-MM-JJ) à Paris, pour l'échéance des milestones
 const dayFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" });
 
 const findStatusColumn = (project: Project | undefined, status: string) =>
@@ -44,7 +40,6 @@ const findStatusColumn = (project: Project | undefined, status: string) =>
 const isDoneStatus = (project: Project | undefined, status: string) =>
   isTaskDone({ status, statusColumn: findStatusColumn(project, status) });
 
-// Couleurs Tailwind 500 des étiquettes Boardify, pour créer les labels GitHub correspondants
 const LABEL_HEX: Record<LabelColor, string> = {
   teal: "14b8a6",
   blue: "3b82f6",
@@ -121,7 +116,6 @@ export const PRIORITY_LABELS: Record<TaskPriority, { name: string; color: string
   [TaskPriority.LOW]: { name: "priorité : basse", color: "c5def5" },
 };
 
-// Labels gérés par Boardify pour une tâche : ses étiquettes et sa priorité
 const getManagedLabels = (task: Task, context: IssueContext) => [
   ...(task.labelIds ?? [])
     .map((labelId) => context.labels.get(labelId))
@@ -138,7 +132,6 @@ const getAssignableLogin = async (task: Task, repo: string, context: IssueContex
 const DETAILS_MARKER = "- **Statut** :";
 const FOOTER_MARKER = "<sub>Synchronisée";
 
-// Taille maximale de l'attribut description dans Appwrite
 const MAX_DESCRIPTION_LENGTH = 2048;
 const TRUNCATED_SUFFIX = "\n\n…";
 
@@ -147,8 +140,6 @@ const truncateDescription = (text: string) =>
     ? `${text.slice(0, MAX_DESCRIPTION_LENGTH - TRUNCATED_SUFFIX.length).trimEnd()}${TRUNCATED_SUFFIX}`
     : text;
 
-// Description de la tâche à partir du corps de l'issue : tout ce qui précède la fiche ajoutée
-// par Boardify (statut, période…) et son pied de page
 export const extractTaskDescription = (body: string | null) => {
   const text = (body ?? "").replace(/\r\n/g, "\n");
   const end = Math.min(
@@ -175,7 +166,6 @@ const buildIssueText = (task: Task, context: IssueContext, githubLogin: string |
 
   const details = [
     `${DETAILS_MARKER} ${findStatusColumn(project, task.status)?.label ?? task.status}`,
-    // Sans compte GitHub assignable, l'assigné n'apparaît que dans le texte
     ...(githubLogin
       ? []
       : [`- **Assigné à** : ${assignee ? `${assignee.name} (sans compte GitHub lié)` : "—"}`]),
@@ -190,8 +180,6 @@ const buildIssueText = (task: Task, context: IssueContext, githubLogin: string |
   };
 };
 
-// Prépare dans le dépôt les labels et la milestone (une par projet Boardify) de la tâche
-// Échéance du projet : la plus tardive de ses tâches
 const getProjectDueDay = async (databases: Databases, projectId: string) => {
   const { documents } = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
     Query.equal("projectId", projectId),
@@ -233,8 +221,6 @@ const getInstallationId = async (databases: Databases, workspaceId: string) => {
   return workspace.githubInstallationId;
 };
 
-// Crée l'issue d'une nouvelle tâche si son projet est lié à un dépôt, et renvoie la tâche
-// mise à jour avec l'URL de l'issue (ou null si aucune issue n'a été créée).
 export const createTaskIssue = async (databases: Databases, task: Task) => {
   try {
     const [installationId, project] = await Promise.all([
@@ -270,8 +256,6 @@ export const createTaskIssue = async (databases: Databases, task: Task) => {
   }
 };
 
-// Réécrit les issues des tâches modifiées, et les ferme ou rouvre quand elles entrent ou
-// sortent d'une colonne terminée.
 export const syncTaskIssues = async (
   databases: Databases,
   workspaceId: string,
@@ -311,7 +295,6 @@ export const syncTaskIssues = async (
           state: !syncState || wasDone === isDone ? undefined : isDone ? "closed" : "open",
         });
 
-        // Labels et assignés en différentiel : ceux ajoutés depuis GitHub sont conservés
         const lowerCase = (names: string[]) => new Set(names.map((name) => name.toLowerCase()));
         const currentLabels = lowerCase(labels);
         const previousLogin = context.assignees.get(before.assigneeId)?.githubLogin;
@@ -340,7 +323,6 @@ export const syncTaskIssues = async (
   }
 };
 
-// Ferme en « non planifiée » l'issue d'une tâche supprimée
 export const closeDeletedTaskIssue = async (databases: Databases, task: Task) => {
   if (!task.githubIssueUrl) return;
 

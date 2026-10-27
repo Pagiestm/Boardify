@@ -22,8 +22,6 @@ const chunk = <T>(values: T[], size: number) =>
     values.slice(index * size, index * size + size),
   );
 
-// Crée une tâche pour chaque issue ouverte du dépôt lié au projet qui n'en a pas encore.
-// Les issues ne sont pas modifiées : elles le seront à la première modification de la tâche.
 export const importGithubIssues = async ({
   databases,
   project,
@@ -37,7 +35,6 @@ export const importGithubIssues = async ({
 }) => {
   const issues = await listGithubOpenIssues(installationId, project.githubRepo);
 
-  // Issues déjà liées à une tâche de l'espace
   const linkedUrls = new Set<string>();
   for (const urls of chunk(
     issues.map((issue) => issue.url),
@@ -65,7 +62,6 @@ export const importGithubIssues = async ({
     ]),
   ]);
 
-  // Compte GitHub → membre, pour reprendre l'assigné de l'issue
   const { users } = await createAdminClient();
   const memberByLogin = new Map<string, string>();
   await Promise.all(

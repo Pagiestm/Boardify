@@ -21,11 +21,9 @@ const appConfig = () => {
   if (!slug || !clientId || !clientSecret || !privateKey) return null;
 
   return {
-    // Accepte aussi l'URL publique de l'app (https://github.com/apps/<slug>)
     slug: slug.replace(/^https:\/\/github\.com\/apps\//, "").replace(/\/+$/, ""),
     clientId,
     clientSecret,
-    // Les hébergeurs stockent souvent la clé PEM sur une ligne avec des « \n » littéraux
     privateKey: privateKey.replace(/\\n/g, "\n"),
   };
 };
@@ -40,7 +38,6 @@ export const isGithubAppConfigured = () => appConfig() !== null;
 
 export const getGithubBotLogin = () => `${requireAppConfig().slug}[bot]`;
 
-// Signature HMAC SHA-256 envoyée par GitHub dans X-Hub-Signature-256
 export const verifyGithubWebhook = (payload: string, signature: string | undefined) => {
   const secret = process.env.GITHUB_APP_WEBHOOK_SECRET;
   if (!secret || !signature?.startsWith("sha256=")) return false;
@@ -81,7 +78,6 @@ const githubFetch = async <T>(
 
 const base64Url = (value: string | Buffer) => Buffer.from(value).toString("base64url");
 
-// JWT signé avec la clé privée de l'app, valable 10 minutes maximum côté GitHub
 const createAppJwt = () => {
   const { clientId, privateKey } = requireAppConfig();
   const now = Math.floor(Date.now() / 1000);
@@ -155,9 +151,6 @@ export const getGithubOAuthUrl = (state: string, redirectUri: string) => {
   return url.toString();
 };
 
-// Liste, via le code OAuth renvoyé par GitHub après l'installation, les installations de l'app
-// auxquelles l'utilisateur a accès. C'est ce qui garantit qu'il ne lie pas l'installation d'un
-// autre compte en forgeant l'URL de retour : l'installation_id seul n'est pas fiable.
 export const listUserInstallationIds = async (code: string) => {
   const userToken = await exchangeOAuthCode(code);
   if (!userToken) return [];
@@ -175,7 +168,6 @@ export const listUserInstallationIds = async (code: string) => {
   }
 };
 
-// Compte GitHub de l'utilisateur qui vient d'autoriser l'app (liaison de compte)
 export const getGithubUserFromCode = async (code: string) => {
   const userToken = await exchangeOAuthCode(code);
   if (!userToken) return null;
@@ -197,7 +189,6 @@ export const getGithubLoginById = async (installationId: string, githubId: strin
 
 const CACHE_TTL = 5 * 60 * 1000;
 
-// GitHub refuse la création d'une issue assignée à quelqu'un qui n'a pas accès au dépôt
 const assignableCache = new Map<string, { value: boolean; expiresAt: number }>();
 
 export const isGithubAssignable = async (installationId: string, repo: string, login: string) => {
@@ -221,7 +212,6 @@ export const isGithubAssignable = async (installationId: string, repo: string, l
 
 const existingLabels = new Map<string, number>();
 
-// Crée dans le dépôt les labels qui n'y existent pas encore, avec la couleur de Boardify
 export const ensureGithubLabels = async (
   installationId: string,
   repo: string,
@@ -246,7 +236,6 @@ export const ensureGithubLabels = async (
         cache: "no-store",
       });
 
-      // 422 : le label existe déjà, on le laisse tel quel
       if (!response.ok && response.status !== 422) {
         throw new Error(`GitHub POST /repos/${repo}/labels : ${response.status}`);
       }
@@ -262,8 +251,6 @@ const milestones = new Map<string, { number: number; dueOn: string | null; expir
 
 const toDay = (dueOn: string | null | undefined) => dueOn?.slice(0, 10) ?? null;
 
-// Numéro de la milestone portant ce titre dans le dépôt, créée si elle n'existe pas encore et
-// dont l'échéance (jour au format AAAA-MM-JJ, ou null) est tenue à jour
 export const getGithubMilestone = async (
   installationId: string,
   repo: string,
@@ -275,7 +262,6 @@ export const getGithubMilestone = async (
   if (cached && cached.expiresAt > Date.now() && cached.dueOn === dueDay) return cached.number;
 
   const token = await getInstallationToken(installationId);
-  // Midi UTC : le jour reste le même quel que soit le fuseau d'affichage
   const due_on = dueDay ? `${dueDay}T12:00:00Z` : null;
 
   const findMilestone = async () => {
@@ -299,7 +285,6 @@ export const getGithubMilestone = async (
         { token, method: "POST", body: { title, due_on } },
       );
     } catch (error) {
-      // Créée entre-temps par une synchronisation concurrente
       milestone = await findMilestone();
       if (!milestone) throw error;
     }
@@ -326,7 +311,6 @@ const issuePath = (issueUrl: string) => {
   return match ? `/repos/${match[1]}/issues/${match[2]}` : null;
 };
 
-// Ajoute ou retire des labels et des assignés sans toucher à ceux posés depuis GitHub
 export const editGithubIssueMetadata = async (
   installationId: string,
   issueUrl: string,
@@ -352,7 +336,6 @@ export const editGithubIssueMetadata = async (
       githubFetch(`${path}/labels`, { token, method: "POST", body: { labels: addLabels } }),
     ...removeLabels.map((name) =>
       githubFetch(`${path}/labels/${encodeURIComponent(name)}`, { token, method: "DELETE" }).catch(
-        // 404 : le label avait déjà été retiré depuis GitHub
         () => null,
       ),
     ),
@@ -382,9 +365,6 @@ export interface GithubIssue {
 
 const ISSUES_IMPORT_LIMIT = 300;
 
-// Issues ouvertes du dépôt. L'API mélange issues et pull requests : ces dernières sont exclues,
-// tout comme les issues créées par des bots (tableau de bord Renovate, Dependabot…), qu'une
-// synchronisation depuis Boardify viendrait réécrire.
 export const listGithubOpenIssues = async (installationId: string, repo: string) => {
   const token = await getInstallationToken(installationId);
   const issues: GithubIssue[] = [];
@@ -448,7 +428,6 @@ export const createGithubIssue = async ({
     body: fields,
   });
 
-  // L'API ne permet pas de créer une issue déjà fermée
   if (state === "closed") {
     await updateGithubIssue(installationId, issue.html_url, { state });
   }
@@ -531,7 +510,6 @@ export interface GithubDevelopment {
   }[];
 }
 
-// Branches liées à l'issue (« Development ») et pull requests qui la fermeront
 export const getGithubDevelopment = async (
   installationId: string,
   issueUrl: string,
@@ -581,7 +559,6 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-// Crée, depuis la branche par défaut, une branche liée à l'issue (visible dans « Development »)
 export const createGithubLinkedBranch = async (
   installationId: string,
   issueUrl: string,

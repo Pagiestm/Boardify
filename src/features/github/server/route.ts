@@ -44,7 +44,6 @@ const stateCookieOptions = {
   maxAge: 60 * 10,
 } as const;
 
-// Tâche liée à une issue et installation GitHub de son espace, pour un membre de l'espace
 const getLinkedTask = async (databases: Databases, userId: string, taskId: string) => {
   const task = await databases.getDocument<Task>(DATABASE_ID, TASKS_ID, taskId);
   const member = await getMember({ databases, workspaceId: task.workspaceId, userId });
@@ -67,7 +66,6 @@ const getLinkedTask = async (databases: Databases, userId: string, taskId: strin
 };
 
 const app = new Hono()
-  // Appelé par GitHub, sans session : l'authenticité est garantie par la signature HMAC
   .post("/webhook", async (c) => {
     const payload = await c.req.text();
 
@@ -131,8 +129,6 @@ const app = new Hono()
       const [expectedState, workspaceId] = getCookie(c, STATE_COOKIE)?.split(":") ?? [];
       deleteCookie(c, STATE_COOKIE, { path: "/" });
 
-      // GitHub ne renvoie pas toujours le state : le cookie suffit alors à prouver que le flux
-      // a été lancé depuis Boardify, la vérification d'accès se faisant via le code OAuth
       if (!expectedState || !workspaceId || (state && expectedState !== state)) {
         return c.json({ error: "Lien de connexion expiré, recommencez" }, 400);
       }
@@ -359,7 +355,6 @@ const app = new Hono()
         },
       });
     } catch (error) {
-      // Installation supprimée côté GitHub : l'espace reste lié mais inutilisable
       console.error("Lecture de l'installation GitHub impossible", error);
       return c.json({ data: { canManage, configured: true, broken: true, connection: null } });
     }
