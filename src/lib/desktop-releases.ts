@@ -1,8 +1,10 @@
 import "server-only";
 
-const RELEASES_URL = "https://api.github.com/repos/Pagiestm/Boardify/releases?per_page=10";
+const RELEASES_URL = "https://api.github.com/repos/Pagiestm/Boardify/releases?per_page=20";
 
 export type DesktopPlatform = "macos" | "windows" | "linux";
+
+const PLATFORMS: DesktopPlatform[] = ["macos", "windows", "linux"];
 
 export interface DesktopDownload {
   platform: DesktopPlatform;
@@ -30,7 +32,7 @@ export const getDesktopRelease = async (): Promise<DesktopRelease | null> => {
   try {
     const response = await fetch(RELEASES_URL, {
       headers: { Accept: "application/vnd.github+json" },
-      next: { revalidate: 3600 },
+      next: { revalidate: 300 },
     });
     if (!response.ok) return null;
 
@@ -42,18 +44,24 @@ export const getDesktopRelease = async (): Promise<DesktopRelease | null> => {
       assets: { name: string; browser_download_url: string }[];
     }[];
 
-    for (const release of releases) {
-      if (release.draft || release.prerelease) continue;
+    const candidates = releases
+      .filter((release) => !release.draft && !release.prerelease)
+      .map((release) => ({
+        version: release.tag_name,
+        url: release.html_url,
+        downloads: ASSETS.flatMap(({ platform, label, pattern }): DesktopDownload[] => {
+          const asset = release.assets.find((candidate) => pattern.test(candidate.name));
+          return asset ? [{ platform, label, url: asset.browser_download_url }] : [];
+        }),
+      }))
+      .filter((release) => release.downloads.length > 0);
 
-      const downloads = ASSETS.flatMap(({ platform, label, pattern }): DesktopDownload[] => {
-        const asset = release.assets.find((candidate) => pattern.test(candidate.name));
-        return asset ? [{ platform, label, url: asset.browser_download_url }] : [];
-      });
+    const isComplete = (release: DesktopRelease) =>
+      PLATFORMS.every((platform) =>
+        release.downloads.some((download) => download.platform === platform),
+      );
 
-      if (downloads.length > 0) {
-        return { version: release.tag_name, url: release.html_url, downloads };
-      }
-    }
+    return candidates.find(isComplete) ?? candidates[0] ?? null;
   } catch (error) {
     console.error("Lecture des releases GitHub impossible", error);
   }
