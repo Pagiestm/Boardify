@@ -1,3 +1,9 @@
+## [1.6.3](https://github.com/Pagiestm/Boardify/compare/v1.6.2...v1.6.3) (2026-10-27)
+
+### Bug Fixes
+
+* **deps:** update dependency node-appwrite to v31 ([798cad5](https://github.com/Pagiestm/Boardify/commit/798cad541dbe3095adc97830d33a32335a3665a9))
+
 ## [1.6.2](https://github.com/Pagiestm/Boardify/compare/v1.6.1...v1.6.2) (2026-10-27)
 
 ### Bug Fixes
