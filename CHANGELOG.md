@@ -1,3 +1,9 @@
+## [1.6.2](https://github.com/Pagiestm/Boardify/compare/v1.6.1...v1.6.2) (2026-10-27)
+
+### Bug Fixes
+
+* **desktop:** corrige la compilation Linux de l'application ([8d46610](https://github.com/Pagiestm/Boardify/commit/8d46610de9a7ab677aab0625f31b944ea5db914a))
+
 ## [1.6.1](https://github.com/Pagiestm/Boardify/compare/v1.6.0...v1.6.1) (2026-10-27)
 
 ### Bug Fixes
