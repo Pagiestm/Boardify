@@ -4,9 +4,11 @@ import { Logo } from "@/components/brand/logo";
 import { AppVersion } from "@/components/app-version";
 
 const links = [
-  { href: "#fonctionnalites", label: "Fonctionnalités" },
-  { href: "#vues", label: "Vues" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#fonctionnalites", label: "Fonctionnalités" },
+  { href: "/#vues", label: "Vues" },
+  { href: "/#github", label: "GitHub" },
+  { href: "/#faq", label: "FAQ" },
+  { href: "/download", label: "Application desktop" },
   { href: "/sign-in", label: "Se connecter" },
   { href: "/sign-up", label: "Créer un compte" },
 ];

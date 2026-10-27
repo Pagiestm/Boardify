@@ -1,10 +1,13 @@
+import { FaGithub } from "react-icons/fa";
 import {
   BarChart3Icon,
+  Columns3Icon,
   FolderKanbanIcon,
   KeyboardIcon,
   LayersIcon,
   LayoutGridIcon,
   ListChecksIcon,
+  TagsIcon,
   UsersIcon,
 } from "lucide-react";
 
@@ -28,12 +31,26 @@ const features = [
   {
     icon: ListChecksIcon,
     title: "Tâches détaillées",
-    description: "Statut, priorité, personne assignée, échéance et description pour chaque tâche.",
+    description:
+      "Statut, priorité, personne assignée, période, description et étiquettes pour chaque tâche.",
   },
   {
     icon: LayoutGridIcon,
-    title: "Trois vues",
-    description: "Kanban en glisser-déposer, tableau triable et filtrable, calendrier mensuel.",
+    title: "Quatre vues",
+    description:
+      "Kanban en glisser-déposer, tableau triable, calendrier mensuel et frise façon Gantt.",
+  },
+  {
+    icon: Columns3Icon,
+    title: "Colonnes sur mesure",
+    description:
+      "Renommez, recolorez, réordonnez ou masquez les colonnes, et choisissez le statut final.",
+  },
+  {
+    icon: TagsIcon,
+    title: "Étiquettes et filtres",
+    description:
+      "Classez avec des étiquettes colorées, filtrez par statut, membre, projet ou échéance.",
   },
   {
     icon: BarChart3Icon,
@@ -44,6 +61,12 @@ const features = [
     icon: UsersIcon,
     title: "Équipe et rôles",
     description: "Invitez par lien et répartissez les rôles Admin et Membre.",
+  },
+  {
+    icon: FaGithub,
+    title: "Intégration GitHub",
+    description:
+      "Chaque tâche devient une issue, synchronisée dans les deux sens avec votre dépôt.",
   },
 ];
 
@@ -76,12 +99,13 @@ export const Features = () => {
               <p className="text-sm">
                 <span className="font-medium">Raccourcis clavier.</span>{" "}
                 <span className="text-muted-foreground">
-                  Ouvrez la recherche avec ⌘K, créez une tâche avec N, un projet avec P.
+                  Recherchez avec ⌘K, créez une tâche avec N ou un projet avec P, changez de vue
+                  avec 1 à 4.
                 </span>
               </p>
             </div>
             <div className="flex items-center gap-1.5">
-              {["⌘K", "N", "P", "?"].map((key) => (
+              {["⌘K", "N", "P", "1-4", "?"].map((key) => (
                 <Kbd key={key}>{key}</Kbd>
               ))}
             </div>

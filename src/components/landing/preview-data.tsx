@@ -17,6 +17,7 @@ export interface SampleTask {
   priority: TaskPriority;
   assignee: string;
   project: string;
+  start: number;
   day: number;
 }
 
@@ -28,6 +29,7 @@ export const SAMPLE_TASKS: SampleTask[] = [
     priority: TaskPriority.HIGH,
     assignee: "Léa",
     project: "Site vitrine",
+    start: 1,
     day: 3,
   },
   {
@@ -37,6 +39,7 @@ export const SAMPLE_TASKS: SampleTask[] = [
     priority: TaskPriority.MEDIUM,
     assignee: "Hugo",
     project: "Site vitrine",
+    start: 4,
     day: 8,
   },
   {
@@ -46,6 +49,7 @@ export const SAMPLE_TASKS: SampleTask[] = [
     priority: TaskPriority.HIGH,
     assignee: "Sam",
     project: "App mobile",
+    start: 6,
     day: 12,
   },
   {
@@ -55,6 +59,7 @@ export const SAMPLE_TASKS: SampleTask[] = [
     priority: TaskPriority.MEDIUM,
     assignee: "Léa",
     project: "App mobile",
+    start: 9,
     day: 14,
   },
   {
@@ -64,6 +69,7 @@ export const SAMPLE_TASKS: SampleTask[] = [
     priority: TaskPriority.LOW,
     assignee: "Hugo",
     project: "Site vitrine",
+    start: 15,
     day: 18,
   },
   {
@@ -73,6 +79,7 @@ export const SAMPLE_TASKS: SampleTask[] = [
     priority: TaskPriority.HIGH,
     assignee: "Sam",
     project: "Site vitrine",
+    start: 19,
     day: 22,
   },
   {
@@ -82,6 +89,7 @@ export const SAMPLE_TASKS: SampleTask[] = [
     priority: TaskPriority.LOW,
     assignee: "Léa",
     project: "Site vitrine",
+    start: 23,
     day: 27,
   },
 ];

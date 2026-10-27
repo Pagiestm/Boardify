@@ -8,6 +8,8 @@ import { Features } from "@/components/landing/features";
 import { FinalCta } from "@/components/landing/final-cta";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { ViewsSection } from "@/components/landing/views-section";
+import { GithubSection } from "@/components/landing/github-section";
+import { DesktopSection } from "@/components/landing/desktop-section";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
 
@@ -29,6 +31,8 @@ export default async function LandingPage() {
         <Hero isLoggedIn={isLoggedIn} />
         <Features />
         <ViewsSection />
+        <GithubSection />
+        <DesktopSection />
         <HowItWorks />
         <Faq />
         <FinalCta isLoggedIn={isLoggedIn} />

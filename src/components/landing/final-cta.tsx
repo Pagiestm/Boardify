@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRightIcon } from "lucide-react";
+import { ArrowRightIcon, DownloadIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -19,12 +19,20 @@ export const FinalCta = ({ isLoggedIn }: FinalCtaProps) => {
         <p className="max-w-md text-base text-muted-foreground">
           Créez votre premier espace de travail en moins d&apos;une minute.
         </p>
-        <Button asChild size="lg">
-          <Link href={isLoggedIn ? "/dashboard" : "/sign-up"}>
-            {isLoggedIn ? "Ouvrir mon espace" : "Commencer gratuitement"}
-            <ArrowRightIcon />
-          </Link>
-        </Button>
+        <div className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
+          <Button asChild size="lg" className="w-full sm:w-auto">
+            <Link href={isLoggedIn ? "/dashboard" : "/sign-up"}>
+              {isLoggedIn ? "Ouvrir mon espace" : "Commencer gratuitement"}
+              <ArrowRightIcon />
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
+            <Link href="/download">
+              <DownloadIcon />
+              Télécharger l&apos;application
+            </Link>
+          </Button>
+        </div>
       </Reveal>
     </section>
   );

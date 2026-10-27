@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useState } from "react";
 import { ChevronDownIcon } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -27,7 +28,7 @@ const questions = [
   {
     question: "Quelles vues sont disponibles pour les tâches ?",
     answer:
-      "Trois vues : un kanban en glisser-déposer, un tableau triable et filtrable, et un calendrier mensuel des échéances.",
+      "Quatre vues : un kanban en glisser-déposer, un tableau triable et filtrable, un calendrier mensuel des échéances et une frise façon Gantt pour suivre la durée des tâches. Les colonnes du kanban se personnalisent : nom, couleur, ordre et statut final.",
   },
   {
     question: "Comment me connecter ?",
@@ -39,9 +40,26 @@ const questions = [
     answer:
       "Oui, l'interface s'adapte aux petits écrans, et propose un thème clair et un thème sombre.",
   },
+  {
+    question: "Boardify fonctionne-t-il avec GitHub ?",
+    answer:
+      "Oui. Connectez votre compte ou votre organisation GitHub depuis les paramètres de l'espace, puis liez un dépôt à chaque projet : chaque tâche devient une issue, avec ses étiquettes, sa priorité, son assigné et une milestone par projet. Fermer l'issue ou merger la pull request qui la résout termine la tâche, et la page d'une tâche affiche ses branches et pull requests.",
+  },
+  {
+    question: "Existe-t-il une application pour ordinateur ?",
+    answer: (
+      <>
+        Oui, pour macOS, Windows et Linux. Elle reprend tout Boardify dans sa propre fenêtre et se
+        met à jour avec le site.{" "}
+        <Link href="/download" className="font-medium text-foreground underline underline-offset-4">
+          Télécharger l&apos;application
+        </Link>
+      </>
+    ),
+  },
 ];
 
-const FaqItem = ({ question, answer }: { question: string; answer: string }) => {
+const FaqItem = ({ question, answer }: { question: string; answer: React.ReactNode }) => {
   const [open, setOpen] = useState(false);
   const reduceMotion = useReducedMotion();
   const id = useId();

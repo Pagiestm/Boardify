@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDaysIcon, KanbanSquareIcon, TableIcon } from "lucide-react";
+import { CalendarDaysIcon, GanttChartIcon, KanbanSquareIcon, TableIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -107,6 +107,61 @@ const CalendarPreview = () => {
   );
 };
 
+const GANTT_DAYS = Array.from({ length: 28 }, (_, index) => index + 1);
+const GANTT_TODAY = 13;
+const isWeekend = (day: number) => (day + 2) % 7 >= 5;
+
+const GanttPreview = () => (
+  <div className="overflow-x-auto">
+    <div className="min-w-[760px] text-xs">
+      <div className="grid grid-cols-[200px_minmax(0,1fr)] border-b">
+        <div className="px-4 py-2.5 font-medium text-muted-foreground">Tâche</div>
+        <div className="grid grid-cols-[repeat(28,minmax(0,1fr))]">
+          {GANTT_DAYS.map((day) => (
+            <div
+              key={day}
+              className={cn(
+                "py-2.5 text-center text-[10px] text-muted-foreground",
+                isWeekend(day) && "bg-muted/60",
+                day === GANTT_TODAY && "font-semibold text-primary",
+              )}
+            >
+              {day}
+            </div>
+          ))}
+        </div>
+      </div>
+      {SAMPLE_TASKS.map((task) => (
+        <div key={task.id} className="grid grid-cols-[200px_minmax(0,1fr)] border-b last:border-0">
+          <div className="flex items-center gap-2 px-4 py-2">
+            <MiniAvatar name={task.assignee} />
+            <span className="truncate font-medium">{task.name}</span>
+          </div>
+          <div className="relative grid grid-cols-[repeat(28,minmax(0,1fr))]">
+            {GANTT_DAYS.map((day) => (
+              <div key={day} className={cn(isWeekend(day) && "bg-muted/60")} />
+            ))}
+            <div
+              className="absolute inset-y-0 w-px bg-primary/60"
+              style={{ left: `${((GANTT_TODAY - 0.5) / GANTT_DAYS.length) * 100}%` }}
+            />
+            <div
+              className={cn(
+                "absolute top-1/2 h-5 -translate-y-1/2 rounded-md opacity-90",
+                TASK_STATUS_CONFIG[task.status].dot,
+              )}
+              style={{
+                left: `${((task.start - 1) / GANTT_DAYS.length) * 100}%`,
+                width: `${((task.day - task.start + 1) / GANTT_DAYS.length) * 100}%`,
+              }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 const views = [
   {
     value: "kanban",
@@ -126,6 +181,13 @@ const views = [
     icon: CalendarDaysIcon,
     description: "Visualisez les échéances du mois et anticipez les semaines chargées.",
   },
+  {
+    value: "gantt",
+    label: "Frise",
+    icon: GanttChartIcon,
+    description:
+      "Suivez la durée de chaque tâche, du début à l'échéance, sur une frise façon Gantt.",
+  },
 ];
 
 export const ViewsSection = () => {
@@ -135,7 +197,7 @@ export const ViewsSection = () => {
         <Reveal>
           <SectionHeading
             eyebrow="Vues"
-            title="Les mêmes tâches, trois façons de les voir"
+            title="Les mêmes tâches, quatre façons de les voir"
             description="Changez de vue à tout moment : tout reste synchronisé."
           />
         </Reveal>
@@ -160,6 +222,7 @@ export const ViewsSection = () => {
                   )}
                   {value === "table" && <TablePreview />}
                   {value === "calendar" && <CalendarPreview />}
+                  {value === "gantt" && <GanttPreview />}
                 </div>
               </TabsContent>
             ))}
