@@ -6,7 +6,7 @@ import { zValidator } from "@hono/zod-validator";
 import { createAdminClient } from "@/lib/appwrite";
 import { forgetSession, sessionMiddleware } from "@/lib/session-middleware";
 
-import { AUTH_COOKIE } from "../constants";
+import { AUTH_COOKIE, isSecureUrl } from "../constants";
 import { loginShema, registerShema } from "../schemas";
 
 const app = new Hono()
@@ -25,7 +25,7 @@ const app = new Hono()
     setCookie(c, AUTH_COOKIE, session.secret, {
       path: "/",
       httpOnly: true,
-      secure: true,
+      secure: isSecureUrl(c.req.url),
       sameSite: "strict",
       maxAge: 60 * 60 * 24 * 30,
     });
@@ -44,7 +44,7 @@ const app = new Hono()
     setCookie(c, AUTH_COOKIE, session.secret, {
       path: "/",
       httpOnly: true,
-      secure: true,
+      secure: isSecureUrl(c.req.url),
       sameSite: "strict",
       maxAge: 60 * 60 * 24 * 30,
     });

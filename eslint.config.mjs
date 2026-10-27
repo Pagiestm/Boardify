@@ -23,7 +23,13 @@ const eslintConfig = [
   },
   prettier,
   {
-    ignores: [".next/**", "node_modules/**", "next-env.d.ts", "test-results/**"],
+    ignores: [
+      ".next/**",
+      "node_modules/**",
+      "next-env.d.ts",
+      "test-results/**",
+      "src-tauri/target/**",
+    ],
   },
 ];
 

@@ -26,13 +26,20 @@ const projects = [
   { name: "Refonte du logo", color: "bg-amber-500" },
 ];
 
-export const AppPreview = () => {
+interface AppPreviewProps {
+  className?: string;
+}
+
+export const AppPreview = ({ className }: AppPreviewProps) => {
   return (
     <div
       aria-hidden
-      className="overflow-hidden rounded-xl border bg-background shadow-lg shadow-black/5 select-none"
+      className={cn(
+        "@container overflow-hidden rounded-xl border bg-background shadow-lg shadow-black/5 select-none",
+        className,
+      )}
     >
-      <div className="flex">
+      <div className="flex h-full">
         <aside className="hidden w-52 shrink-0 flex-col gap-5 border-r bg-sidebar p-3 md:flex">
           <div className="flex items-center gap-2 px-1">
             <LogoMark className="size-5" />
@@ -83,7 +90,7 @@ export const AppPreview = () => {
               <p className="truncate text-sm font-semibold">Site vitrine</p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="hidden items-center gap-2 rounded-md border px-2 py-1 text-xs text-muted-foreground sm:flex">
+              <span className="hidden items-center gap-2 rounded-md border px-2 py-1 text-xs text-muted-foreground @2xl:flex">
                 <SearchIcon className="size-3.5" />
                 Rechercher…
                 <span className="rounded border bg-muted px-1 text-[10px]">⌘K</span>
@@ -100,10 +107,11 @@ export const AppPreview = () => {
               <span className="rounded px-2 py-1 text-muted-foreground">Tableau</span>
               <span className="rounded bg-background px-2 py-1 font-medium shadow-xs">Kanban</span>
               <span className="rounded px-2 py-1 text-muted-foreground">Calendrier</span>
+              <span className="rounded px-2 py-1 text-muted-foreground">Frise</span>
             </div>
-            <span className="flex items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
+            <span className="flex shrink-0 items-center gap-1 rounded-md bg-primary px-2 py-1 text-xs font-medium whitespace-nowrap text-primary-foreground">
               <PlusIcon className="size-3.5" />
-              <span className="hidden sm:inline">Nouvelle tâche</span>
+              <span className="hidden @xl:inline">Nouvelle tâche</span>
             </span>
           </div>
           <div className="overflow-hidden p-4">

@@ -6,3 +6,5 @@ next-env.d.ts
 playwright-report
 test-results
 e2e/.auth
+src-tauri/target
+src-tauri/gen

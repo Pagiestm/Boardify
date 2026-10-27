@@ -4,7 +4,7 @@
 
 <h1 align="center">Boardify</h1>
 
-<p align="center">Gestion de projets simple pour les équipes : espaces de travail, projets et tâches en Kanban, tableau ou calendrier.</p>
+<p align="center">Gestion de projets simple pour les équipes : espaces de travail, projets et tâches en Kanban, tableau, calendrier ou frise, synchronisés avec GitHub. Sur le web et en application desktop.</p>
 
 ## Stack
 
@@ -12,6 +12,7 @@
 - [Tailwind CSS 4](https://tailwindcss.com) · composants [shadcn/ui](https://ui.shadcn.com) · [Motion](https://motion.dev) · [cmdk](https://cmdk.paco.me) (palette ⌘K)
 - [Hono](https://hono.dev) pour l'API (`src/app/api/[[...route]]`) · [TanStack Query](https://tanstack.com/query) / [TanStack Table](https://tanstack.com/table)
 - [Appwrite](https://appwrite.io) (auth, base de données, stockage)
+- [Tauri 2](https://tauri.app) pour l'application desktop (`src-tauri/`)
 
 ## Démarrage
 
@@ -68,17 +69,109 @@ Renseignez ensuite `GITHUB_APP_SLUG` (fin de l'URL publique de l'app), `GITHUB_A
 
 Dans Appwrite, ajoutez les attributs optionnels `githubInstallationId` (string, 32) aux espaces de travail, `githubRepo` (string, 140) aux projets et `githubIssueUrl` (URL) aux tâches.
 
+## Application desktop
+
+Boardify est disponible en application desktop pour macOS, Windows et Linux, construite avec [Tauri 2](https://tauri.app) (dossier `src-tauri/`). Les installateurs sont proposés sur la page [`/download`](src/app/download/page.tsx).
+
+### Architecture
+
+L'application est une coquille native qui affiche la version hébergée de Boardify dans le moteur web du système : WebKit sur macOS, WebView2 sur Windows, WebKitGTK sur Linux. L'interface, l'API et la session sont celles du site. L'application ne contient ni code métier ni secret, et reflète chaque déploiement sans mise à jour.
+
+```mermaid
+flowchart LR
+    subgraph Poste["Poste de l'utilisateur"]
+        subgraph App["Application Boardify"]
+            Shell["Coquille Tauri (Rust)<br/>fenêtre, navigation, liens boardify://"]
+            WebView["Moteur web du système<br/>WebKit · WebView2 · WebKitGTK"]
+            Shell --> WebView
+        end
+        Browser["Navigateur"]
+    end
+    Next["Boardify (Next.js)<br/>pages et API"]
+    Appwrite[("Appwrite")]
+    GitHub["GitHub"]
+
+    WebView -- HTTPS --> Next
+    Browser -- HTTPS --> Next
+    Next --> Appwrite
+    Next --> GitHub
+    Shell -. liens externes .-> Browser
+```
+
+### Comportement
+
+| Situation                                | Comportement                                                               |
+| ---------------------------------------- | -------------------------------------------------------------------------- |
+| Lancement                                | Ouvre `/dashboard` (redirige vers la connexion si nécessaire)              |
+| Navigation vers Boardify ou `github.com` | Dans la fenêtre (installation de la GitHub App, liaison de compte)         |
+| Navigation vers un autre domaine         | Dans le navigateur par défaut                                              |
+| Lien `target="_blank"` ou `window.open`  | Dans le navigateur par défaut                                              |
+| Lien `boardify://`                       | Transmis à l'instance en cours (ou la lance)                               |
+| Chargement d'une page                    | Cookie `boardify-desktop=1`, qui identifie l'application auprès du serveur |
+
+### Structure
+
+| Fichier                                            | Rôle                                                                               |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [`src/lib.rs`](src-tauri/src/lib.rs)               | Fenêtre, adresse chargée, règles de navigation, liens `boardify://`                |
+| [`src/init.js`](src-tauri/src/init.js)             | Script injecté dans chaque page                                                    |
+| [`tauri.conf.json`](src-tauri/tauri.conf.json)     | Identité de l'application, version (lue dans `package.json`), icônes, schéma d'URL |
+| [`Cargo.toml`](src-tauri/Cargo.toml)               | Dépendances : Tauri, plugins `deep-link`, `single-instance` et `opener`            |
+| [`app-icon.svg`](src-tauri/app-icon.svg), `icons/` | Icône source et icônes générées                                                    |
+
+### Connexion Google et GitHub
+
+Les fournisseurs OAuth n'acceptent pas les fenêtres intégrées : la connexion s'effectue dans le navigateur et revient dans l'application par le schéma `boardify://`.
+
+1. [`src/lib/oauth.ts`](src/lib/oauth.ts) détecte le cookie `boardify-desktop` et définit `/oauth/desktop` comme URL de retour d'Appwrite.
+2. L'application ouvre la page de connexion dans le navigateur.
+3. [`/oauth/desktop`](src/app/oauth/desktop/page.tsx) transmet le jeton à usage unique d'Appwrite à l'application : `boardify://oauth?userId=…&secret=…`.
+4. L'application charge `/oauth` avec ce jeton, qui crée la session dans sa fenêtre.
+
+La connexion par e-mail se fait directement dans l'application. Le cookie de session n'est `Secure` qu'en HTTPS, WebKit le refusant sur `http://localhost`.
+
+### Développement
+
+Prérequis : [Rust](https://rustup.rs) (stable).
+
+```bash
+npm run dev            # site, sur http://localhost:3000
+npm run desktop:dev    # application, sur http://localhost:3000
+npm run desktop:build  # installateurs, sur la version hébergée
+```
+
+- `BOARDIFY_URL`, lue à la compilation, remplace l'adresse chargée (`http://localhost:3000` en développement, la version hébergée en production).
+- Sur macOS, le schéma `boardify://` n'est enregistré que par une application empaquetée : `npx tauri build --debug --bundles app`, puis ouvrir `src-tauri/target/debug/bundle/macos/Boardify.app`.
+- Icônes : exporter `src-tauri/app-icon.svg` en PNG 1024 px, puis `npx tauri icon <png> -o src-tauri/icons`.
+
+### Publication
+
+À chaque release, [`release.yml`](.github/workflows/release.yml) appelle [`desktop.yml`](.github/workflows/desktop.yml), qui compile l'application et ajoute ses installateurs à la release GitHub :
+
+| Système               | Installateurs               |
+| --------------------- | --------------------------- |
+| macOS (Apple Silicon) | `.dmg`                      |
+| macOS (Intel)         | `.dmg`                      |
+| Windows               | `.exe`, `.msi`              |
+| Linux                 | `.AppImage`, `.deb`, `.rpm` |
+
+`desktop.yml` peut aussi être lancé manuellement depuis l'onglet _Actions_ pour un tag existant. La page `/download` affiche la dernière release qui contient des installateurs (cache d'une heure).
+
+Les applications ne sont pas signées : macOS et Windows affichent un avertissement au premier lancement, documenté sur `/download`.
+
 ## Scripts
 
-| Commande               | Description                                |
-| ---------------------- | ------------------------------------------ |
-| `npm run dev`          | Serveur de développement                   |
-| `npm run build`        | Build de production                        |
-| `npm run start`        | Lance le build de production               |
-| `npm run lint`         | ESLint                                     |
-| `npm run format`       | Formate le projet avec Prettier            |
-| `npm run format:check` | Vérifie le formatage (utilisé par la CI)   |
-| `npm run release`      | Lance semantic-release (utilisé par la CI) |
+| Commande                | Description                                |
+| ----------------------- | ------------------------------------------ |
+| `npm run dev`           | Serveur de développement                   |
+| `npm run build`         | Build de production                        |
+| `npm run start`         | Lance le build de production               |
+| `npm run lint`          | ESLint                                     |
+| `npm run format`        | Formate le projet avec Prettier            |
+| `npm run format:check`  | Vérifie le formatage (utilisé par la CI)   |
+| `npm run release`       | Lance semantic-release (utilisé par la CI) |
+| `npm run desktop:dev`   | Application desktop en développement       |
+| `npm run desktop:build` | Installateurs de l'application desktop     |
 
 ## Qualité et CI
 
@@ -96,7 +189,7 @@ formatage, lint et build.
 
 Les versions sont gérées automatiquement par [semantic-release](https://semantic-release.gitbook.io) (config : `.releaserc.json`, workflow : `.github/workflows/release.yml`).
 
-À chaque push sur `master`, la CI analyse les commits depuis la dernière release et, si nécessaire, publie une nouvelle version : tag Git, release GitHub, `CHANGELOG.md` et `package.json` mis à jour. La version courante est affichée dans l'application (pied de page, barre latérale, pages de connexion).
+À chaque push sur `master`, la CI analyse les commits depuis la dernière release et, si nécessaire, publie une nouvelle version : tag Git, release GitHub (avec les installateurs de l'application desktop), `CHANGELOG.md` et `package.json` mis à jour. La version courante est affichée dans l'application (pied de page, barre latérale, pages de connexion).
 
 Les messages de commit doivent suivre les [Conventional Commits](https://www.conventionalcommits.org/fr) :
 
