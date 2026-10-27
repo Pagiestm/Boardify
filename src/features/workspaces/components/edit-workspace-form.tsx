@@ -23,6 +23,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+import { GithubConnectionCard } from "@/features/github/components/github-connection-card";
+
 import { Workspace } from "../types";
 import { updateWorkspaceSchema } from "../schemas";
 import { useUpdateWorkspace } from "../api/use-update-workspace";
@@ -205,6 +207,8 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
           </Button>
         </div>
       </Card>
+
+      <GithubConnectionCard workspaceId={initialValues.$id} />
 
       <DangerZone
         description="La suppression d'un espace de travail est irréversible et supprime toutes les données associées."

@@ -16,6 +16,7 @@ import { DATABASE_ID, LABELS_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from "@/con
 
 import { Task, TaskPriority } from "../types";
 import { createtaskSchema } from "../schemas";
+import { closeDeletedTaskIssue, createTaskIssue, syncTaskIssues } from "./github-sync";
 
 const app = new Hono()
   .delete("/:taskId", sessionMiddleware, async (c) => {
@@ -36,6 +37,7 @@ const app = new Hono()
     }
 
     await databases.deleteDocument(DATABASE_ID, TASKS_ID, taskId);
+    await closeDeletedTaskIssue(databases, task);
 
     return c.json({ data: { $id: task.$id } });
   })
@@ -175,6 +177,7 @@ const app = new Hono()
       startDate,
       assigneeId,
       priority,
+      description,
       labelIds,
     } = c.req.valid("json");
 
@@ -200,20 +203,23 @@ const app = new Hono()
         ? highestPositionTask.documents[0].position + 1000
         : 1000;
 
-    const task = await databases.createDocument(DATABASE_ID, TASKS_ID, ID.unique(), {
+    const task = await databases.createDocument<Task>(DATABASE_ID, TASKS_ID, ID.unique(), {
       name,
       status,
       workspaceId,
       projectId,
-      dueDate,
-      startDate,
+      dueDate: dueDate.toISOString(),
+      startDate: startDate.toISOString(),
       assigneeId,
       priority,
+      description,
       labelIds: labelIds ?? [],
       position: newPosition,
     });
 
-    return c.json({ data: task });
+    const linkedTask = await createTaskIssue(databases, task);
+
+    return c.json({ data: linkedTask ?? task });
   })
   .patch(
     "/:taskId",
@@ -222,8 +228,17 @@ const app = new Hono()
     async (c) => {
       const user = c.get("user");
       const databases = c.get("databases");
-      const { name, status, description, projectId, dueDate, assigneeId, priority } =
-        c.req.valid("json");
+      const {
+        name,
+        status,
+        description,
+        projectId,
+        dueDate,
+        startDate,
+        assigneeId,
+        priority,
+        labelIds,
+      } = c.req.valid("json");
       const { taskId } = c.req.param();
 
       const existingTask = await databases.getDocument<Task>(DATABASE_ID, TASKS_ID, taskId);
@@ -243,10 +258,16 @@ const app = new Hono()
         status,
         projectId,
         dueDate: dueDate instanceof Date ? dueDate.toISOString() : dueDate,
+        startDate: startDate instanceof Date ? startDate.toISOString() : startDate,
         assigneeId,
         priority,
         description,
+        labelIds,
       });
+
+      await syncTaskIssues(databases, existingTask.workspaceId, [
+        { before: existingTask, after: task },
+      ]);
 
       return c.json({ data: task });
     },
@@ -352,6 +373,16 @@ const app = new Hono()
           const { $id, status, position } = task;
           return databases.updateDocument<Task>(DATABASE_ID, TASKS_ID, $id, { status, position });
         }),
+      );
+
+      const tasksBefore = new Map(tasksToUpdate.documents.map((task) => [task.$id, task]));
+
+      await syncTaskIssues(
+        databases,
+        workspaceId,
+        updatedTasks
+          .map((after) => ({ before: tasksBefore.get(after.$id)!, after }))
+          .filter(({ before, after }) => before && before.status !== after.status),
       );
 
       return c.json({ data: updatedTasks });

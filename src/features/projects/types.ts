@@ -5,6 +5,7 @@ export type Project = Models.Document & {
   imageUrl: string;
   workspaceId: string;
   columnConfig?: string;
+  githubRepo?: string;
 };
 
 export const COLUMN_COLORS = ["teal", "blue", "amber", "violet", "green", "rose", "zinc"] as const;

@@ -12,6 +12,7 @@ import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { DateRangePicker } from "@/components/date-range-picker";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import {
@@ -70,6 +71,24 @@ export const TaskFormFields = ({
             <FormLabel>Nom de la tâche</FormLabel>
             <FormControl>
               <Input {...field} placeholder="Ex. : Préparer la démo client" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
+        name="description"
+        render={({ field }) => (
+          <FormItem className="sm:col-span-2">
+            <FormLabel>Description</FormLabel>
+            <FormControl>
+              <Textarea
+                {...field}
+                value={field.value ?? ""}
+                rows={4}
+                placeholder="Contexte, étapes, liens utiles…"
+              />
             </FormControl>
             <FormMessage />
           </FormItem>

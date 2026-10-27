@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { FaGithub } from "react-icons/fa";
 import { PencilIcon } from "lucide-react";
 
 import { MemberAvatar } from "@/features/members/components/member-avatar";
@@ -114,6 +115,19 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
               <Empty />
             )}
           </OverviewProperty>
+          {task.githubIssueUrl && (
+            <OverviewProperty label="GitHub">
+              <a
+                href={task.githubIssueUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-w-0 items-center gap-x-2 hover:underline"
+              >
+                <FaGithub className="size-4 shrink-0" />
+                <span className="truncate">Issue #{task.githubIssueUrl.split("/").pop()}</span>
+              </a>
+            </OverviewProperty>
+          )}
         </dl>
       </CardContent>
     </Card>

@@ -31,6 +31,7 @@ export type Task = Models.Document & {
   priority: TaskPriority;
   description?: string;
   labelIds?: string[];
+  githubIssueUrl?: string;
 };
 
 export type PopulatedTask = Task & {

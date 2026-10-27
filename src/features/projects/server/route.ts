@@ -10,6 +10,9 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 
 import { createProjectSchema, updateBoardColumnsSchema, updateProjectSchema } from "../schemas";
 
+import { Task } from "@/features/tasks/types";
+import { closeDeletedTaskIssue } from "@/features/tasks/server/github-sync";
+
 import { Project } from "../types";
 
 const deleteProjectTasks = async (databases: Databases, projectId: string): Promise<void> => {
@@ -19,11 +22,14 @@ const deleteProjectTasks = async (databases: Databases, projectId: string): Prom
     const queries = [Query.equal("projectId", projectId), Query.limit(100)];
     if (cursor) queries.push(Query.cursorAfter(cursor));
 
-    const { documents } = await databases.listDocuments(DATABASE_ID, TASKS_ID, queries);
+    const { documents } = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, queries);
     if (documents.length === 0) break;
 
     await Promise.all(
-      documents.map((document) => databases.deleteDocument(DATABASE_ID, TASKS_ID, document.$id)),
+      documents.map(async (document) => {
+        await databases.deleteDocument(DATABASE_ID, TASKS_ID, document.$id);
+        await closeDeletedTaskIssue(databases, document);
+      }),
     );
 
     cursor = documents.length === 100 ? documents[documents.length - 1].$id : undefined;
@@ -123,7 +129,7 @@ const app = new Hono()
     const user = c.get("user");
 
     const { projectId } = c.req.param();
-    const { name, image } = c.req.valid("form");
+    const { name, image, githubRepo } = c.req.valid("form");
 
     const existingProject = await databases.getDocument<Project>(
       DATABASE_ID,
@@ -153,9 +159,15 @@ const app = new Hono()
       uploadedImageUrl = image;
     }
 
+    // N'envoie githubRepo que s'il change : l'attribut peut ne pas encore exister dans Appwrite
+    const nextGithubRepo = githubRepo === undefined ? undefined : githubRepo || null;
+    const githubRepoChanged =
+      nextGithubRepo !== undefined && nextGithubRepo !== (existingProject.githubRepo ?? null);
+
     const project = await databases.updateDocument(DATABASE_ID, PROJECTS_ID, projectId, {
       name,
       imageUrl: uploadedImageUrl,
+      ...(githubRepoChanged && { githubRepo: nextGithubRepo }),
     });
 
     return c.json({ data: project });
