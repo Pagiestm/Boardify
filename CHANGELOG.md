@@ -1,3 +1,14 @@
+## [1.6.0](https://github.com/Pagiestm/Boardify/compare/v1.5.0...v1.6.0) (2026-10-27)
+
+### Features
+
+* **desktop:** application desktop pour macOS, Windows et Linux ([435c905](https://github.com/Pagiestm/Boardify/commit/435c905f340d5bb9e116c498157482b68ce5d816))
+* **landing:** présente la frise, GitHub et l'application desktop ([e385e5a](https://github.com/Pagiestm/Boardify/commit/e385e5a1f4a2b1c1aefbc8b63d3c1a1768b951b3))
+
+### Bug Fixes
+
+* **landing:** affiche les sections avec « réduire les animations » activé ([0384b03](https://github.com/Pagiestm/Boardify/commit/0384b038f9ee9d726f3b62f31aada076e50d8b11))
+
 ## [1.5.0](https://github.com/Pagiestm/Boardify/compare/v1.4.3...v1.5.0) (2026-10-27)
 
 ### Features
