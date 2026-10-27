@@ -32,7 +32,6 @@ const findLinkedTask = async (databases: Databases, event: IssuesEvent) => {
   const task = documents[0];
   if (!task || !event.installation) return null;
 
-  // L'événement doit venir de l'installation liée à l'espace de la tâche
   const workspace = await databases.getDocument<Workspace>(
     DATABASE_ID,
     WORKSPACES_ID,
@@ -41,8 +40,6 @@ const findLinkedTask = async (databases: Databases, event: IssuesEvent) => {
   return workspace.githubInstallationId === String(event.installation.id) ? task : null;
 };
 
-// Colonne cible quand l'issue est fermée (première colonne terminée) ou rouverte
-// (première colonne visible non terminée), ou null si la tâche y est déjà
 const getTargetStatus = (project: Project, task: Task, closed: boolean) => {
   const columns = parseBoardColumns(project.columnConfig);
   const current = columns.find((column) => column.id === task.status);
@@ -53,7 +50,6 @@ const getTargetStatus = (project: Project, task: Task, closed: boolean) => {
 };
 
 const handleIssuesEvent = async (databases: Databases, event: IssuesEvent) => {
-  // Modifications faites par Boardify lui-même : rien à remonter
   if (event.sender.login === getGithubBotLogin()) return "ignored";
 
   const task = await findLinkedTask(databases, event);
@@ -81,7 +77,6 @@ const handleIssuesEvent = async (databases: Databases, event: IssuesEvent) => {
 
   const updated = await databases.updateDocument<Task>(DATABASE_ID, TASKS_ID, task.$id, update);
 
-  // Remet à jour la fiche de l'issue (statut…) sans toucher à son état, déjà fixé sur GitHub
   await syncTaskIssues(databases, task.workspaceId, [{ before: task, after: updated }], {
     syncState: false,
   });

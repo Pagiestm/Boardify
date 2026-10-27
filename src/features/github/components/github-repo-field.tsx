@@ -40,7 +40,6 @@ export const GithubRepoField = ({
   if (!isLoading && !data?.configured) return null;
 
   const repositories = data?.connection?.repositories ?? [];
-  // Garde le dépôt actuel sélectionnable même s'il n'est plus accessible à l'installation
   const options = value && !repositories.includes(value) ? [value, ...repositories] : repositories;
 
   return (
