@@ -76,7 +76,7 @@ jobs:
         run: echo "id=$(gh api repos/${{ github.repository }}/releases/tags/${{ inputs.tag }} --jq .id)" >> "$GITHUB_OUTPUT"
 
       - name: Build and upload
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
