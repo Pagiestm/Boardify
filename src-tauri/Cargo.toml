@@ -1,0 +1,16 @@
+[package]
+name = "boardify"
+version = "0.0.0"
+description = "Boardify, application desktop"
+edition = "2021"
+rust-version = "1.77.2"
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+serde_json = "1"
+tauri = { version = "2.12", features = [] }
+tauri-plugin-deep-link = "2.6"
+tauri-plugin-opener = "2.7"
+tauri-plugin-single-instance = { version = "2.5", features = ["deep-link"] }

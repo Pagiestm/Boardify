@@ -10,7 +10,12 @@ interface HeroProps {
   isLoggedIn: boolean;
 }
 
-const notes = ["Gratuit", "Connexion Google, GitHub ou e-mail", "Clair ou sombre"];
+const notes = [
+  "Gratuit",
+  "Connexion Google, GitHub ou e-mail",
+  "Clair ou sombre",
+  "Web, Mac, Windows et Linux",
+];
 
 export const Hero = ({ isLoggedIn }: HeroProps) => {
   return (
@@ -21,8 +26,8 @@ export const Hero = ({ isLoggedIn }: HeroProps) => {
             Vos projets, clairement organisés.
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base text-balance text-muted-foreground sm:text-lg">
-            Boardify réunit les espaces de travail, les projets et les tâches de votre équipe, avec
-            un kanban, un tableau et un calendrier.
+            Boardify réunit les espaces de travail, les projets et les tâches de votre équipe, en
+            kanban, tableau, calendrier ou frise, et les synchronise avec GitHub.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             {isLoggedIn ? (
