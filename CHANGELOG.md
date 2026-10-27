@@ -1,3 +1,9 @@
+## [1.6.4](https://github.com/Pagiestm/Boardify/compare/v1.6.3...v1.6.4) (2026-10-27)
+
+### Bug Fixes
+
+* **download:** propose la dernière release complète de l'application ([6ac24a6](https://github.com/Pagiestm/Boardify/commit/6ac24a68050887e977a97b243192fa460c62283f))
+
 ## [1.6.3](https://github.com/Pagiestm/Boardify/compare/v1.6.2...v1.6.3) (2026-10-27)
 
 ### Bug Fixes
