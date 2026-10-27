@@ -1,6 +1,6 @@
 {
   "name": "boardify",
-  "version": "1.4.3",
+  "version": "1.6.1",
   "private": true,
   "engines": {
     "node": ">=24"
@@ -13,7 +13,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "release": "semantic-release",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
@@ -66,6 +68,7 @@
     "@semantic-release/changelog": "^7.0.0",
     "@semantic-release/git": "^11.0.1",
     "@tailwindcss/postcss": "^4.3.3",
+    "@tauri-apps/cli": "^2.12.4",
     "@types/node": "^24.19.0",
     "@types/react": "^19.3.0",
     "@types/react-big-calendar": "^1.16.3",

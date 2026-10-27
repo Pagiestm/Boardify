@@ -7,6 +7,7 @@ import workspaces from "@/features/workspaces/server/route";
 import projects from "@/features/projects/server/route";
 import tasks from "@/features/tasks/server/route";
 import labels from "@/features/labels/server/route";
+import github from "@/features/github/server/route";
 
 const app = new Hono().basePath("/api");
 
@@ -17,7 +18,8 @@ const routes = app
   .route("/members", members)
   .route("/projects", projects)
   .route("/tasks", tasks)
-  .route("/labels", labels);
+  .route("/labels", labels)
+  .route("/github", github);
 
 export const GET = handle(app);
 export const POST = handle(app);

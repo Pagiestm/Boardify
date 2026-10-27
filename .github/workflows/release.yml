@@ -13,6 +13,8 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -33,3 +35,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
+      - name: Read release tag
+        id: tag
+        run: echo "tag=$(git tag --points-at HEAD | head -n 1)" >> "$GITHUB_OUTPUT"
+
+  desktop:
+    name: Desktop
+    needs: release
+    if: needs.release.outputs.tag != ''
+    uses: ./.github/workflows/desktop.yml
+    with:
+      tag: ${{ needs.release.outputs.tag }}

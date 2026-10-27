@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const links = [
-  { href: "#fonctionnalites", label: "Fonctionnalités" },
-  { href: "#vues", label: "Vues" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#fonctionnalites", label: "Fonctionnalités" },
+  { href: "/#vues", label: "Vues" },
+  { href: "/#github", label: "GitHub" },
+  { href: "/#faq", label: "FAQ" },
+  { href: "/download", label: "Application" },
 ];
 
 interface LandingHeaderProps {

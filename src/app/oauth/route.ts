@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-import { AUTH_COOKIE } from "@/features/auth/constants";
+import { AUTH_COOKIE, isSecureUrl } from "@/features/auth/constants";
 
 import { createAdminClient } from "@/lib/appwrite";
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       path: "/",
       httpOnly: true,
       sameSite: "strict",
-      secure: true,
+      secure: isSecureUrl(request.nextUrl),
     });
 
     return NextResponse.redirect(`${request.nextUrl.origin}/dashboard`);
