@@ -12,6 +12,8 @@ export enum ActivityType {
   PROJECT = "project",
   DEPENDENCIES = "dependencies",
   RECURRENCE = "recurrence",
+  SPRINT = "sprint",
+  ESTIMATE = "estimate",
   ATTACHMENT_ADDED = "attachment_added",
   ATTACHMENT_REMOVED = "attachment_removed",
   GITHUB_CLOSED = "github_closed",

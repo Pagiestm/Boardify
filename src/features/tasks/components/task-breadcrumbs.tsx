@@ -56,6 +56,7 @@ export const TaskBreadcrumbs = ({ project, task }: TaskBreadcrumbsProps) => {
           priority: task.priority,
           labelIds: task.labelIds ?? [],
           recurrence: task.recurrence ?? null,
+          estimate: task.estimate ?? null,
           checklist: (checklist ?? []).slice(0, 50).map((item) => item.title),
         },
       },

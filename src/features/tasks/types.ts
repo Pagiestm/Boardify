@@ -40,6 +40,8 @@ export type Task = Models.Document & {
   githubIssueUrl?: string;
   blockedBy?: string[];
   recurrence?: TaskRecurrence | null;
+  sprintId?: string | null;
+  estimate?: number | null;
 };
 
 export type PopulatedTask = Task & {

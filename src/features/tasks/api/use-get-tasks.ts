@@ -12,6 +12,8 @@ interface useGetTasksProps {
   assigneeId?: string | null;
   dueDate?: string | null;
   labelId?: string | null;
+  sprintId?: string | null;
+  enabled?: boolean;
 }
 
 export const useGetTasks = ({
@@ -22,10 +24,23 @@ export const useGetTasks = ({
   assigneeId,
   dueDate,
   labelId,
+  sprintId,
+  enabled = true,
 }: useGetTasksProps) => {
   const query = useQuery({
     ...LIVE_QUERY_OPTIONS,
-    queryKey: ["tasks", workspaceId, projectId, status, search, assigneeId, dueDate, labelId],
+    enabled,
+    queryKey: [
+      "tasks",
+      workspaceId,
+      projectId,
+      status,
+      search,
+      assigneeId,
+      dueDate,
+      labelId,
+      sprintId,
+    ],
     queryFn: async () => {
       const response = await client.api.tasks.$get({
         query: {
@@ -36,6 +51,7 @@ export const useGetTasks = ({
           assigneeId: assigneeId ?? undefined,
           dueDate: dueDate ?? undefined,
           labelId: labelId ?? undefined,
+          sprintId: sprintId ?? undefined,
         },
       });
 

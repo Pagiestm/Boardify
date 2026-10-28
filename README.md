@@ -28,16 +28,16 @@ L'application est disponible sur [http://localhost:3000](http://localhost:3000).
 
 Toutes les valeurs se trouvent dans la console Appwrite :
 
-| Variable                                                                                                                                                                                                                                 | Où la trouver                                                          |
-| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `NEXT_PUBLIC_APP_URL`                                                                                                                                                                                                                    | `http://localhost:3000` en local                                       |
-| `NEXT_PUBLIC_APPWRITE_ENDPOINT`                                                                                                                                                                                                          | _Settings_ du projet → API Endpoint (se termine par `/v1`)             |
-| `NEXT_PUBLIC_APPWRITE_PROJECT`                                                                                                                                                                                                           | _Settings_ du projet → Project ID                                      |
-| `NEXT_APPWRITE_KEY`                                                                                                                                                                                                                      | _Overview → Integrations → API Keys_ (scopes auth, databases, storage) |
-| `NEXT_PUBLIC_APPWRITE_DATABASE_ID`                                                                                                                                                                                                       | _Databases_ → ID de la base                                            |
-| `NEXT_PUBLIC_APPWRITE_WORKSPACES_ID` / `MEMBERS_ID` / `PROJECTS_ID` / `TASKS_ID` / `LABELS_ID` / `COMMENTS_ID` / `ACTIVITIES_ID` / `NOTIFICATIONS_ID` / `CHECKLIST_ITEMS_ID` / `ATTACHMENTS_ID` / `TASK_TEMPLATES_ID` / `SAVED_VIEWS_ID` | ID de chaque collection                                                |
-| `CRON_SECRET`                                                                                                                                                                                                                            | Secret des tâches planifiées Vercel (notification « échéance demain ») |
-| `NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID`                                                                                                                                                                                                  | _Storage_ → ID du bucket d'images                                      |
+| Variable                                                                                                                                                                                                                                                | Où la trouver                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `NEXT_PUBLIC_APP_URL`                                                                                                                                                                                                                                   | `http://localhost:3000` en local                                       |
+| `NEXT_PUBLIC_APPWRITE_ENDPOINT`                                                                                                                                                                                                                         | _Settings_ du projet → API Endpoint (se termine par `/v1`)             |
+| `NEXT_PUBLIC_APPWRITE_PROJECT`                                                                                                                                                                                                                          | _Settings_ du projet → Project ID                                      |
+| `NEXT_APPWRITE_KEY`                                                                                                                                                                                                                                     | _Overview → Integrations → API Keys_ (scopes auth, databases, storage) |
+| `NEXT_PUBLIC_APPWRITE_DATABASE_ID`                                                                                                                                                                                                                      | _Databases_ → ID de la base                                            |
+| `NEXT_PUBLIC_APPWRITE_WORKSPACES_ID` / `MEMBERS_ID` / `PROJECTS_ID` / `TASKS_ID` / `LABELS_ID` / `COMMENTS_ID` / `ACTIVITIES_ID` / `NOTIFICATIONS_ID` / `CHECKLIST_ITEMS_ID` / `ATTACHMENTS_ID` / `TASK_TEMPLATES_ID` / `SAVED_VIEWS_ID` / `SPRINTS_ID` | ID de chaque collection                                                |
+| `CRON_SECRET`                                                                                                                                                                                                                                           | Secret des tâches planifiées Vercel (notification « échéance demain ») |
+| `NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID`                                                                                                                                                                                                                 | _Storage_ → ID du bucket d'images                                      |
 
 Pour la connexion Google / GitHub, activez les providers dans _Auth → Settings_ et ajoutez une plateforme Web `localhost` dans le projet Appwrite.
 
@@ -104,6 +104,19 @@ Attributs optionnels à ajouter aux tâches : `blockedBy` (string 50, tableau) e
 | `saved_views`     | `workspaceId`, `memberId` (string 50, requis), `name` (string 100, requis), `view` (string 20, requis), `filters` (string 2000, requis)   | `workspaceId` |
 
 Le bucket d'images doit accepter tous les types de fichiers, jusqu'à 10 Mo, avec les permissions « All users » : Create, Read, Delete.
+
+## Planification
+
+- **Sprints** : chaque projet peut être découpé en sprints (période, objectif). La barre de sprint de la page projet filtre toutes les vues, affiche l'avancement en tâches et en points, et la charge restante de chaque membre. Terminer un sprint reporte ses tâches non terminées vers un autre sprint ou le backlog.
+- **Estimation** : chaque tâche peut recevoir des points, utilisés par les sprints et la charge.
+- **Charge des prochaines semaines** : sur l'accueil, le travail restant de chaque membre est réparti sur les jours ouvrés jusqu'à l'échéance, semaine par semaine, en points ou en nombre de tâches.
+- **Abonnement iCal** : depuis la vue Calendrier, chaque membre génère un lien personnel vers ses tâches assignées (Apple Calendar, Google Agenda, Outlook). Le lien est signé côté serveur et peut être régénéré ou désactivé à tout moment.
+
+Attributs optionnels : `sprintId` (string 50, indexé) et `estimate` (integer 0–1000) sur les tâches, `calendarToken` (string 64) sur les membres. Collection :
+
+| Collection | Attributs                                                                                                                                                           | Index       |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `sprints`  | `workspaceId`, `projectId` (string 50, requis), `name` (string 100, requis), `goal` (string 1000), `startDate`, `endDate` (datetime, requis), `completed` (boolean) | `projectId` |
 
 ## Application desktop
 

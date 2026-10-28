@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useGetTasks } from "../api/use-get-tasks";
+import { useGetSprints } from "@/features/sprints/api/use-sprints";
 import { PopulatedTask, TaskPriority, TaskRecurrence } from "../types";
 import { TASK_PRIORITY_CONFIG, TASK_RECURRENCE_LABELS } from "../constants";
 
@@ -73,6 +74,7 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
   const { data: labels } = useGetLabels({ workspaceId: task.workspaceId });
   const { data: projects } = useGetProjects({ workspaceId: task.workspaceId });
   const { data: tasks } = useGetTasks({ workspaceId: task.workspaceId });
+  const { data: sprints } = useGetSprints({ projectId: task.projectId });
   const { mutate: createComment, isPending: isCreating } = useCreateComment();
   const { mutate: updateComment, isPending: isUpdating } = useUpdateComment();
   const { mutate: deleteComment } = useDeleteComment();
@@ -98,6 +100,8 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
     (typeof id === "string" && memberNames.get(id)) || "quelqu'un";
   const taskName = (id: string) =>
     tasks?.documents.find((item) => item.$id === id)?.name ?? "une tâche supprimée";
+  const sprintName = (id?: unknown) =>
+    sprints?.find((sprint) => sprint.$id === id)?.name ?? "un sprint supprimé";
   const recurrenceLabel = (value?: unknown) =>
     TASK_RECURRENCE_LABELS[value as TaskRecurrence]?.toLowerCase();
   const priorityLabel = (value?: unknown) =>
@@ -201,6 +205,24 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
           </>
         ) : (
           "a arrêté la répétition"
+        );
+      case ActivityType.SPRINT:
+        return change.to ? (
+          <>
+            a placé la tâche dans <Strong>{sprintName(change.to)}</Strong>
+          </>
+        ) : (
+          <>
+            a retiré la tâche de <Strong>{sprintName(change.from)}</Strong>
+          </>
+        );
+      case ActivityType.ESTIMATE:
+        return change.to != null ? (
+          <>
+            a estimé la tâche à <Strong>{String(change.to)} pts</Strong>
+          </>
+        ) : (
+          "a retiré l'estimation"
         );
       case ActivityType.ATTACHMENT_ADDED:
         return (

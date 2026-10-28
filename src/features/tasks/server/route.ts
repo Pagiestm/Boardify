@@ -22,6 +22,8 @@ import { notifyMembers } from "@/features/notifications/server/notify";
 import { describeTaskChanges, logActivities } from "@/features/activities/server/activities";
 
 import { createChecklistItems, listChecklistItems } from "@/features/checklist/server/items";
+import { NO_SPRINT } from "@/features/sprints/types";
+import { validateSprint } from "@/features/sprints/server/sprints";
 
 import { deleteTaskRelations } from "./cleanup";
 import { createNextOccurrence } from "./recurrence";
@@ -68,6 +70,7 @@ const app = new Hono()
         labelId: z.string().nullish(),
         dueDate: z.string().nullish(),
         priority: z.nativeEnum(TaskPriority).nullish(),
+        sprintId: z.string().nullish(),
       }),
     ),
     async (c) => {
@@ -75,8 +78,17 @@ const app = new Hono()
       const databases = c.get("databases");
       const user = c.get("user");
 
-      const { workspaceId, projectId, status, search, assigneeId, dueDate, priority, labelId } =
-        c.req.valid("query");
+      const {
+        workspaceId,
+        projectId,
+        status,
+        search,
+        assigneeId,
+        dueDate,
+        priority,
+        labelId,
+        sprintId,
+      } = c.req.valid("query");
 
       const member = await getMember({
         databases,
@@ -116,6 +128,12 @@ const app = new Hono()
 
       if (search) {
         query.push(Query.contains("name", search));
+      }
+
+      if (sprintId) {
+        query.push(
+          sprintId === NO_SPRINT ? Query.isNull("sprintId") : Query.equal("sprintId", sprintId),
+        );
       }
 
       const tasks = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
@@ -213,6 +231,8 @@ const app = new Hono()
       labelIds,
       blockedBy,
       recurrence,
+      sprintId,
+      estimate,
       checklist,
     } = c.req.valid("json");
 
@@ -230,6 +250,9 @@ const app = new Hono()
       const error = await validateBlockedBy(databases, { $id: "", workspaceId }, blockedBy);
       if (error) return c.json({ error }, 400);
     }
+
+    const sprintError = await validateSprint(databases, sprintId, projectId);
+    if (sprintError) return c.json({ error: sprintError }, 400);
 
     const highestPositionTask = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
       Query.equal("status", status),
@@ -256,6 +279,8 @@ const app = new Hono()
       labelIds: labelIds ?? [],
       blockedBy: blockedBy ?? [],
       recurrence: recurrence ?? null,
+      sprintId: sprintId ?? null,
+      estimate: estimate ?? null,
       position: newPosition,
     });
 
@@ -293,6 +318,8 @@ const app = new Hono()
         labelIds,
         blockedBy,
         recurrence,
+        sprintId,
+        estimate,
       } = c.req.valid("json");
       const { taskId } = c.req.param();
 
@@ -313,6 +340,22 @@ const app = new Hono()
         if (error) return c.json({ error }, 400);
       }
 
+      const targetProjectId = projectId ?? existingTask.projectId;
+      const nextSprintId =
+        sprintId !== undefined
+          ? sprintId
+          : targetProjectId !== existingTask.projectId
+            ? null
+            : undefined;
+
+      if (
+        nextSprintId &&
+        (nextSprintId !== existingTask.sprintId || targetProjectId !== existingTask.projectId)
+      ) {
+        const error = await validateSprint(databases, nextSprintId, targetProjectId);
+        if (error) return c.json({ error }, 400);
+      }
+
       const task = await databases.updateDocument<Task>(DATABASE_ID, TASKS_ID, taskId, {
         name,
         status,
@@ -325,6 +368,8 @@ const app = new Hono()
         labelIds,
         blockedBy,
         recurrence,
+        sprintId: nextSprintId,
+        estimate,
       });
 
       await Promise.all([

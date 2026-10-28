@@ -72,6 +72,21 @@ export const describeTaskChanges = (before: Task, after: Task): ActivityEntry[] 
       change: { from: before.recurrence ?? null, to: after.recurrence ?? null },
     });
   }
+  if ((before.sprintId ?? null) !== (after.sprintId ?? null)) {
+    entries.push({
+      type: ActivityType.SPRINT,
+      change: { from: before.sprintId ?? null, to: after.sprintId ?? null },
+    });
+  }
+  if ((before.estimate ?? null) !== (after.estimate ?? null)) {
+    entries.push({
+      type: ActivityType.ESTIMATE,
+      change: {
+        from: before.estimate == null ? null : String(before.estimate),
+        to: after.estimate == null ? null : String(after.estimate),
+      },
+    });
+  }
   if (before.projectId !== after.projectId) {
     entries.push({
       type: ActivityType.PROJECT,

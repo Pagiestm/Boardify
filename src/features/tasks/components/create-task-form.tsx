@@ -19,6 +19,8 @@ import { useGetProject } from "@/features/projects/api/use-get-project";
 import { parseBoardColumns } from "@/features/projects/utils";
 import { useWorkspaceColumns } from "@/features/projects/hooks/use-workspace-columns";
 import { useProjectId } from "@/features/projects/hooks/use-project-id";
+import { NO_SPRINT } from "@/features/sprints/types";
+import { useTaskFilters } from "../hooks/use-task-filters";
 
 import { useCreateTaskModal } from "../hooks/use-create-task-modal";
 import { TaskFormFields, type TaskFormOptions } from "./task-form-fields";
@@ -35,6 +37,7 @@ export const CreateTaskForm = ({
   const workspaceId = useWorkspaceId();
   const { mutate, isPending } = useCreateTask();
   const { columnId } = useCreateTaskModal();
+  const [{ sprintId }] = useTaskFilters();
   const paramProjectId = useProjectId();
   const { data: project } = useGetProject({
     projectId: paramProjectId,
@@ -47,6 +50,7 @@ export const CreateTaskForm = ({
       name: "",
       ...(paramProjectId ? { projectId: paramProjectId } : {}),
       ...(columnId ? { status: columnId } : {}),
+      ...(paramProjectId && sprintId && sprintId !== NO_SPRINT ? { sprintId } : {}),
     },
   });
 
@@ -74,6 +78,7 @@ export const CreateTaskForm = ({
     if (data.priority) form.setValue("priority", data.priority);
     form.setValue("labelIds", data.labelIds ?? []);
     form.setValue("recurrence", data.recurrence ?? null);
+    form.setValue("estimate", data.estimate ?? null);
     form.setValue("checklist", data.checklist ?? []);
   };
 

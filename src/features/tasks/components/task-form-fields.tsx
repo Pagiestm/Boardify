@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { z } from "zod";
 import { Control, useFormContext, useWatch } from "react-hook-form";
 
@@ -9,6 +10,8 @@ import { BoardColumn } from "@/features/projects/types";
 import { COLUMN_COLOR_CONFIG } from "@/features/projects/constants";
 import { LabelPicker } from "@/features/labels/components/label-picker";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
+import { useGetSprints } from "@/features/sprints/api/use-sprints";
+import { getSprintState, NO_SPRINT, SPRINT_STATE_LABELS } from "@/features/sprints/types";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -68,6 +71,20 @@ export const TaskFormFields = ({
   const workspaceId = useWorkspaceId();
   const { setValue } = useFormContext<z.input<typeof taskFormSchema>>();
   const startDate = useWatch({ control, name: "startDate" });
+  const projectId = useWatch({ control, name: "projectId" });
+  const sprintId = useWatch({ control, name: "sprintId" });
+  const { data: sprints } = useGetSprints({ projectId });
+  const sprintOptions = (sprints ?? []).filter(
+    (sprint) => !sprint.completed || sprint.$id === sprintId,
+  );
+
+  const previousProjectId = useRef(projectId);
+  useEffect(() => {
+    if (previousProjectId.current && previousProjectId.current !== projectId) {
+      setValue("sprintId", null);
+    }
+    previousProjectId.current = projectId;
+  }, [projectId, setValue]);
 
   return (
     <div className="grid gap-5 px-6 pb-6 sm:grid-cols-2">
@@ -270,6 +287,70 @@ export const TaskFormFields = ({
                 workspaceId={workspaceId}
                 value={field.value ?? []}
                 onChange={field.onChange}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
+        name="sprintId"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Sprint</FormLabel>
+            <Select
+              value={field.value ?? NO_SPRINT}
+              onValueChange={(value) => field.onChange(value === NO_SPRINT ? null : value)}
+              disabled={!projectId}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue>
+                    {sprintOptions.find((sprint) => sprint.$id === field.value)?.name ??
+                      "Sans sprint"}
+                  </SelectValue>
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value={NO_SPRINT}>Sans sprint</SelectItem>
+                {sprintOptions.map((sprint) => (
+                  <SelectItem key={sprint.$id} value={sprint.$id}>
+                    {sprint.name}
+                    <span className="text-xs text-muted-foreground">
+                      {SPRINT_STATE_LABELS[getSprintState(sprint)]}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
+        name="estimate"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Estimation (points)</FormLabel>
+            <FormControl>
+              <Input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={1000}
+                step={1}
+                placeholder="Ex. : 3"
+                value={field.value ?? ""}
+                onChange={(event) =>
+                  field.onChange(
+                    event.target.value === "" ? null : Math.round(Number(event.target.value)),
+                  )
+                }
+                onBlur={field.onBlur}
+                name={field.name}
+                ref={field.ref}
               />
             </FormControl>
             <FormMessage />

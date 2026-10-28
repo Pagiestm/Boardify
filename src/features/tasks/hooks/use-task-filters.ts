@@ -8,5 +8,6 @@ export const useTaskFilters = () => {
     search: parseAsString,
     dueDate: parseAsString,
     labelId: parseAsString,
+    sprintId: parseAsString,
   });
 };

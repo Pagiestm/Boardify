@@ -57,7 +57,10 @@ export const KanbanCard = ({ task, isDragging }: KanbanCardProps) => {
           ))}
         </div>
       )}
-      {(!!task.checklist?.total || !!task.openBlockers || task.recurrence) && (
+      {(!!task.checklist?.total ||
+        !!task.openBlockers ||
+        task.recurrence ||
+        task.estimate != null) && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           {!!task.openBlockers && (
             <span
@@ -78,6 +81,14 @@ export const KanbanCard = ({ task, isDragging }: KanbanCardProps) => {
             >
               <ListChecksIcon className="size-3.5" />
               {task.checklist.done}/{task.checklist.total}
+            </span>
+          )}
+          {task.estimate != null && (
+            <span
+              className="rounded bg-muted px-1.5 py-px font-medium text-foreground tabular-nums"
+              title="Estimation"
+            >
+              {task.estimate} pt{task.estimate > 1 ? "s" : ""}
             </span>
           )}
           {task.recurrence && (

@@ -63,6 +63,7 @@ export const createNextOccurrence = async (
       labelIds: after.labelIds ?? [],
       blockedBy: [],
       recurrence: after.recurrence,
+      estimate: after.estimate ?? null,
       startDate,
       dueDate,
       position: (lowest[0]?.position ?? 0) + 1000,

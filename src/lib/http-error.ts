@@ -13,3 +13,12 @@ export const httpErrorMessage = (status: number, fallback: string) => {
   if (status === 401) return "Session expirée, reconnectez-vous";
   return fallback;
 };
+
+export const responseErrorMessage = async (
+  response: { status: number; json: () => Promise<unknown> },
+  fallback: string,
+) => {
+  if (response.status !== 400) return fallback;
+  const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
+  return typeof body?.error === "string" ? body.error : fallback;
+};

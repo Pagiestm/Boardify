@@ -17,6 +17,8 @@ import checklist from "@/features/checklist/server/route";
 import attachments from "@/features/attachments/server/route";
 import templates from "@/features/templates/server/route";
 import savedViews from "@/features/saved-views/server/route";
+import sprints from "@/features/sprints/server/route";
+import calendar from "@/features/calendar/server/route";
 
 const app = new Hono().basePath("/api");
 
@@ -45,7 +47,9 @@ const routes = app
   .route("/checklist", checklist)
   .route("/attachments", attachments)
   .route("/templates", templates)
-  .route("/saved-views", savedViews);
+  .route("/saved-views", savedViews)
+  .route("/sprints", sprints)
+  .route("/calendar", calendar);
 
 export const GET = handle(app);
 export const POST = handle(app);

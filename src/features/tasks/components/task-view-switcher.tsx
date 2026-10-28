@@ -92,7 +92,7 @@ export const isTypingTarget = (target: EventTarget | null) => {
 };
 
 export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwitcherProps) => {
-  const [{ status, assigneeId, projectId, dueDate, labelId }] = useTaskFilters();
+  const [{ status, assigneeId, projectId, dueDate, labelId, sprintId }] = useTaskFilters();
 
   const [view, setView] = useQueryState("task-view", {
     defaultValue: "table",
@@ -137,6 +137,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwit
     status,
     dueDate,
     labelId,
+    sprintId: paramProjectId ? sprintId : null,
   });
 
   useEffect(() => {
