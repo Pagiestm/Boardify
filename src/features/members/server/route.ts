@@ -77,7 +77,7 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    if (member.id !== memberToDelete.$id && member.role !== MemberRole.ADMIN) {
+    if (member.$id !== memberToDelete.$id && member.role !== MemberRole.ADMIN) {
       return c.json({ error: "Unauthorized" }, 401);
     }
 
