@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FaApple, FaLinux, FaWindows } from "react-icons/fa";
-import { DownloadIcon, FeatherIcon, LayoutDashboardIcon, RefreshCwIcon } from "lucide-react";
+import { BellDotIcon, DownloadIcon, RefreshCwIcon, ZapIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -9,11 +9,14 @@ import { DesktopMockup } from "./desktop-mockup";
 
 const highlights = [
   {
-    icon: LayoutDashboardIcon,
-    text: "Sa propre fenêtre et son icône dans le Dock ou la barre des tâches",
+    icon: ZapIcon,
+    text: "Ajout rapide d'une tâche depuis n'importe quelle application : ⌃⌥N (Ctrl+Alt+N sous Windows)",
   },
-  { icon: RefreshCwIcon, text: "Toujours à jour, sans réinstaller" },
-  { icon: FeatherIcon, text: "Légère : une dizaine de Mo" },
+  {
+    icon: BellDotIcon,
+    text: "Icône dans la barre des menus avec vos tâches du jour, pastille pour les notifications",
+  },
+  { icon: RefreshCwIcon, text: "Mises à jour automatiques, légère : une dizaine de Mo" },
 ];
 
 export const DesktopSection = () => {

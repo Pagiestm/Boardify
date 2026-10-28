@@ -5,10 +5,12 @@ import { HttpError, httpErrorMessage } from "@/lib/http-error";
 
 interface useGetMembersProps {
   workspaceId: string;
+  enabled?: boolean;
 }
 
-export const useGetMembers = ({ workspaceId }: useGetMembersProps) => {
+export const useGetMembers = ({ workspaceId, enabled = true }: useGetMembersProps) => {
   const query = useQuery({
+    enabled,
     queryKey: ["members", workspaceId],
     queryFn: async () => {
       const response = await client.api.members.$get({ query: { workspaceId } });

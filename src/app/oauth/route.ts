@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
       httpOnly: true,
       sameSite: "strict",
       secure: isSecureUrl(request.nextUrl),
+      maxAge: 60 * 60 * 24 * 30,
     });
 
     return NextResponse.redirect(`${request.nextUrl.origin}/dashboard`);

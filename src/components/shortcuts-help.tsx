@@ -2,6 +2,8 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 
+import { isDesktopApp } from "@/features/desktop/tauri";
+
 import { Kbd } from "@/components/ui/kbd";
 import {
   Dialog,
@@ -57,8 +59,17 @@ export const useShortcutsHelp = () => {
   };
 };
 
+const noop = () => () => {};
+const quickAddKeys = () =>
+  /Mac/.test(navigator.userAgent) ? ["⌃", "⌥", "N"] : ["Ctrl", "Alt", "N"];
+
 export const ShortcutsHelp = () => {
   const { isOpen: open, setOpen: onOpenChange } = useShortcutsHelp();
+  const desktopKeys = useSyncExternalStore(
+    noop,
+    () => (isDesktopApp() ? quickAddKeys().join(" ") : null),
+    () => null,
+  );
   useEffect(() => {
     mounted++;
     notify();
@@ -90,6 +101,21 @@ export const ShortcutsHelp = () => {
             </li>
           ))}
         </ul>
+        {desktopKeys && (
+          <div className="flex items-center justify-between gap-4 rounded-md bg-muted/60 px-3 py-2.5 text-sm">
+            <span>
+              Ajout rapide
+              <span className="block text-xs text-muted-foreground">
+                Depuis n&apos;importe quelle application
+              </span>
+            </span>
+            <span className="flex items-center gap-1">
+              {desktopKeys.split(" ").map((key) => (
+                <Kbd key={key}>{key}</Kbd>
+              ))}
+            </span>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

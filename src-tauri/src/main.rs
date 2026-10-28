@@ -1,20 +1,26 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod quick_add;
+mod tray;
+mod updater;
+
 use std::error::Error;
 
 use tauri::webview::NewWindowResponse;
-use tauri::{App, AppHandle, Manager, Url, WebviewUrl, WebviewWindow, WebviewWindowBuilder};
+use tauri::{
+    App, AppHandle, Manager, Url, WebviewUrl, WebviewWindow, WebviewWindowBuilder, WindowEvent,
+};
 use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_opener::OpenerExt;
 
-const MAIN_WINDOW: &str = "main";
+pub(crate) const MAIN_WINDOW: &str = "main";
 const START_PATH: &str = "/dashboard";
 const OAUTH_PATH: &str = "/oauth";
 const DEEP_LINK_SCHEME: &str = "boardify";
 const IN_APP_HOSTS: &[&str] = &["github.com"];
 const INIT_SCRIPT: &str = include_str!("init.js");
 
-fn app_url() -> Url {
+pub(crate) fn app_url() -> Url {
     let default = if cfg!(debug_assertions) {
         "http://localhost:3000"
     } else {
@@ -32,16 +38,35 @@ fn opens_in_app(url: &Url, app_url: &Url) -> bool {
         || matches!(url.scheme(), "about" | "data" | "blob")
 }
 
-fn open_in_browser(app: &AppHandle, url: &Url) {
+pub(crate) fn open_in_browser(app: &AppHandle, url: &Url) {
     let _ = app.opener().open_url(url.as_str(), None::<&str>);
 }
 
-fn focus_main_window(app: &AppHandle) -> Option<WebviewWindow> {
+pub(crate) fn focus_main_window(app: &AppHandle) -> Option<WebviewWindow> {
     let window = app.get_webview_window(MAIN_WINDOW)?;
     let _ = window.unminimize();
     let _ = window.show();
     let _ = window.set_focus();
     Some(window)
+}
+
+/// Ouvre un chemin de Boardify (ex. `/workspaces/…/tasks/…`) dans la fenêtre principale.
+pub(crate) fn open_in_main(app: &AppHandle, path: &str) {
+    if !path.starts_with('/') || path.starts_with("//") {
+        return;
+    }
+
+    let app_url = app_url();
+    let Ok(target) = app_url.join(path) else {
+        return;
+    };
+    if target.origin() != app_url.origin() {
+        return;
+    }
+
+    if let Some(window) = focus_main_window(app) {
+        let _ = window.navigate(target);
+    }
 }
 
 fn handle_deep_link(app: &AppHandle, url: &Url) {
@@ -70,7 +95,7 @@ fn create_main_window(app: &App) -> tauri::Result<()> {
     let navigation_handle = app.handle().clone();
     let new_window_handle = app.handle().clone();
 
-    WebviewWindowBuilder::new(app, MAIN_WINDOW, WebviewUrl::External(start_url))
+    let window = WebviewWindowBuilder::new(app, MAIN_WINDOW, WebviewUrl::External(start_url))
         .title("Boardify")
         .inner_size(1280.0, 820.0)
         .min_inner_size(900.0, 600.0)
@@ -87,6 +112,15 @@ fn create_main_window(app: &App) -> tauri::Result<()> {
             NewWindowResponse::Deny
         })
         .build()?;
+
+    // Fermer la fenêtre la masque : Boardify reste disponible dans la barre des menus.
+    let handle = window.clone();
+    window.on_window_event(move |event| {
+        if let WindowEvent::CloseRequested { api, .. } = event {
+            api.prevent_close();
+            let _ = handle.hide();
+        }
+    });
 
     Ok(())
 }
@@ -116,16 +150,36 @@ fn main() {
         }))
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(
             tauri_plugin_opener::Builder::new()
                 .open_js_links_on_click(false)
                 .build(),
         )
+        .manage(updater::UpdateState::default())
+        .manage(tray::TrayState::default())
+        .invoke_handler(tauri::generate_handler![tray::sync_desktop_state])
         .setup(|app| {
             create_main_window(app)?;
             listen_deep_links(app)?;
+            tray::create(app.handle())?;
+            quick_add::register_shortcut(app.handle())?;
+            quick_add::build(app.handle())?;
+            if !cfg!(debug_assertions) {
+                updater::schedule(app.handle());
+            }
             Ok(())
         })
-        .run(tauri::generate_context!())
-        .expect("erreur au lancement de Boardify");
+        .build(tauri::generate_context!())
+        .expect("erreur au lancement de Boardify")
+        .run(|app, event| {
+            // Clic sur l'icône du Dock alors que la fenêtre est masquée.
+            #[cfg(target_os = "macos")]
+            if let tauri::RunEvent::Reopen { .. } = event {
+                focus_main_window(app);
+            }
+            #[cfg(not(target_os = "macos"))]
+            let _ = (app, event);
+        });
 }
