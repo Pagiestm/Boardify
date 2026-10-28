@@ -7,6 +7,7 @@ export const useGetNotifications = () =>
   useQuery({
     queryKey: ["notifications"],
     refetchInterval: 15_000,
+    refetchIntervalInBackground: true,
     refetchOnWindowFocus: "always",
     queryFn: async () => {
       const response = await client.api.notifications.$get();
