@@ -45,5 +45,7 @@ jobs:
     needs: release
     if: needs.release.outputs.tag != ''
     uses: ./.github/workflows/desktop.yml
+    # Transmet les secrets de signature des mises à jour (TAURI_SIGNING_PRIVATE_KEY…).
+    secrets: inherit
     with:
       tag: ${{ needs.release.outputs.tag }}
