@@ -1,3 +1,9 @@
+## [1.9.0](https://github.com/Pagiestm/Boardify/compare/v1.8.0...v1.9.0) (2026-10-28)
+
+### Features
+
+* **planification:** sprints, estimation, charge par membre et abonnement iCal ([581481e](https://github.com/Pagiestm/Boardify/commit/581481e1fdde4ad204ec6eb9719a17df7fc1e6e3))
+
 ## [1.8.0](https://github.com/Pagiestm/Boardify/compare/v1.7.0...v1.8.0) (2026-10-28)
 
 ### Features
