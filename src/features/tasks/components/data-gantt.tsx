@@ -26,6 +26,8 @@ import { resolveStatus } from "./task-status-badge";
 const DAY_WIDTH = 32;
 const LABEL_WIDTH = 220;
 const MIN_DAYS = 14;
+const ROW_HEIGHT = 41;
+const ELBOW = 8;
 
 interface DataGanttProps {
   data: PopulatedTask[];
@@ -70,6 +72,27 @@ export const DataGantt = ({ data }: DataGanttProps) => {
   const showTodayLine = todayOffset >= 0 && todayOffset < spanDays;
   const overdueCount = rows.filter((row) => row.isOverdue).length;
 
+  const rowIndex = new Map(rows.map((row, index) => [row.task.$id, index]));
+  const links = rows.flatMap((row, targetIndex) =>
+    (row.task.blockedBy ?? []).flatMap((blockerId) => {
+      const sourceIndex = rowIndex.get(blockerId);
+      if (sourceIndex === undefined) return [];
+      const source = rows[sourceIndex];
+
+      const sx = LABEL_WIDTH + (differenceInCalendarDays(source.end, first) + 1) * DAY_WIDTH - 4;
+      const sy = sourceIndex * ROW_HEIGHT + 20;
+      const tx = LABEL_WIDTH + differenceInCalendarDays(row.start, first) * DAY_WIDTH + 4;
+      const ty = targetIndex * ROW_HEIGHT + 20;
+
+      const path =
+        tx - ELBOW >= sx + ELBOW
+          ? `M ${sx} ${sy} H ${sx + ELBOW} V ${ty} H ${tx}`
+          : `M ${sx} ${sy} H ${sx + ELBOW} V ${ty + (ty > sy ? -20 : 20)} H ${Math.max(tx - ELBOW * 1.5, LABEL_WIDTH + 1)} V ${ty} H ${tx}`;
+
+      return [{ id: `${blockerId}-${row.task.$id}`, path, isOpen: !source.isDone && !row.isDone }];
+    }),
+  );
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
@@ -83,6 +106,12 @@ export const DataGantt = ({ data }: DataGanttProps) => {
             ? `${overdueCount} tâche${overdueCount > 1 ? "s" : ""} en retard`
             : "Aucune tâche en retard"}
         </span>
+        {links.length > 0 && (
+          <span className="inline-flex items-center gap-1.5">
+            <span aria-hidden className="h-px w-5 bg-amber-500" />
+            Dépendance
+          </span>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -120,78 +149,116 @@ export const DataGantt = ({ data }: DataGanttProps) => {
             />
           )}
 
-          <ul className="divide-y">
-            {rows.map(({ task, start, end, isDone, isOverdue }) => {
-              const offset = differenceInCalendarDays(start, first);
-              const length = differenceInCalendarDays(end, start) + 1;
-              const status = resolveStatus(task.status, task.statusColumn);
-              const color = task.statusColumn
-                ? COLUMN_COLOR_CONFIG[task.statusColumn.color].dot
-                : status.dot;
-              const period = `${format(start, "d MMM", { locale: fr })} → ${format(end, "d MMM", { locale: fr })}`;
-              const lateBy = differenceInCalendarDays(today, end);
+          <div className="relative">
+            <ul className="divide-y">
+              {rows.map(({ task, start, end, isDone, isOverdue }) => {
+                const offset = differenceInCalendarDays(start, first);
+                const length = differenceInCalendarDays(end, start) + 1;
+                const status = resolveStatus(task.status, task.statusColumn);
+                const color = task.statusColumn
+                  ? COLUMN_COLOR_CONFIG[task.statusColumn.color].dot
+                  : status.dot;
+                const period = `${format(start, "d MMM", { locale: fr })} → ${format(end, "d MMM", { locale: fr })}`;
+                const lateBy = differenceInCalendarDays(today, end);
 
-              return (
-                <li key={task.$id} className="flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => router.push(`/workspaces/${workspaceId}/tasks/${task.$id}`)}
-                    style={{ width: LABEL_WIDTH }}
-                    className="flex shrink-0 items-center gap-1.5 px-2 py-2 text-left text-sm transition-colors hover:text-primary"
-                    title={task.name}
-                  >
-                    {isOverdue && (
-                      <AlertTriangleIcon
-                        aria-hidden
-                        className="size-3.5 shrink-0 text-red-600 dark:text-red-400"
-                      />
-                    )}
-                    <span
-                      className={cn(
-                        "truncate",
-                        isDone && "text-muted-foreground line-through",
-                        isOverdue && "text-red-600 dark:text-red-400",
-                      )}
+                return (
+                  <li key={task.$id} className="flex items-center">
+                    <button
+                      type="button"
+                      onClick={() => router.push(`/workspaces/${workspaceId}/tasks/${task.$id}`)}
+                      style={{ width: LABEL_WIDTH }}
+                      className="flex shrink-0 items-center gap-1.5 px-2 py-2 text-left text-sm transition-colors hover:text-primary"
+                      title={task.name}
                     >
-                      {task.name}
-                    </span>
-                    {isOverdue && <span className="sr-only">, en retard de {lateBy} j</span>}
-                  </button>
-                  <div className="relative flex h-10 items-center">
-                    {days.map((day) => (
-                      <div
-                        key={day.toISOString()}
-                        style={{ width: DAY_WIDTH }}
+                      {isOverdue && (
+                        <AlertTriangleIcon
+                          aria-hidden
+                          className="size-3.5 shrink-0 text-red-600 dark:text-red-400"
+                        />
+                      )}
+                      <span
                         className={cn(
-                          "h-full shrink-0 border-l border-border/50",
-                          isWeekend(day) && "bg-muted/40",
-                          isToday(day) && "bg-primary/5",
+                          "truncate",
+                          isDone && "text-muted-foreground line-through",
+                          isOverdue && "text-red-600 dark:text-red-400",
+                        )}
+                      >
+                        {task.name}
+                      </span>
+                      {isOverdue && <span className="sr-only">, en retard de {lateBy} j</span>}
+                    </button>
+                    <div className="relative flex h-10 items-center">
+                      {days.map((day) => (
+                        <div
+                          key={day.toISOString()}
+                          style={{ width: DAY_WIDTH }}
+                          className={cn(
+                            "h-full shrink-0 border-l border-border/50",
+                            isWeekend(day) && "bg-muted/40",
+                            isToday(day) && "bg-primary/5",
+                          )}
+                        />
+                      ))}
+                      <span
+                        title={
+                          isOverdue
+                            ? `${status.label} · ${period} · en retard de ${lateBy} j`
+                            : `${status.label} · ${period}${isDone ? " · terminée" : ""}`
+                        }
+                        style={{
+                          left: offset * DAY_WIDTH + 4,
+                          width: length * DAY_WIDTH - 8,
+                        }}
+                        className={cn(
+                          "absolute h-3 rounded-full",
+                          color,
+                          isDone && "opacity-40",
+                          isOverdue &&
+                            "outline-2 outline-offset-1 outline-red-600 dark:outline-red-400",
                         )}
                       />
-                    ))}
-                    <span
-                      title={
-                        isOverdue
-                          ? `${status.label} · ${period} · en retard de ${lateBy} j`
-                          : `${status.label} · ${period}${isDone ? " · terminée" : ""}`
-                      }
-                      style={{
-                        left: offset * DAY_WIDTH + 4,
-                        width: length * DAY_WIDTH - 8,
-                      }}
-                      className={cn(
-                        "absolute h-3 rounded-full",
-                        color,
-                        isDone && "opacity-40",
-                        isOverdue &&
-                          "outline-2 outline-offset-1 outline-red-600 dark:outline-red-400",
-                      )}
-                    />
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+            {links.length > 0 && (
+              <svg
+                aria-hidden
+                className="pointer-events-none absolute inset-0 size-full overflow-visible"
+              >
+                <defs>
+                  {(["open", "done"] as const).map((state) => (
+                    <marker
+                      key={state}
+                      id={`gantt-arrow-${state}`}
+                      viewBox="0 0 6 6"
+                      refX="5"
+                      refY="3"
+                      markerWidth="6"
+                      markerHeight="6"
+                      orient="auto"
+                    >
+                      <path
+                        d="M 0 0 L 6 3 L 0 6 z"
+                        className={state === "open" ? "fill-amber-500" : "fill-muted-foreground/40"}
+                      />
+                    </marker>
+                  ))}
+                </defs>
+                {links.map((link) => (
+                  <path
+                    key={link.id}
+                    d={link.path}
+                    fill="none"
+                    strokeWidth={1.5}
+                    markerEnd={`url(#gantt-arrow-${link.isOpen ? "open" : "done"})`}
+                    className={cn(link.isOpen ? "stroke-amber-500" : "stroke-muted-foreground/40")}
+                  />
+                ))}
+              </svg>
+            )}
+          </div>
         </div>
       </div>
     </div>

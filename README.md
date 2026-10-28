@@ -28,16 +28,16 @@ L'application est disponible sur [http://localhost:3000](http://localhost:3000).
 
 Toutes les valeurs se trouvent dans la console Appwrite :
 
-| Variable                                                                                                                                              | Où la trouver                                                          |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `NEXT_PUBLIC_APP_URL`                                                                                                                                 | `http://localhost:3000` en local                                       |
-| `NEXT_PUBLIC_APPWRITE_ENDPOINT`                                                                                                                       | _Settings_ du projet → API Endpoint (se termine par `/v1`)             |
-| `NEXT_PUBLIC_APPWRITE_PROJECT`                                                                                                                        | _Settings_ du projet → Project ID                                      |
-| `NEXT_APPWRITE_KEY`                                                                                                                                   | _Overview → Integrations → API Keys_ (scopes auth, databases, storage) |
-| `NEXT_PUBLIC_APPWRITE_DATABASE_ID`                                                                                                                    | _Databases_ → ID de la base                                            |
-| `NEXT_PUBLIC_APPWRITE_WORKSPACES_ID` / `MEMBERS_ID` / `PROJECTS_ID` / `TASKS_ID` / `LABELS_ID` / `COMMENTS_ID` / `ACTIVITIES_ID` / `NOTIFICATIONS_ID` | ID de chaque collection                                                |
-| `CRON_SECRET`                                                                                                                                         | Secret des tâches planifiées Vercel (notification « échéance demain ») |
-| `NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID`                                                                                                               | _Storage_ → ID du bucket d'images                                      |
+| Variable                                                                                                                                                                                                                                 | Où la trouver                                                          |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `NEXT_PUBLIC_APP_URL`                                                                                                                                                                                                                    | `http://localhost:3000` en local                                       |
+| `NEXT_PUBLIC_APPWRITE_ENDPOINT`                                                                                                                                                                                                          | _Settings_ du projet → API Endpoint (se termine par `/v1`)             |
+| `NEXT_PUBLIC_APPWRITE_PROJECT`                                                                                                                                                                                                           | _Settings_ du projet → Project ID                                      |
+| `NEXT_APPWRITE_KEY`                                                                                                                                                                                                                      | _Overview → Integrations → API Keys_ (scopes auth, databases, storage) |
+| `NEXT_PUBLIC_APPWRITE_DATABASE_ID`                                                                                                                                                                                                       | _Databases_ → ID de la base                                            |
+| `NEXT_PUBLIC_APPWRITE_WORKSPACES_ID` / `MEMBERS_ID` / `PROJECTS_ID` / `TASKS_ID` / `LABELS_ID` / `COMMENTS_ID` / `ACTIVITIES_ID` / `NOTIFICATIONS_ID` / `CHECKLIST_ITEMS_ID` / `ATTACHMENTS_ID` / `TASK_TEMPLATES_ID` / `SAVED_VIEWS_ID` | ID de chaque collection                                                |
+| `CRON_SECRET`                                                                                                                                                                                                                            | Secret des tâches planifiées Vercel (notification « échéance demain ») |
+| `NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID`                                                                                                                                                                                                  | _Storage_ → ID du bucket d'images                                      |
 
 Pour la connexion Google / GitHub, activez les providers dans _Auth → Settings_ et ajoutez une plateforme Web `localhost` dans le projet Appwrite.
 
@@ -84,6 +84,26 @@ Collections Appwrite (permissions « All users » : Create, Read, Update, Delete
 | `comments`      | `workspaceId`, `taskId`, `memberId` (string 50, requis), `content` (string 5000, requis), `githubCommentId` (string 50) | `taskId` |
 | `activities`    | `workspaceId`, `taskId`, `type` (string 50, requis), `memberId` (string 50), `data` (string 2000)                       | `taskId` |
 | `notifications` | `workspaceId`, `userId`, `taskId`, `type` (string 50, requis), `actorId` (string 50), `read` (boolean, défaut `false`)  | `userId` |
+
+## Tâches enrichies
+
+- **Sous-tâches** : une checklist par tâche, avec sa progression sur la page de la tâche et sur la carte Kanban.
+- **Dépendances** : une tâche peut être « bloquée par » d'autres tâches de l'espace. Les boucles sont refusées. Les cartes bloquées sont signalées et la Frise relie les tâches par des flèches.
+- **Pièces jointes** : jusqu'à 10 Mo par fichier, stockées dans le bucket d'images et servies par l'API (aperçu pour les images et les PDF, téléchargement pour le reste).
+- **Tâches récurrentes** : chaque jour, semaine ou mois. Quand la tâche passe dans une colonne terminée (depuis Boardify ou en fermant l'issue GitHub), l'occurrence suivante est créée avec ses dates décalées et sa checklist remise à zéro.
+- **Modèles** : une tâche peut être enregistrée comme modèle (description, priorité, étiquettes, répétition, sous-tâches) puis réutilisée à la création. Les administrateurs les gèrent dans les paramètres de l'espace.
+- **Vues sauvegardées** : chaque membre enregistre ses combinaisons de filtres et de vue (tableau, Kanban, calendrier, frise).
+
+Attributs optionnels à ajouter aux tâches : `blockedBy` (string 50, tableau) et `recurrence` (string 20). Collections (mêmes permissions que les tâches) :
+
+| Collection        | Attributs                                                                                                                                 | Index         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| `checklist_items` | `workspaceId`, `taskId` (string 50, requis), `title` (string 500, requis), `done` (boolean, défaut `false`), `position` (integer, requis) | `taskId`      |
+| `attachments`     | `workspaceId`, `taskId`, `memberId`, `fileId` (string 50, requis), `name` (string 255, requis), `mimeType` (string 100), `size` (integer) | `taskId`      |
+| `task_templates`  | `workspaceId` (string 50, requis), `name` (string 100, requis), `data` (string 5000, requis)                                              | `workspaceId` |
+| `saved_views`     | `workspaceId`, `memberId` (string 50, requis), `name` (string 100, requis), `view` (string 20, requis), `filters` (string 2000, requis)   | `workspaceId` |
+
+Le bucket d'images doit accepter tous les types de fichiers, jusqu'à 10 Mo, avec les permissions « All users » : Create, Read, Delete.
 
 ## Application desktop
 

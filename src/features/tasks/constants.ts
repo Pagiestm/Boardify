@@ -1,4 +1,4 @@
-import { TaskPriority, TaskStatus } from "./types";
+import { TaskPriority, TaskRecurrence, TaskStatus } from "./types";
 
 interface StatusConfig {
   label: string;
@@ -77,3 +77,9 @@ export const TASK_STATUS_ORDER: TaskStatus[] = [
   TaskStatus.IN_REVIEW,
   TaskStatus.DONE,
 ];
+
+export const TASK_RECURRENCE_LABELS: Record<TaskRecurrence, string> = {
+  [TaskRecurrence.DAILY]: "Chaque jour",
+  [TaskRecurrence.WEEKLY]: "Chaque semaine",
+  [TaskRecurrence.MONTHLY]: "Chaque mois",
+};

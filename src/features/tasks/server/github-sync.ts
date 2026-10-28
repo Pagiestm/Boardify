@@ -23,7 +23,7 @@ import {
 import { DATABASE_ID, LABELS_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID, WORKSPACES_ID } from "@/config";
 
 import { Task, TaskPriority } from "../types";
-import { isTaskDone } from "../utils";
+import { isDoneStatus } from "./done";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "long",
@@ -36,9 +36,6 @@ const dayFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris"
 
 const findStatusColumn = (project: Project | undefined, status: string) =>
   parseBoardColumns(project?.columnConfig).find((column) => column.id === status);
-
-const isDoneStatus = (project: Project | undefined, status: string) =>
-  isTaskDone({ status, statusColumn: findStatusColumn(project, status) });
 
 const LABEL_HEX: Record<LabelColor, string> = {
   teal: "14b8a6",

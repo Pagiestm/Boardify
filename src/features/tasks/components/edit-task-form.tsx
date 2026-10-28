@@ -47,6 +47,8 @@ export const EditTaskForm = ({
       priority: initialValues.priority,
       description: initialValues.description ?? undefined,
       labelIds: initialValues.labelIds ?? [],
+      blockedBy: initialValues.blockedBy ?? [],
+      recurrence: initialValues.recurrence ?? null,
       dueDate: initialValues.dueDate ? new Date(initialValues.dueDate) : undefined,
       startDate: new Date(initialValues.startDate ?? initialValues.dueDate),
     },
@@ -77,6 +79,7 @@ export const EditTaskForm = ({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <TaskFormFields
+            taskId={initialValues.$id}
             boardColumns={boardColumns}
             hideProjectField={Boolean(paramProjectId)}
             control={form.control}

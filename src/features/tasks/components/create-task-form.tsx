@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { z } from "zod";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
+import { TemplateData } from "@/features/templates/types";
+import { TemplatePicker } from "@/features/templates/components/template-picker";
 
 import { Form } from "@/components/ui/form";
 import { FormFooter, FormHeader } from "@/components/forms/form-shell";
@@ -48,6 +50,8 @@ export const CreateTaskForm = ({
     },
   });
 
+  const [templateId, setTemplateId] = useState<string | null>(null);
+  const checklist = useWatch({ control: form.control, name: "checklist" });
   const selectedProjectId = useWatch({ control: form.control, name: "projectId" });
   const workspaceColumns = useWorkspaceColumns(workspaceId);
 
@@ -64,6 +68,15 @@ export const CreateTaskForm = ({
     form.setValue("status", targetColumn.id);
   }, [targetColumn, form]);
 
+  const applyTemplate = (id: string | null, data: TemplateData) => {
+    setTemplateId(id);
+    form.setValue("description", data.description ?? "");
+    if (data.priority) form.setValue("priority", data.priority);
+    form.setValue("labelIds", data.labelIds ?? []);
+    form.setValue("recurrence", data.recurrence ?? null);
+    form.setValue("checklist", data.checklist ?? []);
+  };
+
   const onSubmit = (values: z.output<typeof taskFormSchema>) => {
     mutate(
       {
@@ -75,6 +88,7 @@ export const CreateTaskForm = ({
       {
         onSuccess: () => {
           form.reset();
+          setTemplateId(null);
           onCancel?.();
         },
       },
@@ -89,6 +103,12 @@ export const CreateTaskForm = ({
       />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
+          <TemplatePicker
+            workspaceId={workspaceId}
+            selectedId={templateId}
+            checklistCount={checklist?.length ?? 0}
+            onSelect={applyTemplate}
+          />
           <TaskFormFields
             control={form.control}
             projectOptions={projectOptions}

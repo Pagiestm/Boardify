@@ -15,7 +15,11 @@ export const useUpdateTask = () => {
       const response = await client.api.tasks[":taskId"]["$patch"]({ json, param });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la mise à jour de la tâche");
+        const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
+        throw new Error(
+          (response.status === 400 && typeof body?.error === "string" && body.error) ||
+            "Erreur lors de la mise à jour de la tâche",
+        );
       }
 
       return await response.json();
@@ -29,8 +33,8 @@ export const useUpdateTask = () => {
       queryClient.invalidateQueries({ queryKey: ["task", data.$id] });
       queryClient.invalidateQueries({ queryKey: ["activities"] });
     },
-    onError: () => {
-      toast.error("Erreur lors de la mise à jour de la tâche");
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 

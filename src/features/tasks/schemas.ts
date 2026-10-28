@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TaskPriority } from "./types";
+import { TaskPriority, TaskRecurrence } from "./types";
 
 export const createtaskSchema = z.object({
   name: z.string().trim().min(1, "Requis"),
@@ -16,6 +16,9 @@ export const createtaskSchema = z.object({
   priority: z.nativeEnum(TaskPriority, { error: "Requis" }),
   description: z.string().optional(),
   labelIds: z.array(z.string()).optional(),
+  blockedBy: z.array(z.string()).max(20).optional(),
+  recurrence: z.nativeEnum(TaskRecurrence).nullable().optional(),
+  checklist: z.array(z.string().trim().min(1).max(500)).max(50).optional(),
 });
 
 export const taskFormSchema = createtaskSchema

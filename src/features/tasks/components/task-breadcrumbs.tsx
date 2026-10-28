@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronRightIcon, TrashIcon } from "lucide-react";
+import { ChevronRightIcon, LayoutTemplateIcon, TrashIcon } from "lucide-react";
 
 import { Project } from "@/features/projects/types";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
+import { useGetChecklist } from "@/features/checklist/api/use-checklist";
+import { useCreateTemplate } from "@/features/templates/api/use-templates";
 
 import { Button } from "@/components/ui/button";
 import { useConfirm } from "@/hooks/use-confirm";
@@ -22,6 +24,8 @@ export const TaskBreadcrumbs = ({ project, task }: TaskBreadcrumbsProps) => {
   const workspaceId = useWorkspaceId();
 
   const { mutate, isPending } = useDeleteTask();
+  const { data: checklist } = useGetChecklist({ taskId: task.$id });
+  const { mutate: createTemplate, isPending: isSavingTemplate } = useCreateTemplate();
   const [ConfirmDialog, confirm] = useConfirm(
     "Supprimer la tâche ?",
     "Cette action est définitive et ne peut pas être annulée.",
@@ -41,6 +45,21 @@ export const TaskBreadcrumbs = ({ project, task }: TaskBreadcrumbsProps) => {
       },
     );
   };
+
+  const handleSaveTemplate = () =>
+    createTemplate({
+      json: {
+        workspaceId: task.workspaceId,
+        name: task.name.slice(0, 100),
+        data: {
+          description: task.description?.slice(0, 2000) || undefined,
+          priority: task.priority,
+          labelIds: task.labelIds ?? [],
+          recurrence: task.recurrence ?? null,
+          checklist: (checklist ?? []).slice(0, 50).map((item) => item.title),
+        },
+      },
+    });
 
   return (
     <div className="flex items-center gap-x-3">
@@ -66,9 +85,20 @@ export const TaskBreadcrumbs = ({ project, task }: TaskBreadcrumbsProps) => {
         <h1 className="truncate font-semibold">{task.name}</h1>
       </nav>
       <Button
+        onClick={handleSaveTemplate}
+        disabled={isSavingTemplate}
+        className="ml-auto shrink-0"
+        variant="outline"
+        size="sm"
+        title="Enregistrer comme modèle"
+      >
+        <LayoutTemplateIcon />
+        <span className="hidden sm:inline">Modèle</span>
+      </Button>
+      <Button
         onClick={handleDeleteTask}
         disabled={isPending}
-        className="ml-auto shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
         variant="outline"
         size="sm"
       >

@@ -1,4 +1,4 @@
-import { MoreHorizontalIcon } from "lucide-react";
+import { ListChecksIcon, LockIcon, MoreHorizontalIcon, RepeatIcon } from "lucide-react";
 
 import { MemberAvatar } from "@/features/members/components/member-avatar";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
@@ -55,6 +55,36 @@ export const KanbanCard = ({ task, isDragging }: KanbanCardProps) => {
           {task.labels.map((label) => (
             <LabelBadge key={label.$id} label={label} />
           ))}
+        </div>
+      )}
+      {(!!task.checklist?.total || !!task.openBlockers || task.recurrence) && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          {!!task.openBlockers && (
+            <span
+              className="flex items-center gap-1 text-amber-600 dark:text-amber-500"
+              title="Bloquée par une autre tâche"
+            >
+              <LockIcon className="size-3.5" />
+              Bloquée
+            </span>
+          )}
+          {!!task.checklist?.total && (
+            <span
+              className={cn(
+                "flex items-center gap-1 tabular-nums",
+                task.checklist.done === task.checklist.total && "text-primary",
+              )}
+              title="Sous-tâches"
+            >
+              <ListChecksIcon className="size-3.5" />
+              {task.checklist.done}/{task.checklist.total}
+            </span>
+          )}
+          {task.recurrence && (
+            <span className="flex items-center gap-1" title="Tâche récurrente">
+              <RepeatIcon className="size-3.5" />
+            </span>
+          )}
         </div>
       )}
       <div className="flex items-center gap-2">

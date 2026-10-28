@@ -21,7 +21,11 @@ import { NotificationType } from "@/features/notifications/types";
 import { notifyMembers } from "@/features/notifications/server/notify";
 import { describeTaskChanges, logActivities } from "@/features/activities/server/activities";
 
+import { createChecklistItems, listChecklistItems } from "@/features/checklist/server/items";
+
 import { deleteTaskRelations } from "./cleanup";
+import { createNextOccurrence } from "./recurrence";
+import { getBlockerStates, validateBlockedBy } from "./dependencies";
 import { closeDeletedTaskIssue, createTaskIssue, syncTaskIssues } from "./github-sync";
 
 const app = new Hono()
@@ -45,7 +49,7 @@ const app = new Hono()
     await databases.deleteDocument(DATABASE_ID, TASKS_ID, taskId);
     await Promise.all([
       closeDeletedTaskIssue(databases, task),
-      deleteTaskRelations(databases, taskId),
+      deleteTaskRelations(databases, c.get("storage"), taskId),
     ]);
 
     return c.json({ data: { $id: task.$id } });
@@ -114,27 +118,37 @@ const app = new Hono()
         query.push(Query.contains("name", search));
       }
 
-      const tasks = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, query);
+      const tasks = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
+        ...query,
+        Query.limit(5000),
+      ]);
 
       const projectIds = tasks.documents.map((task) => task.projectId);
       const assigneeIds = tasks.documents.map((task) => task.assigneeId);
 
-      const [projects, members, workspaceLabels] = await Promise.all([
-        databases.listDocuments<Project>(
-          DATABASE_ID,
-          PROJECTS_ID,
-          projectIds.length > 0 ? [Query.contains("$id", projectIds)] : [],
-        ),
-        databases.listDocuments<Member>(
-          DATABASE_ID,
-          MEMBERS_ID,
-          assigneeIds.length > 0 ? [Query.contains("$id", assigneeIds)] : [],
-        ),
-        databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
-          Query.equal("workspaceId", workspaceId),
-          Query.limit(100),
-        ]),
-      ]);
+      const [projects, members, workspaceLabels, checklistItems, blockerStates] = await Promise.all(
+        [
+          databases.listDocuments<Project>(
+            DATABASE_ID,
+            PROJECTS_ID,
+            projectIds.length > 0 ? [Query.contains("$id", projectIds)] : [],
+          ),
+          databases.listDocuments<Member>(
+            DATABASE_ID,
+            MEMBERS_ID,
+            assigneeIds.length > 0 ? [Query.contains("$id", assigneeIds)] : [],
+          ),
+          databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
+            Query.equal("workspaceId", workspaceId),
+            Query.limit(100),
+          ]),
+          listChecklistItems(
+            databases,
+            tasks.documents.map((task) => task.$id),
+          ),
+          getBlockerStates(databases, tasks.documents),
+        ],
+      );
 
       const identities = await getUserIdentities(
         users,
@@ -157,12 +171,21 @@ const app = new Hono()
           .map((labelId) => workspaceLabels.documents.find((label) => label.$id === labelId))
           .filter((label): label is Label => Boolean(label));
 
+        const checklist = checklistItems.filter((item) => item.taskId === task.$id);
+
         return {
           ...task,
           project,
           assignee,
           labels,
           statusColumn,
+          checklist: {
+            total: checklist.length,
+            done: checklist.filter((item) => item.done).length,
+          },
+          openBlockers: (task.blockedBy ?? []).filter(
+            (blockerId) => blockerStates.get(blockerId)?.done === false,
+          ).length,
         };
       });
 
@@ -188,6 +211,9 @@ const app = new Hono()
       priority,
       description,
       labelIds,
+      blockedBy,
+      recurrence,
+      checklist,
     } = c.req.valid("json");
 
     const member = await getMember({
@@ -198,6 +224,11 @@ const app = new Hono()
 
     if (!member) {
       return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    if (blockedBy?.length) {
+      const error = await validateBlockedBy(databases, { $id: "", workspaceId }, blockedBy);
+      if (error) return c.json({ error }, 400);
     }
 
     const highestPositionTask = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
@@ -223,11 +254,14 @@ const app = new Hono()
       priority,
       description,
       labelIds: labelIds ?? [],
+      blockedBy: blockedBy ?? [],
+      recurrence: recurrence ?? null,
       position: newPosition,
     });
 
     const [linkedTask] = await Promise.all([
       createTaskIssue(databases, task),
+      createChecklistItems(databases, task, checklist ?? []),
       logActivities(databases, task, member.$id, [{ type: ActivityType.CREATED }]),
       notifyMembers(databases, {
         workspaceId,
@@ -257,6 +291,8 @@ const app = new Hono()
         assigneeId,
         priority,
         labelIds,
+        blockedBy,
+        recurrence,
       } = c.req.valid("json");
       const { taskId } = c.req.param();
 
@@ -272,6 +308,11 @@ const app = new Hono()
         return c.json({ error: "Unauthorized" }, 401);
       }
 
+      if (blockedBy) {
+        const error = await validateBlockedBy(databases, existingTask, blockedBy);
+        if (error) return c.json({ error }, 400);
+      }
+
       const task = await databases.updateDocument<Task>(DATABASE_ID, TASKS_ID, taskId, {
         name,
         status,
@@ -282,12 +323,15 @@ const app = new Hono()
         priority,
         description,
         labelIds,
+        blockedBy,
+        recurrence,
       });
 
       await Promise.all([
         syncTaskIssues(databases, existingTask.workspaceId, [
           { before: existingTask, after: task },
         ]),
+        createNextOccurrence(databases, existingTask, task, member.$id),
         logActivities(databases, task, member.$id, describeTaskChanges(existingTask, task)),
         existingTask.assigneeId !== task.assigneeId &&
           notifyMembers(databases, {
@@ -340,6 +384,13 @@ const app = new Hono()
       ...(await getUserIdentity(users, member.userId)),
     };
 
+    const { documents: blockedTasks } = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
+      Query.equal("workspaceId", task.workspaceId),
+      Query.contains("blockedBy", [task.$id]),
+      Query.limit(100),
+    ]);
+    const states = await getBlockerStates(databases, [task, ...blockedTasks]);
+
     const statusColumn = parseBoardColumns(project.columnConfig).find(
       (column) => column.id === task.status,
     );
@@ -351,6 +402,10 @@ const app = new Hono()
         assignee,
         labels,
         statusColumn,
+        blockers: (task.blockedBy ?? [])
+          .map((blockerId) => states.get(blockerId))
+          .filter((state) => !!state),
+        blocking: blockedTasks.map((blocked) => states.get(blocked.$id)).filter((state) => !!state),
       },
     });
   })
@@ -414,6 +469,9 @@ const app = new Hono()
         syncTaskIssues(databases, workspaceId, statusChanges),
         ...statusChanges.map(({ before, after }) =>
           logActivities(databases, after, member.$id, describeTaskChanges(before, after)),
+        ),
+        ...statusChanges.map(({ before, after }) =>
+          createNextOccurrence(databases, before, after, member.$id),
         ),
       ]);
 
