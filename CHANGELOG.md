@@ -1,3 +1,9 @@
+## [1.9.1](https://github.com/Pagiestm/Boardify/compare/v1.9.0...v1.9.1) (2026-10-28)
+
+### Bug Fixes
+
+* **calendar:** ne plus mettre en cache le flux iCal ([16cdec2](https://github.com/Pagiestm/Boardify/commit/16cdec29447f9712a2ed4c63e3fcbdcb09a256ee))
+
 ## [1.9.0](https://github.com/Pagiestm/Boardify/compare/v1.8.0...v1.9.0) (2026-10-28)
 
 ### Features
