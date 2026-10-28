@@ -80,7 +80,7 @@ const app = new Hono()
     return c.body(body, 200, {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'inline; filename="boardify.ics"',
-      "Cache-Control": "private, max-age=300",
+      "Cache-Control": "private, no-cache",
     });
   })
   .get("/subscription", sessionMiddleware, zValidator("query", workspaceQuery), async (c) => {
