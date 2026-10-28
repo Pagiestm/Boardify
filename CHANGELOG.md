@@ -1,3 +1,9 @@
+## [1.10.1](https://github.com/Pagiestm/Boardify/compare/v1.10.0...v1.10.1) (2026-10-28)
+
+### Bug Fixes
+
+* **ci:** transmettre les secrets de signature au workflow desktop ([8b12232](https://github.com/Pagiestm/Boardify/commit/8b12232f5b20815d6b6e912e2e29489dfca482e8))
+
 ## [1.10.0](https://github.com/Pagiestm/Boardify/compare/v1.9.1...v1.10.0) (2026-10-28)
 
 ### Features
