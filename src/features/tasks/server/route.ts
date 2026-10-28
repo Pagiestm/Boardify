@@ -16,6 +16,12 @@ import { DATABASE_ID, LABELS_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from "@/con
 
 import { Task, TaskPriority } from "../types";
 import { createtaskSchema } from "../schemas";
+import { ActivityType } from "@/features/activities/types";
+import { NotificationType } from "@/features/notifications/types";
+import { notifyMembers } from "@/features/notifications/server/notify";
+import { describeTaskChanges, logActivities } from "@/features/activities/server/activities";
+
+import { deleteTaskRelations } from "./cleanup";
 import { closeDeletedTaskIssue, createTaskIssue, syncTaskIssues } from "./github-sync";
 
 const app = new Hono()
@@ -37,7 +43,10 @@ const app = new Hono()
     }
 
     await databases.deleteDocument(DATABASE_ID, TASKS_ID, taskId);
-    await closeDeletedTaskIssue(databases, task);
+    await Promise.all([
+      closeDeletedTaskIssue(databases, task),
+      deleteTaskRelations(databases, taskId),
+    ]);
 
     return c.json({ data: { $id: task.$id } });
   })
@@ -217,7 +226,17 @@ const app = new Hono()
       position: newPosition,
     });
 
-    const linkedTask = await createTaskIssue(databases, task);
+    const [linkedTask] = await Promise.all([
+      createTaskIssue(databases, task),
+      logActivities(databases, task, member.$id, [{ type: ActivityType.CREATED }]),
+      notifyMembers(databases, {
+        workspaceId,
+        taskId: task.$id,
+        type: NotificationType.ASSIGNED,
+        actorId: member.$id,
+        recipientIds: [assigneeId],
+      }),
+    ]);
 
     return c.json({ data: linkedTask ?? task });
   })
@@ -265,8 +284,19 @@ const app = new Hono()
         labelIds,
       });
 
-      await syncTaskIssues(databases, existingTask.workspaceId, [
-        { before: existingTask, after: task },
+      await Promise.all([
+        syncTaskIssues(databases, existingTask.workspaceId, [
+          { before: existingTask, after: task },
+        ]),
+        logActivities(databases, task, member.$id, describeTaskChanges(existingTask, task)),
+        existingTask.assigneeId !== task.assigneeId &&
+          notifyMembers(databases, {
+            workspaceId: task.workspaceId,
+            taskId: task.$id,
+            type: NotificationType.ASSIGNED,
+            actorId: member.$id,
+            recipientIds: [task.assigneeId],
+          }),
       ]);
 
       return c.json({ data: task });
@@ -376,14 +406,16 @@ const app = new Hono()
       );
 
       const tasksBefore = new Map(tasksToUpdate.documents.map((task) => [task.$id, task]));
+      const statusChanges = updatedTasks
+        .map((after) => ({ before: tasksBefore.get(after.$id)!, after }))
+        .filter(({ before, after }) => before && before.status !== after.status);
 
-      await syncTaskIssues(
-        databases,
-        workspaceId,
-        updatedTasks
-          .map((after) => ({ before: tasksBefore.get(after.$id)!, after }))
-          .filter(({ before, after }) => before && before.status !== after.status),
-      );
+      await Promise.all([
+        syncTaskIssues(databases, workspaceId, statusChanges),
+        ...statusChanges.map(({ before, after }) =>
+          logActivities(databases, after, member.$id, describeTaskChanges(before, after)),
+        ),
+      ]);
 
       return c.json({ data: updatedTasks });
     },

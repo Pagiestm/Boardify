@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { client } from "@/lib/rpc";
+import { LIVE_QUERY_OPTIONS } from "@/lib/live-query";
 import { HttpError, httpErrorMessage } from "@/lib/http-error";
 
 interface useGetTaskProps {
@@ -9,6 +10,7 @@ interface useGetTaskProps {
 
 export const useGetTask = ({ taskId }: useGetTaskProps) => {
   const query = useQuery({
+    ...LIVE_QUERY_OPTIONS,
     queryKey: ["task", taskId],
     queryFn: async () => {
       const response = await client.api.tasks[":taskId"].$get({

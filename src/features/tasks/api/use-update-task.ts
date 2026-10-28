@@ -27,6 +27,7 @@ export const useUpdateTask = () => {
       queryClient.invalidateQueries({ queryKey: ["workspace-analytics"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["task", data.$id] });
+      queryClient.invalidateQueries({ queryKey: ["activities"] });
     },
     onError: () => {
       toast.error("Erreur lors de la mise à jour de la tâche");

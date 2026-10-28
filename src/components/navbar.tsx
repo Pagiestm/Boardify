@@ -4,6 +4,7 @@ import { SearchIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { UserButton } from "@/features/auth/components/user-button";
+import { NotificationsButton } from "@/features/notifications/components/notifications-button";
 
 import { Kbd } from "@/components/ui/kbd";
 import { Button } from "@/components/ui/button";
@@ -58,6 +59,7 @@ export const Navbar = () => {
           >
             <SearchIcon />
           </Button>
+          <NotificationsButton />
           <ThemeToggle />
           <UserButton />
         </div>
