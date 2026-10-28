@@ -1,3 +1,9 @@
+## [1.10.0](https://github.com/Pagiestm/Boardify/compare/v1.9.1...v1.10.0) (2026-10-28)
+
+### Features
+
+* **desktop:** ajout rapide ⌃⌥N, barre des menus, pastille du Dock et mises à jour automatiques ([4d2e9c8](https://github.com/Pagiestm/Boardify/commit/4d2e9c831022ab13ff673db5f13352ca0d8c949e))
+
 ## [1.9.1](https://github.com/Pagiestm/Boardify/compare/v1.9.0...v1.9.1) (2026-10-28)
 
 ### Bug Fixes
