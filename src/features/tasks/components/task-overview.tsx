@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { FaGithub } from "react-icons/fa";
-import { PencilIcon } from "lucide-react";
+import Link from "next/link";
+import { CheckIcon, LockIcon, PencilIcon, RepeatIcon } from "lucide-react";
 
 import { MemberAvatar } from "@/features/members/components/member-avatar";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,15 +19,50 @@ import { TaskStatusBadge } from "./task-status-badge";
 
 import { PopulatedTask } from "../types";
 import { isTaskDone } from "../utils";
-import { TASK_PRIORITY_CONFIG } from "../constants";
+import { TASK_PRIORITY_CONFIG, TASK_RECURRENCE_LABELS } from "../constants";
 import { useEditTaskModal } from "../hooks/use-edit-task-modal";
 import { isTypingTarget } from "./task-view-switcher";
 
+interface DependencyState {
+  $id: string;
+  name: string;
+  done: boolean;
+}
+
 interface TaskOverviewProps {
-  task: PopulatedTask;
+  task: PopulatedTask & { blockers?: DependencyState[]; blocking?: DependencyState[] };
 }
 
 const Empty = () => <span className="text-muted-foreground">-</span>;
+
+const DependencyList = ({
+  workspaceId,
+  tasks,
+}: {
+  workspaceId: string;
+  tasks: DependencyState[];
+}) => (
+  <ul className="flex min-w-0 flex-col gap-1">
+    {tasks.map((dependency) => (
+      <li key={dependency.$id} className="flex min-w-0 items-center gap-1.5">
+        {dependency.done ? (
+          <CheckIcon className="size-3.5 shrink-0 text-primary" />
+        ) : (
+          <LockIcon className="size-3.5 shrink-0 text-amber-500" />
+        )}
+        <Link
+          href={`/workspaces/${workspaceId}/tasks/${dependency.$id}`}
+          className={cn(
+            "truncate hover:underline",
+            dependency.done && "text-muted-foreground line-through",
+          )}
+        >
+          {dependency.name}
+        </Link>
+      </li>
+    ))}
+  </ul>
+);
 
 export const TaskOverview = ({ task }: TaskOverviewProps) => {
   const { open } = useEditTaskModal();
@@ -115,6 +152,22 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
               <Empty />
             )}
           </OverviewProperty>
+          {task.recurrence && (
+            <OverviewProperty label="Répétition">
+              <RepeatIcon className="size-4 shrink-0 text-muted-foreground" />
+              <span className="truncate">{TASK_RECURRENCE_LABELS[task.recurrence]}</span>
+            </OverviewProperty>
+          )}
+          {!!task.blockers?.length && (
+            <OverviewProperty label="Bloquée par">
+              <DependencyList workspaceId={task.workspaceId} tasks={task.blockers} />
+            </OverviewProperty>
+          )}
+          {!!task.blocking?.length && (
+            <OverviewProperty label="Bloque">
+              <DependencyList workspaceId={task.workspaceId} tasks={task.blocking} />
+            </OverviewProperty>
+          )}
           {task.githubIssueUrl && (
             <OverviewProperty label="GitHub">
               <a

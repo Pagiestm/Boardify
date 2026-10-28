@@ -60,6 +60,18 @@ export const describeTaskChanges = (before: Task, after: Task): ActivityEntry[] 
       change: { from: before.labelIds ?? [], to: after.labelIds ?? [] },
     });
   }
+  if (!sameList(before.blockedBy, after.blockedBy)) {
+    entries.push({
+      type: ActivityType.DEPENDENCIES,
+      change: { from: before.blockedBy ?? [], to: after.blockedBy ?? [] },
+    });
+  }
+  if ((before.recurrence ?? null) !== (after.recurrence ?? null)) {
+    entries.push({
+      type: ActivityType.RECURRENCE,
+      change: { from: before.recurrence ?? null, to: after.recurrence ?? null },
+    });
+  }
   if (before.projectId !== after.projectId) {
     entries.push({
       type: ActivityType.PROJECT,

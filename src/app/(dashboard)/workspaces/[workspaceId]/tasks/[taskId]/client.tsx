@@ -7,6 +7,8 @@ import { TaskBreadcrumbs } from "@/features/tasks/components/task-breadcrumbs";
 import { TaskActivity } from "@/features/tasks/components/task-activity";
 import { TaskDescription } from "@/features/tasks/components/task-description";
 import { TaskGithubDevelopment } from "@/features/github/components/task-github-development";
+import { TaskChecklist } from "@/features/checklist/components/task-checklist";
+import { TaskAttachments } from "@/features/attachments/components/task-attachments";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageError } from "@/components/page-error";
@@ -42,6 +44,8 @@ export const TaskIdClient = () => {
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-4">
           <TaskDescription key={data.$updatedAt} task={data} />
+          <TaskChecklist taskId={data.$id} />
+          <TaskAttachments taskId={data.$id} workspaceId={data.workspaceId} />
           <TaskActivity task={data} />
         </div>
         <div className="flex flex-col gap-4">

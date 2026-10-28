@@ -8,6 +8,7 @@ import { Workspace } from "@/features/workspaces/types";
 import { parseBoardColumns } from "@/features/projects/utils";
 import { ActivityType } from "@/features/activities/types";
 import { logActivities } from "@/features/activities/server/activities";
+import { createNextOccurrence } from "@/features/tasks/server/recurrence";
 import { extractTaskDescription, syncTaskIssues } from "@/features/tasks/server/github-sync";
 
 import { Member } from "@/features/members/types";
@@ -116,6 +117,7 @@ const handleIssuesEvent = async (databases: Databases, event: IssuesEvent) => {
     syncTaskIssues(databases, task.workspaceId, [{ before: task, after: updated }], {
       syncState: false,
     }),
+    createNextOccurrence(databases, task, updated, null),
     logActivities(databases, updated, null, [
       { type: activityType, change: { to: event.sender.login } },
     ]),

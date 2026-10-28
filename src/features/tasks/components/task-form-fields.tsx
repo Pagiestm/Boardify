@@ -23,9 +23,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { TaskPriority } from "../types";
+import { TaskPriority, TaskRecurrence } from "../types";
+import { TaskDependencyPicker } from "./task-dependency-picker";
 import { taskFormSchema } from "../schemas";
-import { TASK_PRIORITY_CONFIG, TASK_STATUS_CONFIG, TASK_STATUS_ORDER } from "../constants";
+import {
+  TASK_PRIORITY_CONFIG,
+  TASK_RECURRENCE_LABELS,
+  TASK_STATUS_CONFIG,
+  TASK_STATUS_ORDER,
+} from "../constants";
 
 export type TaskFormControl = Control<
   z.input<typeof taskFormSchema>,
@@ -40,6 +46,7 @@ export interface TaskFormOptions {
 
 interface TaskFormFieldsProps extends TaskFormOptions {
   control: TaskFormControl;
+  taskId?: string;
   boardColumns?: BoardColumn[];
   hideProjectField?: boolean;
 }
@@ -56,6 +63,7 @@ export const TaskFormFields = ({
   memberOptions,
   boardColumns,
   hideProjectField,
+  taskId,
 }: TaskFormFieldsProps) => {
   const workspaceId = useWorkspaceId();
   const { setValue } = useFormContext<z.input<typeof taskFormSchema>>();
@@ -156,7 +164,7 @@ export const TaskFormFields = ({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Priorité</FormLabel>
-            <Select defaultValue={field.value} onValueChange={field.onChange}>
+            <Select value={field.value ?? ""} onValueChange={field.onChange}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Choisir une priorité" />
@@ -260,6 +268,52 @@ export const TaskFormFields = ({
             <FormControl>
               <LabelPicker
                 workspaceId={workspaceId}
+                value={field.value ?? []}
+                onChange={field.onChange}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
+        name="recurrence"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Répétition</FormLabel>
+            <Select
+              value={field.value ?? "none"}
+              onValueChange={(value) => field.onChange(value === "none" ? null : value)}
+            >
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="none">Jamais</SelectItem>
+                {Object.values(TaskRecurrence).map((recurrence) => (
+                  <SelectItem key={recurrence} value={recurrence}>
+                    {TASK_RECURRENCE_LABELS[recurrence]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
+        name="blockedBy"
+        render={({ field }) => (
+          <FormItem className="sm:col-span-2">
+            <FormLabel>Bloquée par</FormLabel>
+            <FormControl>
+              <TaskDependencyPicker
+                workspaceId={workspaceId}
+                taskId={taskId}
                 value={field.value ?? []}
                 onChange={field.onChange}
               />

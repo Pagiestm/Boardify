@@ -35,8 +35,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { PopulatedTask, TaskPriority } from "../types";
-import { TASK_PRIORITY_CONFIG } from "../constants";
+import { useGetTasks } from "../api/use-get-tasks";
+import { PopulatedTask, TaskPriority, TaskRecurrence } from "../types";
+import { TASK_PRIORITY_CONFIG, TASK_RECURRENCE_LABELS } from "../constants";
 
 interface TaskActivityProps {
   task: PopulatedTask;
@@ -71,6 +72,7 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
   const { data: members } = useGetMembers({ workspaceId: task.workspaceId });
   const { data: labels } = useGetLabels({ workspaceId: task.workspaceId });
   const { data: projects } = useGetProjects({ workspaceId: task.workspaceId });
+  const { data: tasks } = useGetTasks({ workspaceId: task.workspaceId });
   const { mutate: createComment, isPending: isCreating } = useCreateComment();
   const { mutate: updateComment, isPending: isUpdating } = useUpdateComment();
   const { mutate: deleteComment } = useDeleteComment();
@@ -94,13 +96,17 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
     projects?.documents.find((project) => project.$id === id)?.name ?? "un autre projet";
   const memberName = (id?: unknown) =>
     (typeof id === "string" && memberNames.get(id)) || "quelqu'un";
+  const taskName = (id: string) =>
+    tasks?.documents.find((item) => item.$id === id)?.name ?? "une tâche supprimée";
+  const recurrenceLabel = (value?: unknown) =>
+    TASK_RECURRENCE_LABELS[value as TaskRecurrence]?.toLowerCase();
   const priorityLabel = (value?: unknown) =>
     TASK_PRIORITY_CONFIG[value as TaskPriority]?.label ?? "—";
 
   const describe = (type: ActivityType, change: ActivityChange): React.ReactNode => {
     switch (type) {
       case ActivityType.CREATED:
-        return "a créé la tâche";
+        return change.from ? "a créé la tâche (prochaine occurrence)" : "a créé la tâche";
       case ActivityType.STATUS:
         return (
           <>
@@ -165,6 +171,47 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
         return (
           <>
             a déplacé la tâche vers <Strong>{projectName(change.to)}</Strong>
+          </>
+        );
+      case ActivityType.DEPENDENCIES: {
+        const before = (change.from as string[] | undefined) ?? [];
+        const after = (change.to as string[] | undefined) ?? [];
+        const added = after.filter((id) => !before.includes(id)).map(taskName);
+        const removed = before.filter((id) => !after.includes(id)).map(taskName);
+        return (
+          <>
+            {added.length > 0 && (
+              <>
+                a ajouté la dépendance <Strong>{added.join(", ")}</Strong>
+              </>
+            )}
+            {added.length > 0 && removed.length > 0 && " et "}
+            {removed.length > 0 && (
+              <>
+                a retiré la dépendance <Strong>{removed.join(", ")}</Strong>
+              </>
+            )}
+          </>
+        );
+      }
+      case ActivityType.RECURRENCE:
+        return change.to ? (
+          <>
+            a rendu la tâche récurrente : <Strong>{recurrenceLabel(change.to)}</Strong>
+          </>
+        ) : (
+          "a arrêté la répétition"
+        );
+      case ActivityType.ATTACHMENT_ADDED:
+        return (
+          <>
+            a joint <Strong>{String(change.to ?? "un fichier")}</Strong>
+          </>
+        );
+      case ActivityType.ATTACHMENT_REMOVED:
+        return (
+          <>
+            a retiré la pièce jointe <Strong>{String(change.from ?? "")}</Strong>
           </>
         );
       case ActivityType.GITHUB_CLOSED:

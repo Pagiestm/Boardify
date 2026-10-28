@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { Databases, ID, Query } from "node-appwrite";
+import { Databases, ID, Query, type Storage } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { getMember } from "@/features/members/utils";
@@ -16,28 +16,29 @@ import { closeDeletedTaskIssue } from "@/features/tasks/server/github-sync";
 
 import { Project } from "../types";
 
-const deleteProjectTasks = async (databases: Databases, projectId: string): Promise<void> => {
-  let cursor: string | undefined;
+const deleteProjectTasks = async (
+  databases: Databases,
+  storage: Storage,
+  projectId: string,
+): Promise<void> => {
+  let documents: Task[];
 
   do {
-    const queries = [Query.equal("projectId", projectId), Query.limit(100)];
-    if (cursor) queries.push(Query.cursorAfter(cursor));
-
-    const { documents } = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, queries);
-    if (documents.length === 0) break;
+    ({ documents } = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
+      Query.equal("projectId", projectId),
+      Query.limit(100),
+    ]));
 
     await Promise.all(
       documents.map(async (document) => {
         await databases.deleteDocument(DATABASE_ID, TASKS_ID, document.$id);
         await Promise.all([
           closeDeletedTaskIssue(databases, document),
-          deleteTaskRelations(databases, document.$id),
+          deleteTaskRelations(databases, storage, document.$id),
         ]);
       }),
     );
-
-    cursor = documents.length === 100 ? documents[documents.length - 1].$id : undefined;
-  } while (cursor);
+  } while (documents.length === 100);
 };
 
 const app = new Hono()
@@ -231,7 +232,7 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    await deleteProjectTasks(databases, projectId);
+    await deleteProjectTasks(databases, c.get("storage"), projectId);
 
     await databases.deleteDocument(DATABASE_ID, PROJECTS_ID, projectId);
 

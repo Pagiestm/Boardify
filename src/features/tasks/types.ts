@@ -13,6 +13,12 @@ export enum TaskStatus {
   DONE = "DONE",
 }
 
+export enum TaskRecurrence {
+  DAILY = "daily",
+  WEEKLY = "weekly",
+  MONTHLY = "monthly",
+}
+
 export enum TaskPriority {
   HIGH = "HIGH",
   MEDIUM = "MEDIUM",
@@ -32,6 +38,8 @@ export type Task = Models.Document & {
   description?: string;
   labelIds?: string[];
   githubIssueUrl?: string;
+  blockedBy?: string[];
+  recurrence?: TaskRecurrence | null;
 };
 
 export type PopulatedTask = Task & {
@@ -39,4 +47,6 @@ export type PopulatedTask = Task & {
   assignee?: Member;
   labels?: Label[];
   statusColumn?: BoardColumn;
+  checklist?: { total: number; done: number };
+  openBlockers?: number;
 };

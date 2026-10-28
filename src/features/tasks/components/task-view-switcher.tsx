@@ -6,6 +6,7 @@ import { CalendarDaysIcon, GanttChartIcon, KanbanIcon, PlusIcon, TableIcon } fro
 
 import { useProjectId } from "@/features/projects/hooks/use-project-id";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
+import { SavedViewsMenu } from "@/features/saved-views/components/saved-views-menu";
 
 import { Kbd } from "@/components/ui/kbd";
 import { Button } from "@/components/ui/button";
@@ -182,13 +183,16 @@ export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwit
             </TabsTrigger>
           ))}
         </TabsList>
-        <Button onClick={() => open()} size="sm" className="w-full lg:w-auto">
-          <PlusIcon />
-          Nouvelle tâche
-          <Kbd className="ml-1 hidden border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground lg:inline-flex">
-            N
-          </Kbd>
-        </Button>
+        <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+          <SavedViewsMenu workspaceId={workspaceId} view={activeView} onViewChange={setView} />
+          <Button onClick={() => open()} size="sm" className="w-full lg:w-auto">
+            <PlusIcon />
+            Nouvelle tâche
+            <Kbd className="ml-1 hidden border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground lg:inline-flex">
+              N
+            </Kbd>
+          </Button>
+        </div>
       </div>
       <div className="border-b px-4 py-3">
         <DataFilters hideProjectFilter={hideProjectFilter} />

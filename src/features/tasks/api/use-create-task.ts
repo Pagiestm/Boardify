@@ -15,7 +15,11 @@ export const useCreateTask = () => {
       const response = await client.api.tasks["$post"]({ json });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la création de la tâche");
+        const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
+        throw new Error(
+          (response.status === 400 && typeof body?.error === "string" && body.error) ||
+            "Erreur lors de la création de la tâche",
+        );
       }
 
       return await response.json();
@@ -27,8 +31,8 @@ export const useCreateTask = () => {
       queryClient.invalidateQueries({ queryKey: ["workspace-analytics"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
-    onError: () => {
-      toast.error("Erreur lors de la création de la tâche");
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 
