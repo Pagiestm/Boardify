@@ -74,7 +74,7 @@ Dans Appwrite, ajoutez les attributs optionnels `githubInstallationId` (string, 
 
 - **Commentaires** sur chaque tâche, avec mentions `@membre` (stockées sous la forme `@[Nom](id)`). Sur une tâche liée à une issue, ils sont publiés sur l'issue par le bot de l'app ; les commentaires écrits sur GitHub remontent dans la tâche (webhook `issue_comment`).
 - **Activité** : chaque modification d'une tâche (statut, assigné, priorité, période, nom, description, étiquettes, projet) et chaque action faite sur l'issue GitHub est enregistrée et affichée avec les commentaires, dans l'ordre chronologique.
-- **Notifications** : assignation, mention, commentaire sur une tâche assignée et échéance du lendemain, dans la cloche de la barre supérieure et en notification native dans l'application desktop. L'échéance est vérifiée chaque matin par une tâche planifiée Vercel (`vercel.json`, route `/api/cron/due-soon` protégée par `CRON_SECRET`).
+- **Notifications** : assignation, mention, commentaire sur une tâche assignée et échéance du lendemain, dans la cloche de la barre supérieure, et dans l'application desktop en notification native avec une pastille sur l'icône du Dock. L'échéance est vérifiée chaque matin par une tâche planifiée Vercel (`vercel.json`, route `/api/cron/due-soon` protégée par `CRON_SECRET`).
 - **Mise à jour automatique** : les tâches, commentaires et l'activité se rafraîchissent toutes les 5 secondes tant que l'onglet est visible, en passant par l'API de Boardify et ses contrôles d'accès.
 
 Collections Appwrite (permissions « All users » : Create, Read, Update, Delete, comme les tâches) :
@@ -124,13 +124,13 @@ Boardify est disponible en application desktop pour macOS, Windows et Linux, con
 
 ### Architecture
 
-L'application est une coquille native qui affiche la version hébergée de Boardify dans le moteur web du système : WebKit sur macOS, WebView2 sur Windows, WebKitGTK sur Linux. L'interface, l'API et la session sont celles du site. L'application ne contient ni code métier ni secret, et reflète chaque déploiement sans mise à jour.
+L'application est une coquille native qui affiche la version hébergée de Boardify dans le moteur web du système : WebKit sur macOS, WebView2 sur Windows, WebKitGTK sur Linux. L'interface, l'API et la session sont celles du site. L'application ne contient ni code métier ni secret, et reflète chaque déploiement sans mise à jour. Seules les fonctions natives (barre des menus, raccourci global, pastille) passent par une nouvelle version, installée par la mise à jour automatique.
 
 ```mermaid
 flowchart LR
     subgraph Poste["Poste de l'utilisateur"]
         subgraph App["Application Boardify"]
-            Shell["Coquille Tauri (Rust)<br/>fenêtre, navigation, liens boardify://"]
+            Shell["Coquille Tauri (Rust)<br/>fenêtres, navigation, liens boardify://<br/>barre des menus, raccourci, mises à jour"]
             WebView["Moteur web du système<br/>WebKit · WebView2 · WebKitGTK"]
             Shell --> WebView
         end
@@ -145,7 +145,19 @@ flowchart LR
     Next --> Appwrite
     Next --> GitHub
     Shell -. liens externes .-> Browser
+    Shell -. latest.json .-> GitHub
 ```
+
+### Fonctionnalités natives
+
+| Fonction                  | Détail                                                                                                                                                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Ajout rapide              | `⌃⌥N` (Ctrl+Alt+N sous Windows et Linux), depuis n'importe quelle application : petite fenêtre [`/quick-add`](src/app/quick-add/page.tsx) sur l'écran de la souris, fermée par Échap ou en cliquant ailleurs |
+| Barre des menus           | Ouvrir Boardify, nouvelle tâche, tâches du jour et en retard de l'espace courant, mises à jour, quitter. Fermer la fenêtre la masque, l'icône du Dock la rouvre                                              |
+| Pastille                  | Nombre de notifications non lues sur l'icône du Dock (macOS) ou du lanceur (Linux), non gérée par Windows                                                                                                    |
+| Mises à jour automatiques | Vérification au lancement puis toutes les 6 h, et depuis le menu : l'application propose d'installer la nouvelle version puis redémarre                                                                      |
+
+La page transmet les notifications non lues et les tâches du jour par la commande `sync_desktop_state` ([`desktop-bridge.tsx`](src/features/desktop/components/desktop-bridge.tsx)), autorisée uniquement pour la fenêtre principale et les adresses de Boardify ([`capabilities/desktop-state.json`](src-tauri/capabilities/desktop-state.json)). La fenêtre d'ajout rapide n'a accès à aucune commande : ses adresses `/quick-add/close` et `/quick-add/open?to=…` sont interceptées par la coquille.
 
 ### Comportement
 
@@ -157,16 +169,22 @@ flowchart LR
 | Lien `target="_blank"` ou `window.open`  | Dans le navigateur par défaut                                              |
 | Lien `boardify://`                       | Transmis à l'instance en cours (ou la lance)                               |
 | Chargement d'une page                    | Cookie `boardify-desktop=1`, qui identifie l'application auprès du serveur |
+| Fermeture de la fenêtre                  | Masque la fenêtre, l'application reste dans la barre des menus             |
+| Clic sur l'icône du Dock                 | Rouvre la fenêtre                                                          |
 
 ### Structure
 
 | Fichier                                            | Rôle                                                                               |
 | -------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [`src/lib.rs`](src-tauri/src/lib.rs)               | Fenêtre, adresse chargée, règles de navigation, liens `boardify://`                |
+| [`src/main.rs`](src-tauri/src/main.rs)             | Fenêtre principale, adresse chargée, règles de navigation, liens `boardify://`     |
+| [`src/quick_add.rs`](src-tauri/src/quick_add.rs)   | Raccourci global et fenêtre d'ajout rapide                                         |
+| [`src/tray.rs`](src-tauri/src/tray.rs)             | Icône et menu de la barre des menus, pastille, commande `sync_desktop_state`       |
+| [`src/updater.rs`](src-tauri/src/updater.rs)       | Vérification et installation des mises à jour                                      |
 | [`src/init.js`](src-tauri/src/init.js)             | Script injecté dans chaque page                                                    |
+| [`capabilities/`](src-tauri/capabilities)          | Commandes autorisées pour la page : notifications natives, `sync_desktop_state`    |
 | [`tauri.conf.json`](src-tauri/tauri.conf.json)     | Identité de l'application, version (lue dans `package.json`), icônes, schéma d'URL |
-| [`Cargo.toml`](src-tauri/Cargo.toml)               | Dépendances : Tauri, plugins `deep-link`, `single-instance` et `opener`            |
-| [`app-icon.svg`](src-tauri/app-icon.svg), `icons/` | Icône source et icônes générées                                                    |
+| [`Cargo.toml`](src-tauri/Cargo.toml)               | Dépendances : Tauri et ses plugins                                                 |
+| [`app-icon.svg`](src-tauri/app-icon.svg), `icons/` | Icône source, icônes générées, icône monochrome de la barre des menus              |
 
 ### Connexion Google et GitHub
 
@@ -189,6 +207,8 @@ npm run desktop:dev    # application, sur http://localhost:3000
 npm run desktop:build  # installateurs, sur la version hébergée
 ```
 
+- `desktop:build` signe les mises à jour : il attend la clé privée dans `TAURI_SIGNING_PRIVATE_KEY` (contenu ou chemin du fichier) et son mot de passe dans `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`.
+
 - `BOARDIFY_URL`, lue à la compilation, remplace l'adresse chargée (`http://localhost:3000` en développement, la version hébergée en production).
 - Sur macOS, le schéma `boardify://` n'est enregistré que par une application empaquetée : `npx tauri build --debug --bundles app`, puis ouvrir `src-tauri/target/debug/bundle/macos/Boardify.app`.
 - Icônes : exporter `src-tauri/app-icon.svg` en PNG 1024 px, puis `npx tauri icon <png> -o src-tauri/icons`.
@@ -203,6 +223,8 @@ npm run desktop:build  # installateurs, sur la version hébergée
 | macOS (Intel)         | `.dmg`                      |
 | Windows               | `.exe`, `.msi`              |
 | Linux                 | `.AppImage`, `.deb`, `.rpm` |
+
+Les bundles de mise à jour (`.app.tar.gz`, installateur NSIS, AppImage) sont signés avec la clé des secrets `TAURI_SIGNING_PRIVATE_KEY` et `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, dont la clé publique figure dans `tauri.conf.json`. Une fois tous les builds terminés, le job `updater` assemble le manifeste `latest.json` ([`scripts/updater-manifest.mjs`](scripts/updater-manifest.mjs)) et l'ajoute à la release : c'est lui que les applications installées consultent. Perdre la clé privée empêche toute mise à jour des applications déjà installées.
 
 `desktop.yml` peut aussi être lancé manuellement depuis l'onglet _Actions_ pour un tag existant. La page `/download` affiche la dernière release qui contient des installateurs (cache d'une heure).
 

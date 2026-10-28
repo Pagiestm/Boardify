@@ -49,8 +49,9 @@ const questions = [
     question: "Existe-t-il une application pour ordinateur ?",
     answer: (
       <>
-        Oui, pour macOS, Windows et Linux. Elle reprend tout Boardify dans sa propre fenêtre et se
-        met à jour avec le site.{" "}
+        Oui, pour macOS, Windows et Linux. Elle reprend tout Boardify dans sa propre fenêtre, ajoute
+        une tâche depuis n&apos;importe quelle application avec ⌃⌥N, affiche vos tâches du jour dans
+        la barre des menus et se met à jour toute seule.{" "}
         <Link href="/download" className="font-medium text-foreground underline underline-offset-4">
           Télécharger l&apos;application
         </Link>

@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "desktop-state",
+  "description": "La page Boardify transmet les notifications non lues et les tâches du jour (pastille du Dock, menu de la barre des menus)",
+  "windows": ["main"],
+  "remote": {
+    "urls": ["https://boardify.theotimepagies.com/*", "http://localhost:*/*"]
+  },
+  "permissions": ["allow-sync-desktop-state"]
+}

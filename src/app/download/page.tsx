@@ -2,12 +2,14 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { FaApple, FaLinux, FaWindows } from "react-icons/fa";
 import {
+  BellDotIcon,
   DownloadIcon,
   ExternalLinkIcon,
   FeatherIcon,
   LayoutDashboardIcon,
-  MousePointerClickIcon,
+  ListTodoIcon,
   RefreshCwIcon,
+  ZapIcon,
 } from "lucide-react";
 
 import { getCurrent } from "@/features/auth/queries";
@@ -53,24 +55,39 @@ const PLATFORMS: Record<
 
 const FEATURES = [
   {
-    icon: LayoutDashboardIcon,
-    title: "Une vraie application",
-    description: "Sa propre fenêtre et son icône dans le Dock ou la barre des tâches.",
+    icon: ZapIcon,
+    title: "Ajout rapide",
+    description:
+      "⌃⌥N (Ctrl+Alt+N sous Windows et Linux) ouvre une petite fenêtre pour noter une tâche, depuis n'importe quelle application.",
+  },
+  {
+    icon: ListTodoIcon,
+    title: "Dans la barre des menus",
+    description:
+      "Vos tâches du jour et en retard à portée de clic. Fermer la fenêtre garde Boardify disponible.",
+  },
+  {
+    icon: BellDotIcon,
+    title: "Notifications",
+    description:
+      "Notifications natives et pastille sur l'icône du Dock avec le nombre de notifications non lues.",
   },
   {
     icon: RefreshCwIcon,
-    title: "Toujours à jour",
-    description: "Chaque nouveauté de Boardify arrive dans l'application, sans la réinstaller.",
+    title: "Mises à jour automatiques",
+    description:
+      "L'application propose d'installer chaque nouvelle version, et le contenu suit chaque nouveauté du site.",
+  },
+  {
+    icon: LayoutDashboardIcon,
+    title: "Une vraie application",
+    description:
+      "Sa propre fenêtre, et les liens externes, comme vos issues GitHub, s'ouvrent dans votre navigateur.",
   },
   {
     icon: FeatherIcon,
     title: "Légère",
     description: "Une dizaine de Mo, grâce au moteur web déjà présent sur votre système.",
-  },
-  {
-    icon: MousePointerClickIcon,
-    title: "Pensée pour le bureau",
-    description: "Les liens externes, comme vos issues GitHub, s'ouvrent dans votre navigateur.",
   },
 ];
 
@@ -151,7 +168,7 @@ export default async function DownloadPage() {
         </section>
 
         <section className="border-b">
-          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+          <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:grid-cols-2 sm:px-6 lg:grid-cols-3">
             {FEATURES.map(({ icon: Icon, title, description }, index) => (
               <Reveal key={title} delay={index * 0.05} className="flex flex-col gap-2">
                 <span className="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">

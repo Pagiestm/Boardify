@@ -79,7 +79,36 @@ jobs:
         uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           releaseId: ${{ steps.release.outputs.id }}
           tauriScript: npx tauri
           args: --target ${{ matrix.target }}
+          # latest.json est assemblé une seule fois par le job « updater », une fois tous les builds terminés.
+          uploadUpdaterJson: false
+
+  updater:
+    name: Manifeste de mise à jour
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Publish latest.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          node scripts/updater-manifest.mjs > latest.json
+          cat latest.json
+          gh release upload "$TAG" latest.json --clobber --repo "${{ github.repository }}"
