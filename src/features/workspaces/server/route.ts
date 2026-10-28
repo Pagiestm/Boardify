@@ -1,19 +1,25 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { Databases, ID, Query } from "node-appwrite";
+import { Databases, ID, Models, Query, type Storage } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 
 import { MemberRole } from "@/features/members/types";
 import { forgetMembers, getMember } from "@/features/members/utils";
+import { Project } from "@/features/projects/types";
+import { deleteProject } from "@/features/projects/server/cleanup";
 
 import { generateInviteCode } from "@/lib/utils";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import {
   DATABASE_ID,
   IMAGES_BUCKET_ID,
+  LABELS_ID,
   MEMBERS_ID,
+  NOTIFICATIONS_ID,
   PROJECTS_ID,
+  SAVED_VIEWS_ID,
+  TASK_TEMPLATES_ID,
   TASKS_ID,
   WORKSPACES_ID,
 } from "@/config";
@@ -23,26 +29,40 @@ import { createWorkspaceSchema, updateWorkspaceSchema } from "../schemas";
 
 const deleteWorkspaceChildren = async (
   databases: Databases,
+  storage: Storage,
   workspaceId: string,
 ): Promise<void> => {
-  for (const collectionId of [TASKS_ID, PROJECTS_ID, MEMBERS_ID]) {
-    let cursor: string | undefined;
+  let projects: Project[];
+  do {
+    ({ documents: projects } = await databases.listDocuments<Project>(DATABASE_ID, PROJECTS_ID, [
+      Query.equal("workspaceId", workspaceId),
+      Query.limit(25),
+    ]));
+    for (const project of projects) {
+      await deleteProject(databases, storage, project.$id);
+    }
+  } while (projects.length === 25);
 
+  for (const collectionId of [
+    TASKS_ID,
+    LABELS_ID,
+    TASK_TEMPLATES_ID,
+    SAVED_VIEWS_ID,
+    NOTIFICATIONS_ID,
+    MEMBERS_ID,
+  ]) {
+    let documents: Models.Document[];
     do {
-      const queries = [Query.equal("workspaceId", workspaceId), Query.limit(100)];
-      if (cursor) queries.push(Query.cursorAfter(cursor));
-
-      const { documents } = await databases.listDocuments(DATABASE_ID, collectionId, queries);
-      if (documents.length === 0) break;
-
+      ({ documents } = await databases.listDocuments(DATABASE_ID, collectionId, [
+        Query.equal("workspaceId", workspaceId),
+        Query.limit(100),
+      ]));
       await Promise.all(
         documents.map((document) =>
           databases.deleteDocument(DATABASE_ID, collectionId, document.$id),
         ),
       );
-
-      cursor = documents.length === 100 ? documents[documents.length - 1].$id : undefined;
-    } while (cursor);
+    } while (documents.length === 100);
   }
 };
 
@@ -202,7 +222,7 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    await deleteWorkspaceChildren(databases, workspaceId);
+    await deleteWorkspaceChildren(databases, c.get("storage"), workspaceId);
 
     await databases.deleteDocument(DATABASE_ID, WORKSPACES_ID, workspaceId);
 

@@ -18,6 +18,8 @@ export const createtaskSchema = z.object({
   labelIds: z.array(z.string()).optional(),
   blockedBy: z.array(z.string()).max(20).optional(),
   recurrence: z.nativeEnum(TaskRecurrence).nullable().optional(),
+  sprintId: z.string().trim().min(1).max(50).nullable().optional(),
+  estimate: z.number().int().min(0).max(1000).nullable().optional(),
   checklist: z.array(z.string().trim().min(1).max(500)).max(50).optional(),
 });
 

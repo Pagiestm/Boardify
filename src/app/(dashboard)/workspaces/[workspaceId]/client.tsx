@@ -35,6 +35,7 @@ import { ActivityChart } from "@/components/charts/activity-chart";
 import { DueDates } from "@/components/charts/due-dates";
 import { TasksByProject } from "@/components/charts/tasks-by-project";
 import { WorkloadBars } from "@/components/charts/workload-bars";
+import { WorkloadTimeline } from "@/components/charts/workload-timeline";
 import { PageError } from "@/components/page-error";
 import { PageLoader } from "@/components/page-loader";
 
@@ -67,6 +68,11 @@ export const WorkspaceIdClient = () => {
         <TasksByProject tasks={tasks.documents} />
         <WorkloadBars tasks={tasks.documents} />
       </div>
+      <WorkloadTimeline
+        workspaceId={workspaceId}
+        tasks={tasks.documents}
+        members={members.documents}
+      />
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
         <TaskList
           data={tasks.documents}

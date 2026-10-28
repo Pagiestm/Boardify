@@ -7,6 +7,7 @@ import { useProjectId } from "@/features/projects/hooks/use-project-id";
 import { useGetProject } from "@/features/projects/api/use-get-project";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 import { TaskViewSwitcher } from "@/features/tasks/components/task-view-switcher";
+import { SprintBar } from "@/features/sprints/components/sprint-bar";
 
 import { Button } from "@/components/ui/button";
 import { PageError } from "@/components/page-error";
@@ -50,6 +51,7 @@ export const ProjectIdClient = () => {
           </Link>
         </Button>
       </div>
+      <SprintBar workspaceId={project.workspaceId} projectId={project.$id} />
       <TaskViewSwitcher hideProjectFilter />
     </div>
   );

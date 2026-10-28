@@ -4,6 +4,8 @@ import { fr } from "date-fns/locale";
 import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
+import { CalendarSubscriptionButton } from "@/features/calendar/components/calendar-subscription-button";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -41,6 +43,9 @@ const CustomToolbar = ({ date, onNavigate }: CustomToolbarProps) => {
     <div className="mb-4 flex w-full items-center justify-between gap-3">
       <p className="text-base font-semibold">{label.charAt(0).toUpperCase() + label.slice(1)}</p>
       <div className="flex items-center gap-1">
+        <div className="mr-2">
+          <CalendarSubscriptionButton />
+        </div>
         <Button onClick={() => onNavigate("TODAY")} variant="outline" size="sm" className="mr-1">
           Aujourd&apos;hui
         </Button>

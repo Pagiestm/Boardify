@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { FaGithub } from "react-icons/fa";
 import Link from "next/link";
-import { CheckIcon, LockIcon, PencilIcon, RepeatIcon } from "lucide-react";
+import { CheckIcon, FlagIcon, LockIcon, PencilIcon, RepeatIcon } from "lucide-react";
 
 import { MemberAvatar } from "@/features/members/components/member-avatar";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
+import { useGetSprints } from "@/features/sprints/api/use-sprints";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -86,6 +87,11 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
   }, [open, task.$id]);
 
   const priority = task.priority ? TASK_PRIORITY_CONFIG[task.priority] : undefined;
+  const { data: sprints } = useGetSprints({
+    projectId: task.projectId,
+    enabled: Boolean(task.sprintId),
+  });
+  const sprint = sprints?.find((entry) => entry.$id === task.sprintId);
 
   return (
     <Card>
@@ -152,6 +158,24 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
               <Empty />
             )}
           </OverviewProperty>
+          {sprint && (
+            <OverviewProperty label="Sprint">
+              <FlagIcon className="size-4 shrink-0 text-muted-foreground" />
+              <Link
+                href={`/workspaces/${task.workspaceId}/projects/${task.projectId}?sprintId=${sprint.$id}`}
+                className="truncate hover:underline"
+              >
+                {sprint.name}
+              </Link>
+            </OverviewProperty>
+          )}
+          {task.estimate != null && (
+            <OverviewProperty label="Estimation">
+              <span className="tabular-nums">
+                {task.estimate} point{task.estimate > 1 ? "s" : ""}
+              </span>
+            </OverviewProperty>
+          )}
           {task.recurrence && (
             <OverviewProperty label="Répétition">
               <RepeatIcon className="size-4 shrink-0 text-muted-foreground" />

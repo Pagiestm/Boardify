@@ -7,6 +7,7 @@ export const savedViewFiltersSchema = z.object({
   assigneeId: z.string().nullable().optional(),
   dueDate: z.string().nullable().optional(),
   labelId: z.string().nullable().optional(),
+  sprintId: z.string().nullable().optional(),
 });
 
 export type SavedViewFilters = z.infer<typeof savedViewFiltersSchema>;

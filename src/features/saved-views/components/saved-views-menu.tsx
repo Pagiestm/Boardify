@@ -56,6 +56,7 @@ export const SavedViewsMenu = ({ workspaceId, view, onViewChange }: SavedViewsMe
             assigneeId: filters.assigneeId,
             dueDate: filters.dueDate,
             labelId: filters.labelId,
+            sprintId: filters.sprintId,
           },
         },
       },
@@ -90,6 +91,7 @@ export const SavedViewsMenu = ({ workspaceId, view, onViewChange }: SavedViewsMe
                     assigneeId: saved.filters.assigneeId ?? null,
                     dueDate: saved.filters.dueDate ?? null,
                     labelId: saved.filters.labelId ?? null,
+                    sprintId: saved.filters.sprintId ?? null,
                   });
                   onViewChange(saved.view as TaskView);
                 }}

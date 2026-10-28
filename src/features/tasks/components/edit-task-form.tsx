@@ -49,6 +49,8 @@ export const EditTaskForm = ({
       labelIds: initialValues.labelIds ?? [],
       blockedBy: initialValues.blockedBy ?? [],
       recurrence: initialValues.recurrence ?? null,
+      sprintId: initialValues.sprintId ?? null,
+      estimate: initialValues.estimate ?? null,
       dueDate: initialValues.dueDate ? new Date(initialValues.dueDate) : undefined,
       startDate: new Date(initialValues.startDate ?? initialValues.dueDate),
     },
