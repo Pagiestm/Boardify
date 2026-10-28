@@ -1,3 +1,9 @@
+## [1.8.0](https://github.com/Pagiestm/Boardify/compare/v1.7.0...v1.8.0) (2026-10-28)
+
+### Features
+
+* **taches:** sous-tâches, dépendances, pièces jointes, récurrence, modèles et vues sauvegardées ([6c01ac2](https://github.com/Pagiestm/Boardify/commit/6c01ac28adb68d4b5c7892996d566c825effc3ca))
+
 ## [1.7.0](https://github.com/Pagiestm/Boardify/compare/v1.6.4...v1.7.0) (2026-10-28)
 
 ### Features
