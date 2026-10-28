@@ -1,3 +1,14 @@
+## [1.7.0](https://github.com/Pagiestm/Boardify/compare/v1.6.4...v1.7.0) (2026-10-28)
+
+### Features
+
+* **collaboration:** commentaires, activité et notifications ([61ce404](https://github.com/Pagiestm/Boardify/commit/61ce4043ecc876e126229cb9ab81e687ef4f614b))
+
+### Bug Fixes
+
+* **members:** permet à un membre de quitter un espace de travail ([113af35](https://github.com/Pagiestm/Boardify/commit/113af35fd8746cdd93cfd2f286e091e8e8324ca8))
+* **notifications:** vérifie les notifications même quand la fenêtre est cachée ([8cff8af](https://github.com/Pagiestm/Boardify/commit/8cff8afbdc7e1578845d6063b185f951e6f323a6))
+
 ## [1.6.4](https://github.com/Pagiestm/Boardify/compare/v1.6.3...v1.6.4) (2026-10-27)
 
 ### Bug Fixes
