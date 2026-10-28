@@ -28,15 +28,16 @@ L'application est disponible sur [http://localhost:3000](http://localhost:3000).
 
 Toutes les valeurs se trouvent dans la console Appwrite :
 
-| Variable                                                                                       | Où la trouver                                                          |
-| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `NEXT_PUBLIC_APP_URL`                                                                          | `http://localhost:3000` en local                                       |
-| `NEXT_PUBLIC_APPWRITE_ENDPOINT`                                                                | _Settings_ du projet → API Endpoint (se termine par `/v1`)             |
-| `NEXT_PUBLIC_APPWRITE_PROJECT`                                                                 | _Settings_ du projet → Project ID                                      |
-| `NEXT_APPWRITE_KEY`                                                                            | _Overview → Integrations → API Keys_ (scopes auth, databases, storage) |
-| `NEXT_PUBLIC_APPWRITE_DATABASE_ID`                                                             | _Databases_ → ID de la base                                            |
-| `NEXT_PUBLIC_APPWRITE_WORKSPACES_ID` / `MEMBERS_ID` / `PROJECTS_ID` / `TASKS_ID` / `LABELS_ID` | ID de chaque collection                                                |
-| `NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID`                                                        | _Storage_ → ID du bucket d'images                                      |
+| Variable                                                                                                                                              | Où la trouver                                                          |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `NEXT_PUBLIC_APP_URL`                                                                                                                                 | `http://localhost:3000` en local                                       |
+| `NEXT_PUBLIC_APPWRITE_ENDPOINT`                                                                                                                       | _Settings_ du projet → API Endpoint (se termine par `/v1`)             |
+| `NEXT_PUBLIC_APPWRITE_PROJECT`                                                                                                                        | _Settings_ du projet → Project ID                                      |
+| `NEXT_APPWRITE_KEY`                                                                                                                                   | _Overview → Integrations → API Keys_ (scopes auth, databases, storage) |
+| `NEXT_PUBLIC_APPWRITE_DATABASE_ID`                                                                                                                    | _Databases_ → ID de la base                                            |
+| `NEXT_PUBLIC_APPWRITE_WORKSPACES_ID` / `MEMBERS_ID` / `PROJECTS_ID` / `TASKS_ID` / `LABELS_ID` / `COMMENTS_ID` / `ACTIVITIES_ID` / `NOTIFICATIONS_ID` | ID de chaque collection                                                |
+| `CRON_SECRET`                                                                                                                                         | Secret des tâches planifiées Vercel (notification « échéance demain ») |
+| `NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID`                                                                                                               | _Storage_ → ID du bucket d'images                                      |
 
 Pour la connexion Google / GitHub, activez les providers dans _Auth → Settings_ et ajoutez une plateforme Web `localhost` dans le projet Appwrite.
 
@@ -61,13 +62,28 @@ Création de l'app (une seule fois), dans _GitHub → Settings → Developer set
 | Request user authorization (OAuth) during installation | coché (sert à vérifier que l'installation est la vôtre)                                     |
 | Post installation → Redirect on update                 | coché (utile pour lier un 2ᵉ espace de travail)                                             |
 | Webhook → Active                                       | coché, URL `<NEXT_PUBLIC_APP_URL>/api/github/webhook` et secret `GITHUB_APP_WEBHOOK_SECRET` |
-| Subscribe to events                                    | Issues                                                                                      |
+| Subscribe to events                                    | Issues, Issue comment                                                                       |
 | Repository permissions                                 | Issues : Read and write, Contents : Read and write, Pull requests : Read-only               |
 | Where can this GitHub App be installed?                | Any account                                                                                 |
 
 Renseignez ensuite `GITHUB_APP_SLUG` (fin de l'URL publique de l'app), `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET`, `GITHUB_APP_PRIVATE_KEY` (contenu du `.pem` généré) et `GITHUB_APP_WEBHOOK_SECRET`. La clé API Appwrite doit avoir les scopes `documents.read` et `documents.write`, utilisés par le webhook. Sans ces variables, la fonctionnalité est masquée.
 
 Dans Appwrite, ajoutez les attributs optionnels `githubInstallationId` (string, 32) aux espaces de travail, `githubRepo` (string, 140) aux projets et `githubIssueUrl` (URL) aux tâches.
+
+## Collaboration
+
+- **Commentaires** sur chaque tâche, avec mentions `@membre` (stockées sous la forme `@[Nom](id)`). Sur une tâche liée à une issue, ils sont publiés sur l'issue par le bot de l'app ; les commentaires écrits sur GitHub remontent dans la tâche (webhook `issue_comment`).
+- **Activité** : chaque modification d'une tâche (statut, assigné, priorité, période, nom, description, étiquettes, projet) et chaque action faite sur l'issue GitHub est enregistrée et affichée avec les commentaires, dans l'ordre chronologique.
+- **Notifications** : assignation, mention, commentaire sur une tâche assignée et échéance du lendemain, dans la cloche de la barre supérieure et en notification native dans l'application desktop. L'échéance est vérifiée chaque matin par une tâche planifiée Vercel (`vercel.json`, route `/api/cron/due-soon` protégée par `CRON_SECRET`).
+- **Mise à jour automatique** : les tâches, commentaires et l'activité se rafraîchissent toutes les 5 secondes tant que l'onglet est visible, en passant par l'API de Boardify et ses contrôles d'accès.
+
+Collections Appwrite (permissions « All users » : Create, Read, Update, Delete, comme les tâches) :
+
+| Collection      | Attributs                                                                                                               | Index    |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------- | -------- |
+| `comments`      | `workspaceId`, `taskId`, `memberId` (string 50, requis), `content` (string 5000, requis), `githubCommentId` (string 50) | `taskId` |
+| `activities`    | `workspaceId`, `taskId`, `type` (string 50, requis), `memberId` (string 50), `data` (string 2000)                       | `taskId` |
+| `notifications` | `workspaceId`, `userId`, `taskId`, `type` (string 50, requis), `actorId` (string 50), `read` (boolean, défaut `false`)  | `userId` |
 
 ## Application desktop
 

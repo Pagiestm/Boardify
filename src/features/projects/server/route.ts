@@ -11,6 +11,7 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 import { createProjectSchema, updateBoardColumnsSchema, updateProjectSchema } from "../schemas";
 
 import { Task } from "@/features/tasks/types";
+import { deleteTaskRelations } from "@/features/tasks/server/cleanup";
 import { closeDeletedTaskIssue } from "@/features/tasks/server/github-sync";
 
 import { Project } from "../types";
@@ -28,7 +29,10 @@ const deleteProjectTasks = async (databases: Databases, projectId: string): Prom
     await Promise.all(
       documents.map(async (document) => {
         await databases.deleteDocument(DATABASE_ID, TASKS_ID, document.$id);
-        await closeDeletedTaskIssue(databases, document);
+        await Promise.all([
+          closeDeletedTaskIssue(databases, document),
+          deleteTaskRelations(databases, document.$id),
+        ]);
       }),
     );
 

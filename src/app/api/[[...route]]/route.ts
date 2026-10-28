@@ -8,6 +8,10 @@ import projects from "@/features/projects/server/route";
 import tasks from "@/features/tasks/server/route";
 import labels from "@/features/labels/server/route";
 import github from "@/features/github/server/route";
+import comments from "@/features/comments/server/route";
+import activities from "@/features/activities/server/route";
+import notifications from "@/features/notifications/server/route";
+import cron from "@/features/cron/server/route";
 
 const app = new Hono().basePath("/api");
 
@@ -19,7 +23,11 @@ const routes = app
   .route("/projects", projects)
   .route("/tasks", tasks)
   .route("/labels", labels)
-  .route("/github", github);
+  .route("/github", github)
+  .route("/comments", comments)
+  .route("/activities", activities)
+  .route("/notifications", notifications)
+  .route("/cron", cron);
 
 export const GET = handle(app);
 export const POST = handle(app);

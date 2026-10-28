@@ -3,6 +3,8 @@ import { Query, type Databases } from "node-appwrite";
 
 import { DATABASE_ID, MEMBERS_ID } from "@/config";
 
+import { Member } from "./types";
+
 const MEMBER_TTL = 60;
 
 interface GetMemberProps {
@@ -16,7 +18,7 @@ const membersTag = (workspaceId: string) => `workspace-members:${workspaceId}`;
 export const getMember = ({ databases, workspaceId, userId }: GetMemberProps) =>
   unstable_cache(
     async () => {
-      const members = await databases.listDocuments(DATABASE_ID, MEMBERS_ID, [
+      const members = await databases.listDocuments<Member>(DATABASE_ID, MEMBERS_ID, [
         Query.equal("workspaceId", workspaceId),
         Query.equal("userId", userId),
         Query.limit(1),

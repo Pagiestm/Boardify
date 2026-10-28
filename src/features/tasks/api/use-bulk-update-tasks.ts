@@ -26,6 +26,7 @@ export const useBulkUpdateTasks = () => {
       queryClient.invalidateQueries({ queryKey: ["project-analytics"] });
       queryClient.invalidateQueries({ queryKey: ["workspace-analytics"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["activities"] });
     },
     onError: () => {
       toast.error("Erreur lors de la mise à jour des tâches");

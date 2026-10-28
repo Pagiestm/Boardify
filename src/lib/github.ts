@@ -607,3 +607,50 @@ export const createGithubLinkedBranch = async (
 
   return branch;
 };
+
+export const createGithubComment = async (
+  installationId: string,
+  issueUrl: string,
+  body: string,
+) => {
+  const path = issuePath(issueUrl);
+  if (!path) return null;
+
+  const { id } = await githubFetch<{ id: number }>(`${path}/comments`, {
+    token: await getInstallationToken(installationId),
+    method: "POST",
+    body: { body },
+  });
+
+  return String(id);
+};
+
+export const updateGithubComment = async (
+  installationId: string,
+  issueUrl: string,
+  commentId: string,
+  body: string,
+) => {
+  const repo = getGithubIssueRepo(issueUrl);
+  if (!repo) return;
+
+  await githubFetch(`/repos/${repo}/issues/comments/${commentId}`, {
+    token: await getInstallationToken(installationId),
+    method: "PATCH",
+    body: { body },
+  });
+};
+
+export const deleteGithubComment = async (
+  installationId: string,
+  issueUrl: string,
+  commentId: string,
+) => {
+  const repo = getGithubIssueRepo(issueUrl);
+  if (!repo) return;
+
+  await githubFetch(`/repos/${repo}/issues/comments/${commentId}`, {
+    token: await getInstallationToken(installationId),
+    method: "DELETE",
+  });
+};

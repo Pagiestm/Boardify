@@ -4,6 +4,7 @@ import { useGetTask } from "@/features/tasks/api/use-get-task";
 import { useTaskId } from "@/features/tasks/hooks/use-task-id";
 import { TaskOverview } from "@/features/tasks/components/task-overview";
 import { TaskBreadcrumbs } from "@/features/tasks/components/task-breadcrumbs";
+import { TaskActivity } from "@/features/tasks/components/task-activity";
 import { TaskDescription } from "@/features/tasks/components/task-description";
 import { TaskGithubDevelopment } from "@/features/github/components/task-github-development";
 
@@ -39,7 +40,10 @@ export const TaskIdClient = () => {
     <div className="flex flex-col gap-4">
       <TaskBreadcrumbs project={data.project} task={data} />
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-        <TaskDescription key={data.$updatedAt} task={data} />
+        <div className="flex flex-col gap-4">
+          <TaskDescription key={data.$updatedAt} task={data} />
+          <TaskActivity task={data} />
+        </div>
         <div className="flex flex-col gap-4">
           <TaskOverview task={data} />
           {data.githubIssueUrl && <TaskGithubDevelopment taskId={data.$id} />}
