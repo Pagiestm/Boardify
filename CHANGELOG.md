@@ -1,3 +1,9 @@
+## [1.11.0](https://github.com/Pagiestm/Boardify/compare/v1.10.1...v1.11.0) (2026-10-29)
+
+### Features
+
+* **assistant:** assistant IA intégré avec la clé de l'utilisateur ([8ab5c8a](https://github.com/Pagiestm/Boardify/commit/8ab5c8ac7b1648dc6672a3e57634d252b12ed1be))
+
 ## [1.10.1](https://github.com/Pagiestm/Boardify/compare/v1.10.0...v1.10.1) (2026-10-28)
 
 ### Bug Fixes
