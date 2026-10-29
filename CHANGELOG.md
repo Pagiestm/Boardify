@@ -1,3 +1,9 @@
+## [1.12.0](https://github.com/Pagiestm/Boardify/compare/v1.11.1...v1.12.0) (2026-10-29)
+
+### Features
+
+* **guide:** guide d'utilisation animé, visites guidées et mise en page mobile ([f81eab9](https://github.com/Pagiestm/Boardify/commit/f81eab9458e7d7138f9c5028bcd40f10c83c223b))
+
 ## [1.11.1](https://github.com/Pagiestm/Boardify/compare/v1.11.0...v1.11.1) (2026-10-29)
 
 ### Bug Fixes
