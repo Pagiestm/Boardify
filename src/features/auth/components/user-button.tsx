@@ -1,6 +1,11 @@
 "use client";
 
-import { KeyboardIcon, LogOutIcon, SearchIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { BookOpenIcon, CompassIcon, KeyboardIcon, LogOutIcon, SearchIcon } from "lucide-react";
+
+import { findTour } from "@/features/onboarding/tours";
+import { startTour } from "@/features/onboarding/store";
 
 import { cn, getAvatarColor, getInitial } from "@/lib/utils";
 import { Kbd } from "@/components/ui/kbd";
@@ -23,6 +28,7 @@ export const UserButton = () => {
   const { data: user, isLoading } = useCurrent();
   const palette = useCommandPalette();
   const help = useShortcutsHelp();
+  const tour = findTour(usePathname());
 
   if (isLoading) {
     return <Skeleton className="size-8 rounded-full" />;
@@ -39,6 +45,7 @@ export const UserButton = () => {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger
+        data-tour="user-menu"
         aria-label="Menu du compte"
         className={cn(
           "flex size-8 items-center justify-center rounded-full text-xs font-semibold transition-opacity outline-none hover:opacity-85 focus-visible:ring-[3px] focus-visible:ring-ring/40",
@@ -77,9 +84,21 @@ export const UserButton = () => {
                 <Kbd>?</Kbd>
               </DropdownMenuItem>
             )}
-            <DropdownMenuSeparator />
           </>
         )}
+        {tour && (
+          <DropdownMenuItem onSelect={() => startTour(tour.id)}>
+            <CompassIcon className="text-muted-foreground" />
+            Visite guidée de la page
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuItem asChild>
+          <Link href="/guide">
+            <BookOpenIcon className="text-muted-foreground" />
+            Guide d&apos;utilisation
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" disabled={isPending} onSelect={() => logout()}>
           <LogOutIcon />
           Se déconnecter

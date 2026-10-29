@@ -95,7 +95,7 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
 
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 border-b py-3">
         <CardTitle className="text-sm">Détails</CardTitle>
         <Button onClick={() => open(task.$id)} size="sm" variant="outline" title="Modifier (e)">
           <PencilIcon />

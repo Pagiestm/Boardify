@@ -20,7 +20,7 @@ export const Navigation = () => {
   const pathname = usePathname();
 
   return (
-    <nav>
+    <nav data-tour="navigation">
       <ul className="flex flex-col gap-0.5">
         {routes.map(({ label, href, icon: Icon }) => {
           const fullHref = `/workspaces/${workspaceId}${href}`;

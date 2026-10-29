@@ -159,7 +159,7 @@ export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
   const maxLoad = Math.max(1, ...loadEntries.map((entry) => entry.total));
 
   return (
-    <section className="rounded-lg border bg-card shadow-xs">
+    <section data-tour="sprint-bar" className="rounded-lg border bg-card shadow-xs">
       <DeleteDialog />
       <div className="flex flex-wrap items-center gap-3 p-4">
         <Select

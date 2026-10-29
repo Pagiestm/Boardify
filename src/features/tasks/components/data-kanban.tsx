@@ -250,7 +250,7 @@ export const DataKanban = ({ data, columns, onColumnsChange, onChange }: DataKan
                             )}
                           >
                             {(tasks[board] ?? []).length === 0 && !snapshot.isDraggingOver && (
-                              <div className="flex h-20 items-center justify-center rounded-md border border-dashed text-xs text-muted-foreground">
+                              <div className="flex h-20 items-center justify-center rounded-md border border-dashed px-3 text-center text-xs text-muted-foreground">
                                 Aucune tâche
                               </div>
                             )}
@@ -279,7 +279,7 @@ export const DataKanban = ({ data, columns, onColumnsChange, onChange }: DataKan
             {boardProvided.placeholder}
 
             {onColumnsChange && (
-              <div className="flex w-[200px] min-w-[200px] shrink-0 flex-col gap-1">
+              <div className="flex w-[200px] min-w-[200px] shrink-0 snap-end flex-col gap-1">
                 <Button
                   type="button"
                   variant="ghost"
@@ -293,7 +293,7 @@ export const DataKanban = ({ data, columns, onColumnsChange, onChange }: DataKan
             )}
 
             {onColumnsChange && hiddenColumns.length > 0 && (
-              <div className="flex w-[200px] min-w-[200px] shrink-0 flex-col gap-1 rounded-lg border border-dashed p-2">
+              <div className="flex w-[200px] min-w-[200px] shrink-0 snap-end flex-col gap-1 rounded-lg border border-dashed p-2">
                 <p className="px-1 text-xs text-muted-foreground">
                   {hiddenColumns.length} statut{hiddenColumns.length > 1 ? "s" : ""} masqué
                   {hiddenColumns.length > 1 ? "s" : ""}

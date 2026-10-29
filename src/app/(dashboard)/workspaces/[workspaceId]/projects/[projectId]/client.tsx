@@ -63,8 +63,12 @@ export const ProjectIdClient = () => {
           <h1 className="truncate text-xl font-semibold tracking-tight">{project.name}</h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          {assistantReady && <ProjectAssistantMenu onSelect={setDialog} />}
-          <Button variant="outline" size="sm" asChild>
+          {assistantReady && (
+            <div data-tour="project-assistant" className="flex">
+              <ProjectAssistantMenu onSelect={setDialog} />
+            </div>
+          )}
+          <Button variant="outline" size="sm" asChild data-tour="project-settings">
             <Link href={`/workspaces/${project.workspaceId}/projects/${project.$id}/settings`}>
               <SettingsIcon />
               Paramètres

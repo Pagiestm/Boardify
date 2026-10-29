@@ -57,7 +57,7 @@ export const DataGantt = ({ data }: DataGanttProps) => {
 
   if (rows.length === 0) {
     return (
-      <div className="flex h-40 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+      <div className="flex h-40 items-center justify-center rounded-lg border border-dashed px-6 text-center text-sm text-muted-foreground">
         Aucune tâche datée à placer sur la frise.
       </div>
     );

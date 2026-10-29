@@ -275,7 +275,7 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
   return (
     <Card>
       <DeleteDialog />
-      <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 border-b py-3">
         <CardTitle className="text-sm">Activité</CardTitle>
         {assistantReady && commentCount >= 2 && !isSummarizing && (
           <Button size="sm" variant="ghost" onClick={() => setIsSummarizing(true)}>

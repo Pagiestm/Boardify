@@ -48,12 +48,14 @@ function DropdownMenuSubContent({
 function DropdownMenuContent({
   className,
   sideOffset = 6,
+  collisionPadding = 12,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
         sideOffset={sideOffset}
+        collisionPadding={collisionPadding}
         className={cn(menuContentClasses, className)}
         {...props}
       />

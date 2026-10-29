@@ -119,10 +119,10 @@ export const StatusLabel = ({ status }: { status: TaskStatus }) => (
 export const PreviewTaskCard = ({ task }: { task: SampleTask }) => (
   <div className="rounded-md border bg-card p-2.5 shadow-xs">
     <p className="text-[13px] leading-snug font-medium">{task.name}</p>
-    <div className="mt-2.5 flex items-center justify-between gap-2">
+    <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
       <Badge variant={task.priority}>{TASK_PRIORITY_CONFIG[task.priority].label}</Badge>
       <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-        <span className="flex items-center gap-1">
+        <span className="flex items-center gap-1 whitespace-nowrap">
           <CalendarIcon className="size-3" />
           {task.day} oct.
         </span>

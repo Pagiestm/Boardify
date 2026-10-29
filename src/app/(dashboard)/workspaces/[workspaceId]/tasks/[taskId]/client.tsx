@@ -40,16 +40,28 @@ export const TaskIdClient = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <TaskBreadcrumbs project={data.project} task={data} />
+      <div data-tour="task-header">
+        <TaskBreadcrumbs project={data.project} task={data} />
+      </div>
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-4">
-          <TaskDescription key={data.$updatedAt} task={data} />
-          <TaskChecklist taskId={data.$id} />
-          <TaskAttachments taskId={data.$id} workspaceId={data.workspaceId} />
-          <TaskActivity task={data} />
+          <div data-tour="task-description">
+            <TaskDescription key={data.$updatedAt} task={data} />
+          </div>
+          <div data-tour="task-checklist">
+            <TaskChecklist taskId={data.$id} />
+          </div>
+          <div data-tour="task-attachments">
+            <TaskAttachments taskId={data.$id} workspaceId={data.workspaceId} />
+          </div>
+          <div data-tour="task-activity">
+            <TaskActivity task={data} />
+          </div>
         </div>
         <div className="flex flex-col gap-4">
-          <TaskOverview task={data} />
+          <div data-tour="task-overview">
+            <TaskOverview task={data} />
+          </div>
           {data.githubIssueUrl && <TaskGithubDevelopment taskId={data.$id} />}
         </div>
       </div>

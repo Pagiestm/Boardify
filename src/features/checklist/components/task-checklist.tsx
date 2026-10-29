@@ -56,7 +56,7 @@ export const TaskChecklist = ({ taskId }: TaskChecklistProps) => {
 
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 border-b py-3">
         <CardTitle className="text-sm">Sous-tâches</CardTitle>
         <div className="flex items-center gap-3">
           {total > 0 && (

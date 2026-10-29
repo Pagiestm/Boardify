@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MenuIcon, XIcon } from "lucide-react";
+import { MenuIcon } from "lucide-react";
 
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const links = [
   { href: "/#fonctionnalites", label: "Fonctionnalités" },
@@ -15,6 +16,7 @@ const links = [
   { href: "/#ia", label: "IA" },
   { href: "/#faq", label: "FAQ" },
   { href: "/download", label: "Application" },
+  { href: "/guide", label: "Guide" },
 ];
 
 interface LandingHeaderProps {
@@ -68,36 +70,36 @@ export const LandingHeader = ({ isLoggedIn }: LandingHeaderProps) => {
         </div>
         <div className="flex items-center gap-1 md:hidden">
           <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
-            aria-expanded={open}
-            onClick={() => setOpen((value) => !value)}
-          >
-            {open ? <XIcon /> : <MenuIcon />}
-          </Button>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Ouvrir le menu">
+                <MenuIcon />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-72 gap-0 p-0" aria-describedby={undefined}>
+              <SheetTitle className="sr-only">Menu</SheetTitle>
+              <div className="flex h-14 shrink-0 items-center border-b px-4">
+                <Logo />
+              </div>
+              <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-3">
+                {links.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    className="rounded-md px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
+              <div className="flex flex-col gap-2 border-t p-3 [&>a]:w-full">
+                <HeaderActions isLoggedIn={isLoggedIn} />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
-      {open && (
-        <div className="border-t md:hidden">
-          <nav className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
-            {links.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="rounded-md px-2 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                {link.label}
-              </a>
-            ))}
-            <div className="mt-2 flex flex-col gap-2 border-t pt-3 [&>a]:w-full">
-              <HeaderActions isLoggedIn={isLoggedIn} />
-            </div>
-          </nav>
-        </div>
-      )}
     </header>
   );
 };

@@ -206,7 +206,7 @@ export const ViewsSection = () => {
             <TabsList>
               {views.map(({ value, label, icon: Icon }) => (
                 <TabsTrigger key={value} value={value}>
-                  <Icon />
+                  <Icon className="max-sm:hidden" />
                   {label}
                 </TabsTrigger>
               ))}

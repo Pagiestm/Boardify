@@ -23,7 +23,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
   return (
     <TabsPrimitive.Trigger
       className={cn(
-        "inline-flex h-full items-center justify-center gap-1.5 px-3 text-xs font-medium whitespace-nowrap transition-all outline-none",
+        "inline-flex h-full min-w-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-medium whitespace-nowrap transition-all outline-none",
         "hover:text-foreground disabled:pointer-events-none disabled:opacity-50",
         "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs [&_svg]:size-4",
         className,

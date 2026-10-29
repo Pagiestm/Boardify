@@ -51,7 +51,7 @@ export const TaskGithubDevelopment = ({ taskId }: TaskGithubDevelopmentProps) =>
 
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 border-b py-3">
         <CardTitle className="flex items-center gap-2 text-sm">
           <FaGithub className="size-4" />
           Développement

@@ -9,6 +9,7 @@ const links = [
   { href: "/#github", label: "GitHub" },
   { href: "/#faq", label: "FAQ" },
   { href: "/download", label: "Application desktop" },
+  { href: "/guide", label: "Guide d'utilisation" },
   { href: "/sign-in", label: "Se connecter" },
   { href: "/sign-up", label: "Créer un compte" },
 ];

@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 
 import { useLogout } from "@/features/auth/api/use-logout";
+import { useCurrent } from "@/features/auth/api/use-current";
+import { markOnboarding } from "@/features/onboarding/store";
 import { useGetProjects } from "@/features/projects/api/use-get-projects";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { useGetWorkspaces } from "@/features/workspaces/api/use-get-workspaces";
@@ -141,6 +143,12 @@ export const CommandPalette = () => {
   const { data: workspaces } = useGetWorkspaces();
   const { data: projects } = useGetProjects({ workspaceId });
   const [search, setSearch] = useState("");
+  const { data: user } = useCurrent();
+
+  // Étape « Essayer la recherche » des premiers pas.
+  useEffect(() => {
+    if (open && user) markOnboarding(user.$id, "palette");
+  }, [open, user]);
 
   const run = (action: () => void) => () => {
     close();

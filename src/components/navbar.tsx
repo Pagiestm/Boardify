@@ -17,6 +17,8 @@ import { useCommandPalette } from "./command-palette";
 const pathnameMap: Record<string, string> = {
   tasks: "Mes tâches",
   projects: "Projet",
+  members: "Membres",
+  settings: "Paramètres",
 };
 
 const DEFAULT_TITLE = "Accueil";
@@ -43,6 +45,7 @@ export const Navbar = () => {
         <div className="flex items-center gap-1.5">
           <button
             type="button"
+            data-tour="search"
             onClick={open}
             className="hidden h-8 w-56 items-center gap-2 rounded-md border bg-background px-2.5 text-sm text-muted-foreground shadow-xs transition-colors hover:bg-accent md:flex"
           >
@@ -55,11 +58,14 @@ export const Navbar = () => {
             size="icon-sm"
             onClick={open}
             aria-label="Rechercher"
+            data-tour="search"
             className="md:hidden"
           >
             <SearchIcon />
           </Button>
-          <NotificationsButton />
+          <span data-tour="notifications" className="flex">
+            <NotificationsButton />
+          </span>
           <ThemeToggle />
           <UserButton />
         </div>

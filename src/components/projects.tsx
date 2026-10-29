@@ -21,7 +21,7 @@ export const Projects = () => {
   });
 
   return (
-    <div className="flex flex-col gap-1">
+    <div data-tour="projects" className="flex flex-col gap-1">
       <div className="flex items-center justify-between px-2.5">
         <p className="text-xs font-medium text-muted-foreground">Projets</p>
         <button

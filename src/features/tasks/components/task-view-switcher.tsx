@@ -171,7 +171,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwit
       className="w-full flex-1 rounded-lg border bg-card shadow-xs"
     >
       <div className="flex flex-col gap-3 border-b p-4 lg:flex-row lg:items-center lg:justify-between">
-        <TabsList className="w-full lg:w-auto">
+        <TabsList data-tour="view-tabs" className="w-full lg:w-auto">
           {availableViews.map(({ value, key, label, icon: Icon }) => (
             <TabsTrigger
               key={value}
@@ -179,14 +179,21 @@ export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwit
               title={`${label} (${key})`}
               className="flex-1 lg:flex-none"
             >
-              <Icon />
+              <Icon className="max-sm:hidden" />
               {label}
             </TabsTrigger>
           ))}
         </TabsList>
         <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-          <SavedViewsMenu workspaceId={workspaceId} view={activeView} onViewChange={setView} />
-          <Button onClick={() => open()} size="sm" className="w-full lg:w-auto">
+          <div data-tour="saved-views" className="flex">
+            <SavedViewsMenu workspaceId={workspaceId} view={activeView} onViewChange={setView} />
+          </div>
+          <Button
+            data-tour="new-task"
+            onClick={() => open()}
+            size="sm"
+            className="w-full lg:w-auto"
+          >
             <PlusIcon />
             Nouvelle tâche
             <Kbd className="ml-1 hidden border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground lg:inline-flex">
@@ -195,7 +202,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwit
           </Button>
         </div>
       </div>
-      <div className="border-b px-4 py-3">
+      <div data-tour="filters" className="border-b px-4 py-3">
         <DataFilters hideProjectFilter={hideProjectFilter} />
       </div>
       <div className="p-4">

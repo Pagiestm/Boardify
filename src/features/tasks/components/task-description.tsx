@@ -64,7 +64,7 @@ export const TaskDescription = ({ task }: TaskDescriptionProps) => {
 
   return (
     <Card>
-      <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 border-b py-3">
         <CardTitle className="text-sm">Description</CardTitle>
         {!isEditing && (
           <div className="flex gap-2">

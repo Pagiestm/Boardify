@@ -195,7 +195,7 @@ const AssistantForm = ({
         <Label>Modèle</Label>
         <div className="flex gap-2">
           <Select value={selectedModel} onValueChange={setModel} disabled={options.length === 0}>
-            <SelectTrigger className="w-full" aria-label="Modèle">
+            <SelectTrigger className="w-full min-w-0 flex-1" aria-label="Modèle">
               <SelectValue placeholder={modelPlaceholder} />
             </SelectTrigger>
             <SelectContent>

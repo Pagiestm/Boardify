@@ -26,6 +26,7 @@ import { useCreateTaskModal } from "@/features/tasks/hooks/use-create-task-modal
 import { useCreateProjectModal } from "@/features/projects/hooks/use-create-project-modal";
 import { useGetWorkspaceAnalytics } from "@/features/workspaces/api/use-get-workspace-analytics";
 import { FocusCard } from "@/features/assistant/components/focus-card";
+import { GettingStartedCard } from "@/features/onboarding/components/getting-started-card";
 import { resolveStatus, TaskStatusBadge } from "@/features/tasks/components/task-status-badge";
 
 import { cn } from "@/lib/utils";
@@ -62,22 +63,32 @@ export const WorkspaceIdClient = () => {
 
   return (
     <div className="flex h-full flex-col gap-6">
+      <GettingStartedCard
+        workspaceId={workspaceId}
+        projectCount={projects.total}
+        taskCount={tasks.total}
+        memberCount={members.total}
+      />
       <FocusCard
         workspaceId={workspaceId}
         tasks={tasks?.documents as PopulatedTask[] | undefined}
       />
-      <Analytics data={analytics} />
+      <div data-tour="analytics">
+        <Analytics data={analytics} />
+      </div>
       <ActivityChart tasks={tasks.documents} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <DueDates tasks={tasks.documents} />
         <TasksByProject tasks={tasks.documents} />
         <WorkloadBars tasks={tasks.documents} />
       </div>
-      <WorkloadTimeline
-        workspaceId={workspaceId}
-        tasks={tasks.documents}
-        members={members.documents}
-      />
+      <div data-tour="workload">
+        <WorkloadTimeline
+          workspaceId={workspaceId}
+          tasks={tasks.documents}
+          members={members.documents}
+        />
+      </div>
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
         <TaskList
           data={tasks.documents}

@@ -138,7 +138,7 @@ export const FocusCard = ({ workspaceId, tasks }: FocusCardProps) => {
   const doneCount = items.filter((item) => item.done).length;
 
   return (
-    <Card className="gap-0 overflow-hidden p-0">
+    <Card data-tour="focus-card" className="gap-0 overflow-hidden p-0">
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">

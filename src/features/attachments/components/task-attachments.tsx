@@ -69,7 +69,7 @@ export const TaskAttachments = ({ taskId, workspaceId }: TaskAttachmentsProps) =
       className={cn(isDragging && "ring-2 ring-primary")}
     >
       <DeleteDialog />
-      <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
+      <CardHeader className="flex-row flex-wrap items-center justify-between gap-2 border-b py-3">
         <CardTitle className="text-sm">Pièces jointes</CardTitle>
         <Button
           size="sm"

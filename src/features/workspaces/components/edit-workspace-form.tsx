@@ -125,7 +125,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
     <div className="flex flex-col gap-6">
       <DeleteDialog />
       <ResetDialog />
-      <Card className="overflow-hidden">
+      <Card data-tour="settings-general" className="overflow-hidden">
         <FormHeader
           onBack={handleBack}
           title="Paramètres de l'espace"
@@ -170,7 +170,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
         </Form>
       </Card>
 
-      <Card>
+      <Card data-tour="settings-invite">
         <div className="space-y-4 p-6">
           <div className="space-y-1">
             <h3 className="text-base font-semibold">Inviter des membres</h3>
@@ -210,11 +210,17 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
         </div>
       </Card>
 
-      <GithubConnectionCard workspaceId={initialValues.$id} />
+      <div data-tour="settings-github" className="empty:hidden">
+        <GithubConnectionCard workspaceId={initialValues.$id} />
+      </div>
 
-      <AssistantSettingsCard workspaceId={initialValues.$id} />
+      <div data-tour="settings-assistant" className="empty:hidden">
+        <AssistantSettingsCard workspaceId={initialValues.$id} />
+      </div>
 
-      <TemplatesCard workspaceId={initialValues.$id} />
+      <div data-tour="settings-templates" className="empty:hidden">
+        <TemplatesCard workspaceId={initialValues.$id} />
+      </div>
 
       <DangerZone
         description="La suppression d'un espace de travail est irréversible et supprime toutes les données associées."

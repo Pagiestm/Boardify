@@ -27,7 +27,7 @@ export const WorkspaceSwitcher = () => {
   };
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div data-tour="workspace-switcher" className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between px-2.5">
         <p className="text-xs font-medium text-muted-foreground">Espace de travail</p>
         <button

@@ -169,7 +169,7 @@ export const AiSection = () => {
   return (
     <section id="ia" className="scroll-mt-14 border-b bg-muted/30">
       <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24">
-        <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <Reveal className="flex flex-col items-start">
             <p className="flex items-center gap-1.5 text-sm font-medium text-primary">
               <SparklesIcon className="size-4" />
