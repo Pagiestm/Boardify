@@ -156,7 +156,7 @@ const AssistantForm = ({
             placeholder="https://openrouter.ai/api/v1"
           />
           <p className="text-xs text-muted-foreground">
-            OpenRouter, Groq, Together, Ollama… toute API compatible avec celle d&apos;OpenAI.
+            OpenRouter, Groq… toute API compatible avec celle d&apos;OpenAI.
           </p>
         </div>
       )}

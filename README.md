@@ -121,7 +121,7 @@ Attributs optionnels : `sprintId` (string 50, indexé) et `estimate` (integer 0�
 
 ## Assistant IA
 
-Chaque espace branche **sa propre IA** : dans les paramètres de l'espace, un administrateur choisit le fournisseur (OpenAI, Anthropic, Mistral, Google Gemini ou un service compatible OpenAI : OpenRouter, Groq, Ollama…), le modèle et colle sa clé d'API. Les appels sont facturés par ce fournisseur ; Boardify n'utilise aucune IA à ses frais.
+Chaque espace branche **sa propre IA** : dans les paramètres de l'espace, un administrateur choisit le fournisseur (OpenAI, Anthropic, Mistral, Google Gemini ou un service compatible OpenAI : OpenRouter, Groq…), le modèle et colle sa clé d'API. Les appels sont facturés par ce fournisseur ; Boardify n'utilise aucune IA à ses frais.
 
 - **Nouvelle tâche** : « Compléter avec l'IA » propose, à partir du nom, la description, les sous-tâches, la priorité et l'estimation.
 - **Ajout rapide** (⌃⌥N, application desktop) : « Interpréter » (⌘I) transforme « Appeler le client vendredi, urgent #commercial » en titre, échéance, priorité, projet, assigné et étiquettes.

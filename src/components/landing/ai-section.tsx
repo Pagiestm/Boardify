@@ -18,13 +18,7 @@ import { TaskPriority } from "@/features/tasks/types";
 import { Reveal } from "./reveal";
 import { SectionHeading } from "./section-heading";
 
-const PROVIDERS = [
-  "OpenAI",
-  "Anthropic (Claude)",
-  "Mistral",
-  "Google Gemini",
-  "OpenRouter, Groq, Ollama…",
-];
+const PROVIDERS = ["OpenAI", "Anthropic (Claude)", "Mistral", "Google Gemini", "OpenRouter, Groq…"];
 
 const capabilities = [
   {

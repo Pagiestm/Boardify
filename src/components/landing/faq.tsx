@@ -48,7 +48,7 @@ const questions = [
   {
     question: "Boardify utilise-t-il l'IA ?",
     answer:
-      "Seulement si vous le souhaitez. Un administrateur branche la clé d'API de son fournisseur (OpenAI, Anthropic, Mistral, Google Gemini ou un service compatible comme OpenRouter ou Ollama) et choisit le modèle. L'assistant prépare alors « Ma journée », répond aux recherches en langage naturel dans ⌘K, complète les nouvelles tâches, crée des tâches depuis un compte rendu, résume les discussions, rédige bilans et notes de version, estime les tâches et planifie les sprints. Rien n'est créé sans votre validation.",
+      "Seulement si vous le souhaitez. Un administrateur branche la clé d'API de son fournisseur (OpenAI, Anthropic, Mistral, Google Gemini ou un service compatible comme OpenRouter ou Groq) et choisit le modèle. L'assistant prépare alors « Ma journée », répond aux recherches en langage naturel dans ⌘K, complète les nouvelles tâches, crée des tâches depuis un compte rendu, résume les discussions, rédige bilans et notes de version, estime les tâches et planifie les sprints. Rien n'est créé sans votre validation.",
   },
   {
     question: "Mes données et ma clé d'IA sont-elles protégées ?",
