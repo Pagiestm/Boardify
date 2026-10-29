@@ -1,3 +1,9 @@
+## [1.11.1](https://github.com/Pagiestm/Boardify/compare/v1.11.0...v1.11.1) (2026-10-29)
+
+### Bug Fixes
+
+* **assistant:** retirer Ollama et Together des fournisseurs cités ([2ccf3a8](https://github.com/Pagiestm/Boardify/commit/2ccf3a876b598f7ffcea9a24be7d0b9ce80f8c95))
+
 ## [1.11.0](https://github.com/Pagiestm/Boardify/compare/v1.10.1...v1.11.0) (2026-10-29)
 
 ### Features
