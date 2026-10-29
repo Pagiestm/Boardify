@@ -58,7 +58,7 @@ const FEATURES = [
     icon: ZapIcon,
     title: "Ajout rapide",
     description:
-      "⌃⌥N (Ctrl+Alt+N sous Windows et Linux) ouvre une petite fenêtre pour noter une tâche, depuis n'importe quelle application.",
+      "⌃⌥N (Ctrl+Alt+N sous Windows et Linux) ouvre une petite fenêtre pour noter une tâche, depuis n'importe quelle application. Avec l'assistant IA, une phrase suffit : date, priorité et étiquettes sont remplies.",
   },
   {
     icon: ListTodoIcon,

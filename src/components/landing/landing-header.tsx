@@ -12,6 +12,7 @@ const links = [
   { href: "/#fonctionnalites", label: "Fonctionnalités" },
   { href: "/#vues", label: "Vues" },
   { href: "/#github", label: "GitHub" },
+  { href: "/#ia", label: "IA" },
   { href: "/#faq", label: "FAQ" },
   { href: "/download", label: "Application" },
 ];

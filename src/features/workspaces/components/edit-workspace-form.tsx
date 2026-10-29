@@ -25,6 +25,7 @@ import {
 
 import { GithubConnectionCard } from "@/features/github/components/github-connection-card";
 import { TemplatesCard } from "@/features/templates/components/templates-card";
+import { AssistantSettingsCard } from "@/features/assistant/components/assistant-settings-card";
 
 import { Workspace } from "../types";
 import { updateWorkspaceSchema } from "../schemas";
@@ -210,6 +211,8 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
       </Card>
 
       <GithubConnectionCard workspaceId={initialValues.$id} />
+
+      <AssistantSettingsCard workspaceId={initialValues.$id} />
 
       <TemplatesCard workspaceId={initialValues.$id} />
 

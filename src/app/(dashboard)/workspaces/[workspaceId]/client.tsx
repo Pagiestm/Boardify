@@ -25,6 +25,7 @@ import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { useCreateTaskModal } from "@/features/tasks/hooks/use-create-task-modal";
 import { useCreateProjectModal } from "@/features/projects/hooks/use-create-project-modal";
 import { useGetWorkspaceAnalytics } from "@/features/workspaces/api/use-get-workspace-analytics";
+import { FocusCard } from "@/features/assistant/components/focus-card";
 import { resolveStatus, TaskStatusBadge } from "@/features/tasks/components/task-status-badge";
 
 import { cn } from "@/lib/utils";
@@ -61,6 +62,10 @@ export const WorkspaceIdClient = () => {
 
   return (
     <div className="flex h-full flex-col gap-6">
+      <FocusCard
+        workspaceId={workspaceId}
+        tasks={tasks?.documents as PopulatedTask[] | undefined}
+      />
       <Analytics data={analytics} />
       <ActivityChart tasks={tasks.documents} />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

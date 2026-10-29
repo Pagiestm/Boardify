@@ -52,6 +52,8 @@ interface TaskFormFieldsProps extends TaskFormOptions {
   taskId?: string;
   boardColumns?: BoardColumn[];
   hideProjectField?: boolean;
+  /** Contenu affiché sous le nom de la tâche (assistant IA). */
+  afterName?: React.ReactNode;
 }
 
 const PRIORITY_ORDER = [TaskPriority.HIGH, TaskPriority.MEDIUM, TaskPriority.LOW];
@@ -61,6 +63,7 @@ const Dot = ({ className }: { className: string }) => (
 );
 
 export const TaskFormFields = ({
+  afterName,
   control,
   projectOptions,
   memberOptions,
@@ -101,6 +104,7 @@ export const TaskFormFields = ({
           </FormItem>
         )}
       />
+      {afterName && <div className="sm:col-span-2">{afterName}</div>}
       <FormField
         control={control}
         name="description"

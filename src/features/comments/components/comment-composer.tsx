@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { SparklesIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,8 @@ interface CommentComposerProps {
   autoFocus?: boolean;
   onSubmit: (content: string) => void;
   onCancel?: () => void;
+  /** Assistant IA : renvoie une proposition de réponse à placer dans le champ. */
+  onSuggest?: () => Promise<string | null>;
 }
 
 const MENTION_QUERY = /(?:^|\s)@([^\s@]{0,30})$/;
@@ -57,7 +60,9 @@ export const CommentComposer = ({
   autoFocus,
   onSubmit,
   onCancel,
+  onSuggest,
 }: CommentComposerProps) => {
+  const [isSuggesting, setIsSuggesting] = useState(false);
   const initial = toEditable(initialContent);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState(initial.text);
@@ -179,6 +184,27 @@ export const CommentComposer = ({
         )}
       </div>
       <div className="flex justify-end gap-2">
+        {onSuggest && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="mr-auto"
+            disabled={isSuggesting || isPending}
+            onClick={async () => {
+              setIsSuggesting(true);
+              try {
+                const suggestion = await onSuggest();
+                if (suggestion) setText(suggestion);
+              } finally {
+                setIsSuggesting(false);
+              }
+            }}
+          >
+            {isSuggesting ? <Spinner className="text-current" /> : <SparklesIcon />}
+            Suggérer une réponse
+          </Button>
+        )}
         {onCancel && (
           <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
             Annuler

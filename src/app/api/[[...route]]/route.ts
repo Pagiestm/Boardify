@@ -19,6 +19,7 @@ import templates from "@/features/templates/server/route";
 import savedViews from "@/features/saved-views/server/route";
 import sprints from "@/features/sprints/server/route";
 import calendar from "@/features/calendar/server/route";
+import assistant from "@/features/assistant/server/route";
 
 const app = new Hono().basePath("/api");
 
@@ -49,10 +50,12 @@ const routes = app
   .route("/templates", templates)
   .route("/saved-views", savedViews)
   .route("/sprints", sprints)
-  .route("/calendar", calendar);
+  .route("/calendar", calendar)
+  .route("/assistant", assistant);
 
 export const GET = handle(app);
 export const POST = handle(app);
+export const PUT = handle(app);
 export const PATCH = handle(app);
 export const DELETE = handle(app);
 

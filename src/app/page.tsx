@@ -10,6 +10,7 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { ViewsSection } from "@/components/landing/views-section";
 import { GithubSection } from "@/components/landing/github-section";
 import { DesktopSection } from "@/components/landing/desktop-section";
+import { AiSection } from "@/components/landing/ai-section";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
 
@@ -32,6 +33,7 @@ export default async function LandingPage() {
         <Features />
         <ViewsSection />
         <GithubSection />
+        <AiSection />
         <DesktopSection />
         <HowItWorks />
         <Faq />

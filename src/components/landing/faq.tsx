@@ -46,6 +46,16 @@ const questions = [
       "Oui. Connectez votre compte ou votre organisation GitHub depuis les paramètres de l'espace, puis liez un dépôt à chaque projet : chaque tâche devient une issue, avec ses étiquettes, sa priorité, son assigné et une milestone par projet. Fermer l'issue ou merger la pull request qui la résout termine la tâche, et la page d'une tâche affiche ses branches et pull requests.",
   },
   {
+    question: "Boardify utilise-t-il l'IA ?",
+    answer:
+      "Seulement si vous le souhaitez. Un administrateur branche la clé d'API de son fournisseur (OpenAI, Anthropic, Mistral, Google Gemini ou un service compatible comme OpenRouter ou Ollama) et choisit le modèle. L'assistant prépare alors « Ma journée », répond aux recherches en langage naturel dans ⌘K, complète les nouvelles tâches, crée des tâches depuis un compte rendu, résume les discussions, rédige bilans et notes de version, estime les tâches et planifie les sprints. Rien n'est créé sans votre validation.",
+  },
+  {
+    question: "Mes données et ma clé d'IA sont-elles protégées ?",
+    answer:
+      "La clé d'API est chiffrée (AES-256-GCM) avant d'être enregistrée et n'est jamais réaffichée, même aux administrateurs. Seules les informations nécessaires à la demande (tâches concernées, commentaires d'une discussion) sont envoyées au fournisseur que vous avez choisi, et les échanges vous sont facturés directement par lui. L'assistant se désactive ou se supprime à tout moment.",
+  },
+  {
     question: "Existe-t-il une application pour ordinateur ?",
     answer: (
       <>

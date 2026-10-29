@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { fr } from "date-fns/locale";
 import { addDays, differenceInCalendarDays, format, startOfDay } from "date-fns";
-import { FlagIcon, PencilIcon, PlusIcon, Trash2Icon, TrophyIcon } from "lucide-react";
+import { FlagIcon, PencilIcon, PlusIcon, SparklesIcon, Trash2Icon, TrophyIcon } from "lucide-react";
 
 import { PopulatedTask } from "@/features/tasks/types";
 import { isTaskDone } from "@/features/tasks/utils";
 import { useGetTasks } from "@/features/tasks/api/use-get-tasks";
 import { useTaskFilters } from "@/features/tasks/hooks/use-task-filters";
 import { MemberAvatar } from "@/features/members/components/member-avatar";
+import { useAssistantReady } from "@/features/assistant/api/use-assistant";
+import { SprintPlanDialog } from "@/features/assistant/components/sprint-plan-dialog";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -75,13 +77,15 @@ interface SprintBarProps {
 type SprintDialog =
   | { kind: "create"; defaults: SprintFormValues }
   | { kind: "edit"; sprint: Sprint }
-  | { kind: "complete" };
+  | { kind: "complete" }
+  | { kind: "plan" };
 
 export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
   const [{ sprintId }, setFilters] = useTaskFilters();
   const [dialog, setDialog] = useState<SprintDialog | null>(null);
   const { data: sprints } = useGetSprints({ projectId });
   const { mutate: deleteSprint } = useDeleteSprint();
+  const assistantReady = useAssistantReady(workspaceId);
 
   const selected = sprints?.find((sprint) => sprint.$id === sprintId);
   const { data: sprintTasks } = useGetTasks({
@@ -233,6 +237,12 @@ export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
                 <PencilIcon />
                 Modifier
               </Button>
+              {assistantReady && (
+                <Button size="sm" variant="ghost" onClick={() => setDialog({ kind: "plan" })}>
+                  <SparklesIcon />
+                  Planifier
+                </Button>
+              )}
               <Button size="sm" variant="outline" onClick={() => setDialog({ kind: "complete" })}>
                 <TrophyIcon />
                 Terminer
@@ -335,6 +345,9 @@ export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
           }}
           onClose={() => setDialog(null)}
         />
+      )}
+      {dialog?.kind === "plan" && selected && (
+        <SprintPlanDialog sprint={selected} onClose={() => setDialog(null)} />
       )}
       {dialog?.kind === "complete" && selected && (
         <CompleteSprintDialog

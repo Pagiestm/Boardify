@@ -7,6 +7,7 @@ import {
   LayersIcon,
   LayoutGridIcon,
   ListChecksIcon,
+  SparklesIcon,
   TagsIcon,
   UsersIcon,
 } from "lucide-react";
@@ -67,6 +68,12 @@ const features = [
     title: "Intégration GitHub",
     description:
       "Chaque tâche devient une issue, synchronisée dans les deux sens avec votre dépôt.",
+  },
+  {
+    icon: SparklesIcon,
+    title: "Assistant IA",
+    description:
+      "Votre IA prépare vos journées, rédige vos tâches, résume les discussions et planifie vos sprints.",
   },
 ];
 

@@ -26,6 +26,7 @@ import {
 
 import { Workspace } from "../types";
 import { createWorkspaceSchema, updateWorkspaceSchema } from "../schemas";
+import { deleteWorkspaceAssistant } from "@/features/assistant/server/model";
 
 const deleteWorkspaceChildren = async (
   databases: Databases,
@@ -64,6 +65,8 @@ const deleteWorkspaceChildren = async (
       );
     } while (documents.length === 100);
   }
+
+  await deleteWorkspaceAssistant(workspaceId);
 };
 
 const app = new Hono()

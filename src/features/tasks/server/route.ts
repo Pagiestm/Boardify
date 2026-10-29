@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { ID, Query } from "node-appwrite";
+import { Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { getMember } from "@/features/members/utils";
@@ -16,19 +16,15 @@ import { DATABASE_ID, LABELS_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from "@/con
 
 import { Task, TaskPriority } from "../types";
 import { createtaskSchema } from "../schemas";
-import { ActivityType } from "@/features/activities/types";
-import { NotificationType } from "@/features/notifications/types";
-import { notifyMembers } from "@/features/notifications/server/notify";
 import { describeTaskChanges, logActivities } from "@/features/activities/server/activities";
 
-import { createChecklistItems, listChecklistItems } from "@/features/checklist/server/items";
+import { listChecklistItems } from "@/features/checklist/server/items";
 import { NO_SPRINT } from "@/features/sprints/types";
-import { validateSprint } from "@/features/sprints/server/sprints";
 
-import { deleteTaskRelations } from "./cleanup";
 import { createNextOccurrence } from "./recurrence";
-import { getBlockerStates, validateBlockedBy } from "./dependencies";
-import { closeDeletedTaskIssue, createTaskIssue, syncTaskIssues } from "./github-sync";
+import { getBlockerStates } from "./dependencies";
+import { syncTaskIssues } from "./github-sync";
+import { createTask, deleteTask, updateTask } from "./mutations";
 
 const app = new Hono()
   .delete("/:taskId", sessionMiddleware, async (c) => {
@@ -48,11 +44,7 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    await databases.deleteDocument(DATABASE_ID, TASKS_ID, taskId);
-    await Promise.all([
-      closeDeletedTaskIssue(databases, task),
-      deleteTaskRelations(databases, c.get("storage"), taskId),
-    ]);
+    await deleteTask(databases, c.get("storage"), task);
 
     return c.json({ data: { $id: task.$id } });
   })
@@ -218,27 +210,11 @@ const app = new Hono()
   .post("/", sessionMiddleware, zValidator("json", createtaskSchema), async (c) => {
     const user = c.get("user");
     const databases = c.get("databases");
-    const {
-      name,
-      status,
-      workspaceId,
-      projectId,
-      dueDate,
-      startDate,
-      assigneeId,
-      priority,
-      description,
-      labelIds,
-      blockedBy,
-      recurrence,
-      sprintId,
-      estimate,
-      checklist,
-    } = c.req.valid("json");
+    const input = c.req.valid("json");
 
     const member = await getMember({
       databases,
-      workspaceId,
+      workspaceId: input.workspaceId,
       userId: user.$id,
     });
 
@@ -246,58 +222,10 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    if (blockedBy?.length) {
-      const error = await validateBlockedBy(databases, { $id: "", workspaceId }, blockedBy);
-      if (error) return c.json({ error }, 400);
-    }
+    const result = await createTask(databases, member.$id, input);
+    if (result.error !== undefined) return c.json({ error: result.error }, 400);
 
-    const sprintError = await validateSprint(databases, sprintId, projectId);
-    if (sprintError) return c.json({ error: sprintError }, 400);
-
-    const highestPositionTask = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
-      Query.equal("status", status),
-      Query.equal("workspaceId", workspaceId),
-      Query.orderAsc("position"),
-      Query.limit(1),
-    ]);
-
-    const newPosition =
-      highestPositionTask.documents.length > 0
-        ? highestPositionTask.documents[0].position + 1000
-        : 1000;
-
-    const task = await databases.createDocument<Task>(DATABASE_ID, TASKS_ID, ID.unique(), {
-      name,
-      status,
-      workspaceId,
-      projectId,
-      dueDate: dueDate.toISOString(),
-      startDate: startDate.toISOString(),
-      assigneeId,
-      priority,
-      description,
-      labelIds: labelIds ?? [],
-      blockedBy: blockedBy ?? [],
-      recurrence: recurrence ?? null,
-      sprintId: sprintId ?? null,
-      estimate: estimate ?? null,
-      position: newPosition,
-    });
-
-    const [linkedTask] = await Promise.all([
-      createTaskIssue(databases, task),
-      createChecklistItems(databases, task, checklist ?? []),
-      logActivities(databases, task, member.$id, [{ type: ActivityType.CREATED }]),
-      notifyMembers(databases, {
-        workspaceId,
-        taskId: task.$id,
-        type: NotificationType.ASSIGNED,
-        actorId: member.$id,
-        recipientIds: [assigneeId],
-      }),
-    ]);
-
-    return c.json({ data: linkedTask ?? task });
+    return c.json({ data: result.data });
   })
   .patch(
     "/:taskId",
@@ -306,21 +234,7 @@ const app = new Hono()
     async (c) => {
       const user = c.get("user");
       const databases = c.get("databases");
-      const {
-        name,
-        status,
-        description,
-        projectId,
-        dueDate,
-        startDate,
-        assigneeId,
-        priority,
-        labelIds,
-        blockedBy,
-        recurrence,
-        sprintId,
-        estimate,
-      } = c.req.valid("json");
+      const input = c.req.valid("json");
       const { taskId } = c.req.param();
 
       const existingTask = await databases.getDocument<Task>(DATABASE_ID, TASKS_ID, taskId);
@@ -335,60 +249,10 @@ const app = new Hono()
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      if (blockedBy) {
-        const error = await validateBlockedBy(databases, existingTask, blockedBy);
-        if (error) return c.json({ error }, 400);
-      }
+      const result = await updateTask(databases, member.$id, existingTask, input);
+      if (result.error !== undefined) return c.json({ error: result.error }, 400);
 
-      const targetProjectId = projectId ?? existingTask.projectId;
-      const nextSprintId =
-        sprintId !== undefined
-          ? sprintId
-          : targetProjectId !== existingTask.projectId
-            ? null
-            : undefined;
-
-      if (
-        nextSprintId &&
-        (nextSprintId !== existingTask.sprintId || targetProjectId !== existingTask.projectId)
-      ) {
-        const error = await validateSprint(databases, nextSprintId, targetProjectId);
-        if (error) return c.json({ error }, 400);
-      }
-
-      const task = await databases.updateDocument<Task>(DATABASE_ID, TASKS_ID, taskId, {
-        name,
-        status,
-        projectId,
-        dueDate: dueDate instanceof Date ? dueDate.toISOString() : dueDate,
-        startDate: startDate instanceof Date ? startDate.toISOString() : startDate,
-        assigneeId,
-        priority,
-        description,
-        labelIds,
-        blockedBy,
-        recurrence,
-        sprintId: nextSprintId,
-        estimate,
-      });
-
-      await Promise.all([
-        syncTaskIssues(databases, existingTask.workspaceId, [
-          { before: existingTask, after: task },
-        ]),
-        createNextOccurrence(databases, existingTask, task, member.$id),
-        logActivities(databases, task, member.$id, describeTaskChanges(existingTask, task)),
-        existingTask.assigneeId !== task.assigneeId &&
-          notifyMembers(databases, {
-            workspaceId: task.workspaceId,
-            taskId: task.$id,
-            type: NotificationType.ASSIGNED,
-            actorId: member.$id,
-            recipientIds: [task.assigneeId],
-          }),
-      ]);
-
-      return c.json({ data: task });
+      return c.json({ data: result.data });
     },
   )
   .get("/:taskId", sessionMiddleware, async (c) => {

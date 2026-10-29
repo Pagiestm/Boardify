@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 const DESCRIPTION =
-  "Boardify réunit vos espaces de travail, projets et tâches : kanban, tableau, calendrier, frise et statistiques, synchronisés avec GitHub, sur le web et sur ordinateur.";
+  "Boardify réunit vos espaces de travail, projets et tâches : kanban, tableau, calendrier, frise et statistiques, synchronisés avec GitHub, avec un assistant IA, sur le web et sur ordinateur.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

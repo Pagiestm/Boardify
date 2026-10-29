@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addDays, format, isSameDay, startOfDay } from "date-fns";
 import { fr } from "date-fns/locale";
-import { CheckCircle2Icon, ExternalLinkIcon, LogInIcon } from "lucide-react";
+import { CheckCircle2Icon, ExternalLinkIcon, LogInIcon, SparklesIcon, XIcon } from "lucide-react";
 
 import { useCurrent } from "@/features/auth/api/use-current";
 import { useGetMembers } from "@/features/members/api/use-get-members";
+import { useGetLabels } from "@/features/labels/api/use-get-labels";
+import { useAssistantReady } from "@/features/assistant/api/use-assistant";
 import { useGetProjects } from "@/features/projects/api/use-get-projects";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 import { useWorkspaceColumns } from "@/features/projects/hooks/use-workspace-columns";
@@ -122,6 +124,10 @@ const QuickAddForm = ({
   const [dueDate, setDueDate] = useState(() => startOfDay(new Date()));
   const [priority, setPriority] = useState(TaskPriority.MEDIUM);
   const [created, setCreated] = useState<{ $id: string; name: string } | null>(null);
+  const [assigneeId, setAssigneeId] = useState<string | null>(null);
+  const [labelIds, setLabelIds] = useState<string[]>([]);
+  const assistantReady = useAssistantReady(workspaceId);
+  const { data: labels } = useGetLabels({ workspaceId });
 
   const projectList = projects?.documents ?? [];
   const project = projectList.find((candidate) => candidate.$id === projectId) ?? projectList[0];
@@ -142,7 +148,8 @@ const QuickAddForm = ({
           name: name.trim(),
           workspaceId,
           projectId: project.$id,
-          assigneeId: memberId,
+          assigneeId: assigneeId ?? memberId,
+          labelIds,
           status: status.id,
           priority,
           startDate: dueDate < today ? dueDate : today,
@@ -175,6 +182,43 @@ const QuickAddForm = ({
   }, [created]);
 
   const canSubmit = Boolean(name.trim() && project && memberId && status) && !isPending;
+
+  // Ajout rapide intelligent : « Appeler Marie vendredi, urgent #commercial » → champs.
+  const { mutate: interpret, isPending: isInterpreting } = useMutation({
+    mutationFn: async () => {
+      const response = await client.api.assistant.workspaces[":workspaceId"].parse.$post({
+        param: { workspaceId },
+        json: { text: name.trim() },
+      });
+      const body = (await response.json().catch(() => null)) as {
+        data?: {
+          name: string;
+          dueDate: string | null;
+          priority: TaskPriority | null;
+          projectId: string | null;
+          assigneeId: string | null;
+          labelIds: string[];
+        };
+        error?: string;
+      } | null;
+      if (!response.ok || !body?.data) throw new Error(body?.error ?? "Interprétation impossible");
+      return body.data;
+    },
+    onSuccess: (parsed) => {
+      setName(parsed.name);
+      if (parsed.dueDate) {
+        const [year, month, day] = parsed.dueDate.split("-").map(Number);
+        setDueDate(new Date(year, month - 1, day));
+      }
+      if (parsed.priority) setPriority(parsed.priority);
+      if (parsed.projectId) setProjectId(parsed.projectId);
+      setAssigneeId(parsed.assigneeId && parsed.assigneeId !== memberId ? parsed.assigneeId : null);
+      setLabelIds(parsed.labelIds);
+      inputRef.current?.focus();
+    },
+  });
+  const canInterpret = assistantReady && name.trim().length >= 3 && !isInterpreting;
+  const assigneeName = members?.documents.find((member) => member.$id === assigneeId)?.name;
 
   if (created) {
     return (
@@ -216,16 +260,69 @@ const QuickAddForm = ({
         if (canSubmit) mutate();
       }}
     >
-      <Input
-        ref={inputRef}
-        autoFocus
-        value={name}
-        maxLength={256}
-        onChange={(event) => setName(event.target.value)}
-        placeholder="Que faut-il faire ?"
-        aria-label="Nom de la tâche"
-        className="h-12 border-0 bg-transparent px-1 text-lg shadow-none focus-visible:ring-0 md:text-lg"
-      />
+      <div className="flex items-center gap-2">
+        <Input
+          ref={inputRef}
+          autoFocus
+          value={name}
+          maxLength={256}
+          onChange={(event) => setName(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "i" && (event.metaKey || event.ctrlKey) && canInterpret) {
+              event.preventDefault();
+              interpret();
+            }
+          }}
+          placeholder={
+            assistantReady
+              ? "Ex. : Appeler le client vendredi, urgent #commercial"
+              : "Que faut-il faire ?"
+          }
+          aria-label="Nom de la tâche"
+          className="h-12 border-0 bg-transparent px-1 text-lg shadow-none focus-visible:ring-0 md:text-lg"
+        />
+        {assistantReady && (
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            disabled={!canInterpret}
+            onClick={() => interpret()}
+            title="Remplir les champs à partir de la phrase (⌘I)"
+          >
+            {isInterpreting ? <Spinner className="text-current" /> : <SparklesIcon />}
+            Interpréter
+          </Button>
+        )}
+      </div>
+
+      {(assigneeName || labelIds.length > 0) && (
+        <div className="flex flex-wrap gap-1.5">
+          {assigneeName && (
+            <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs">
+              Assignée à {assigneeName}
+              <button type="button" onClick={() => setAssigneeId(null)} aria-label="Me l'assigner">
+                <XIcon className="size-3" />
+              </button>
+            </span>
+          )}
+          {labelIds.map((labelId) => (
+            <span
+              key={labelId}
+              className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-xs"
+            >
+              #{labels?.documents.find((label) => label.$id === labelId)?.name ?? "étiquette"}
+              <button
+                type="button"
+                onClick={() => setLabelIds((current) => current.filter((id) => id !== labelId))}
+                aria-label="Retirer l'étiquette"
+              >
+                <XIcon className="size-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-2">
         {workspaces.length > 1 && (
@@ -319,13 +416,19 @@ const QuickAddForm = ({
           <Kbd>↵</Kbd> créer
           <span className="mx-1">·</span>
           <Kbd>Échap</Kbd> fermer
+          {assistantReady && (
+            <>
+              <span className="mx-1">·</span>
+              <Kbd>⌘I</Kbd> interpréter
+            </>
+          )}
           <span className="mx-1 hidden sm:inline">·</span>
           <span className="hidden sm:inline">
             échéance {format(dueDate, "EEEE d MMMM", { locale: fr })}
           </span>
         </p>
         <Button type="submit" size="sm" disabled={!canSubmit}>
-          {isPending && <Spinner />}
+          {isPending && <Spinner className="text-current" />}
           Créer la tâche
         </Button>
       </div>

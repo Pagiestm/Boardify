@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { PencilIcon } from "lucide-react";
+import { PencilIcon, SparklesIcon } from "lucide-react";
+
+import { useAssistantReady } from "@/features/assistant/api/use-assistant";
+import { DescriptionAssistant } from "@/features/assistant/components/description-assistant";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,6 +19,8 @@ interface TaskDescriptionProps {
 export const TaskDescription = ({ task }: TaskDescriptionProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(task.description ?? "");
+  const [isAssisting, setIsAssisting] = useState(false);
+  const assistantReady = useAssistantReady(task.workspaceId);
 
   const { mutate, isPending } = useUpdateTask();
 
@@ -62,18 +67,49 @@ export const TaskDescription = ({ task }: TaskDescriptionProps) => {
       <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
         <CardTitle className="text-sm">Description</CardTitle>
         {!isEditing && (
-          <Button
-            onClick={() => setIsEditing(true)}
-            size="sm"
-            variant="outline"
-            title="Modifier (i)"
-          >
-            <PencilIcon />
-            Modifier
-          </Button>
+          <div className="flex gap-2">
+            {assistantReady && !isAssisting && (
+              <Button onClick={() => setIsAssisting(true)} size="sm" variant="ghost">
+                <SparklesIcon />
+                Rédiger avec l&apos;IA
+              </Button>
+            )}
+            <Button
+              onClick={() => setIsEditing(true)}
+              size="sm"
+              variant="outline"
+              title="Modifier (i)"
+            >
+              <PencilIcon />
+              Modifier
+            </Button>
+          </div>
         )}
       </CardHeader>
-      <CardContent className="pt-5">
+      <CardContent className="flex flex-col gap-4 pt-5">
+        {isAssisting && !isEditing && (
+          <DescriptionAssistant
+            taskId={task.$id}
+            hasDescription={Boolean(task.description?.trim())}
+            isSaving={isPending}
+            onClose={() => setIsAssisting(false)}
+            onApply={(text, mode) => {
+              const description =
+                mode === "append" && task.description?.trim()
+                  ? `${task.description.trim()}\n\n${text}`
+                  : text;
+              mutate(
+                { json: { description }, param: { taskId: task.$id } },
+                {
+                  onSuccess: () => {
+                    setValue(description);
+                    setIsAssisting(false);
+                  },
+                },
+              );
+            }}
+          />
+        )}
         {isEditing ? (
           <div className="flex flex-col gap-3">
             <Textarea

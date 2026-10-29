@@ -9,11 +9,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { TemplateData } from "@/features/templates/types";
 import { TemplatePicker } from "@/features/templates/components/template-picker";
+import { useAssistantReady } from "@/features/assistant/api/use-assistant";
+import { TaskDraftAssistant } from "@/features/assistant/components/task-draft-assistant";
 
 import { Form } from "@/components/ui/form";
 import { FormFooter, FormHeader } from "@/components/forms/form-shell";
 
 import { taskFormSchema } from "../schemas";
+import { TaskPriority } from "../types";
 import { useCreateTask } from "../api/use-create-task";
 import { useGetProject } from "@/features/projects/api/use-get-project";
 import { parseBoardColumns } from "@/features/projects/utils";
@@ -56,6 +59,9 @@ export const CreateTaskForm = ({
 
   const [templateId, setTemplateId] = useState<string | null>(null);
   const checklist = useWatch({ control: form.control, name: "checklist" });
+  const name = useWatch({ control: form.control, name: "name" });
+  const description = useWatch({ control: form.control, name: "description" });
+  const assistantReady = useAssistantReady(workspaceId);
   const selectedProjectId = useWatch({ control: form.control, name: "projectId" });
   const workspaceColumns = useWorkspaceColumns(workspaceId);
 
@@ -120,6 +126,24 @@ export const CreateTaskForm = ({
             boardColumns={boardColumns}
             hideProjectField={Boolean(paramProjectId)}
             memberOptions={memberOptions}
+            afterName={
+              assistantReady && (
+                <TaskDraftAssistant
+                  workspaceId={workspaceId}
+                  projectId={selectedProjectId}
+                  name={name ?? ""}
+                  description={description ?? undefined}
+                  checklist={checklist ?? []}
+                  onChecklistChange={(items) => form.setValue("checklist", items)}
+                  onDraft={(draft) => {
+                    form.setValue("description", draft.description);
+                    form.setValue("priority", draft.priority as TaskPriority);
+                    form.setValue("estimate", draft.estimate);
+                    form.setValue("checklist", draft.checklist);
+                  }}
+                />
+              )
+            }
           />
           <FormFooter onCancel={onCancel} isPending={isPending} submitLabel="Créer" />
         </form>

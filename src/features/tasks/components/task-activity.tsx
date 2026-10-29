@@ -4,7 +4,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { FaGithub } from "react-icons/fa";
-import { MoreHorizontalIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import { MoreHorizontalIcon, PencilIcon, SparklesIcon, Trash2Icon } from "lucide-react";
 
 import { useCurrent } from "@/features/auth/api/use-current";
 import { useGetLabels } from "@/features/labels/api/use-get-labels";
@@ -22,6 +22,11 @@ import { useUpdateComment } from "@/features/comments/api/use-update-comment";
 import { useDeleteComment } from "@/features/comments/api/use-delete-comment";
 import { CommentContent } from "@/features/comments/components/comment-content";
 import { CommentComposer } from "@/features/comments/components/comment-composer";
+import { useAssistantReady } from "@/features/assistant/api/use-assistant";
+import {
+  DiscussionSummary,
+  suggestReply,
+} from "@/features/assistant/components/discussion-assistant";
 
 import { TimeAgo } from "@/components/time-ago";
 import { Button } from "@/components/ui/button";
@@ -67,6 +72,9 @@ const Strong = ({ children }: { children: React.ReactNode }) => (
 export const TaskActivity = ({ task }: TaskActivityProps) => {
   const { data: current } = useCurrent();
   const { data: comments, isLoading: isLoadingComments } = useGetComments({ taskId: task.$id });
+  const assistantReady = useAssistantReady(task.workspaceId);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const commentCount = comments?.length ?? 0;
   const { data: activities, isLoading: isLoadingActivities } = useGetActivities({
     taskId: task.$id,
   });
@@ -110,7 +118,10 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
   const describe = (type: ActivityType, change: ActivityChange): React.ReactNode => {
     switch (type) {
       case ActivityType.CREATED:
-        return change.from ? "a créé la tâche (prochaine occurrence)" : "a créé la tâche";
+        if (change.from) return "a créé la tâche (prochaine occurrence)";
+        return change.to === "assistant"
+          ? "a créé la tâche avec l'assistant IA"
+          : "a créé la tâche";
       case ActivityType.STATUS:
         return (
           <>
@@ -264,10 +275,19 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
   return (
     <Card>
       <DeleteDialog />
-      <CardHeader className="border-b py-3">
+      <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
         <CardTitle className="text-sm">Activité</CardTitle>
+        {assistantReady && commentCount >= 2 && !isSummarizing && (
+          <Button size="sm" variant="ghost" onClick={() => setIsSummarizing(true)}>
+            <SparklesIcon />
+            Résumer la discussion
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="flex flex-col gap-4 pt-5">
+        {isSummarizing && (
+          <DiscussionSummary taskId={task.$id} onClose={() => setIsSummarizing(false)} />
+        )}
         {isLoading ? (
           <div className="flex flex-col gap-3">
             <Skeleton className="h-4 w-2/3" />
@@ -384,6 +404,7 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
           submitLabel="Commenter"
           isPending={isCreating}
           onSubmit={(content) => createComment({ json: { taskId: task.$id, content } })}
+          onSuggest={assistantReady && commentCount > 0 ? () => suggestReply(task.$id) : undefined}
         />
       </CardContent>
     </Card>

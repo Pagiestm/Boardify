@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { Command } from "cmdk";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,7 @@ import { useGetWorkspaces } from "@/features/workspaces/api/use-get-workspaces";
 import { useCreateTaskModal } from "@/features/tasks/hooks/use-create-task-modal";
 import { useCreateProjectModal } from "@/features/projects/hooks/use-create-project-modal";
 import { useCreateWorkspaceModal } from "@/features/workspaces/hooks/use-create-workspace-modal";
+import { PaletteSearch } from "@/features/assistant/components/palette-search";
 
 import { useHotkeys } from "@/hooks/use-hotkeys";
 import { Kbd } from "@/components/ui/kbd";
@@ -139,9 +140,11 @@ export const CommandPalette = () => {
   const { open: createWorkspace } = useCreateWorkspaceModal();
   const { data: workspaces } = useGetWorkspaces();
   const { data: projects } = useGetProjects({ workspaceId });
+  const [search, setSearch] = useState("");
 
   const run = (action: () => void) => () => {
     close();
+    setSearch("");
     action();
   };
 
@@ -150,7 +153,13 @@ export const CommandPalette = () => {
   const isDark = resolvedTheme === "dark";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) setSearch("");
+        onOpenChange(next);
+      }}
+    >
       <DialogContent
         aria-describedby={undefined}
         showCloseButton={false}
@@ -162,7 +171,9 @@ export const CommandPalette = () => {
             <SearchIcon className="size-4 shrink-0 text-muted-foreground" />
             <Command.Input
               autoFocus
-              placeholder="Rechercher une page, un projet, une action…"
+              value={search}
+              onValueChange={setSearch}
+              placeholder="Rechercher une page, un projet, une action, ou poser une question…"
               className="h-11 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
           </div>
@@ -170,6 +181,16 @@ export const CommandPalette = () => {
             <Command.Empty className="py-8 text-center text-sm text-muted-foreground">
               Aucun résultat.
             </Command.Empty>
+
+            <PaletteSearch
+              workspaceId={workspaceId}
+              search={search}
+              groupClassName={groupClasses}
+              onOpenTask={(path) => {
+                setSearch("");
+                go(path)();
+              }}
+            />
 
             <Command.Group heading="Navigation" className={groupClasses}>
               <Item

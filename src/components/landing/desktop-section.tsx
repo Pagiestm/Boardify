@@ -10,7 +10,7 @@ import { DesktopMockup } from "./desktop-mockup";
 const highlights = [
   {
     icon: ZapIcon,
-    text: "Ajout rapide d'une tâche depuis n'importe quelle application : ⌃⌥N (Ctrl+Alt+N sous Windows)",
+    text: "Ajout rapide d'une tâche depuis n'importe quelle application : ⌃⌥N (Ctrl+Alt+N sous Windows), interprétée par l'assistant IA",
   },
   {
     icon: BellDotIcon,

@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { PlusIcon, XIcon } from "lucide-react";
+import { PlusIcon, SparklesIcon, XIcon } from "lucide-react";
+
+import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
+import { useAssistantReady } from "@/features/assistant/api/use-assistant";
+import { SubtasksAssistant } from "@/features/assistant/components/subtasks-assistant";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -28,6 +32,8 @@ export const TaskChecklist = ({ taskId }: TaskChecklistProps) => {
   const { mutate: deleteItem } = useDeleteChecklistItem();
   const [newTitle, setNewTitle] = useState("");
   const [editing, setEditing] = useState<{ id: string; title: string } | null>(null);
+  const [isAssisting, setIsAssisting] = useState(false);
+  const assistantReady = useAssistantReady(useWorkspaceId());
 
   const total = items?.length ?? 0;
   const done = items?.filter((item) => item.done).length ?? 0;
@@ -52,12 +58,25 @@ export const TaskChecklist = ({ taskId }: TaskChecklistProps) => {
     <Card>
       <CardHeader className="flex-row items-center justify-between gap-2 border-b py-3">
         <CardTitle className="text-sm">Sous-tâches</CardTitle>
-        {total > 0 && (
-          <span className="text-xs text-muted-foreground">
-            {done}/{total}
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {total > 0 && (
+            <span className="text-xs text-muted-foreground">
+              {done}/{total}
+            </span>
+          )}
+          {assistantReady && !isAssisting && (
+            <Button size="sm" variant="ghost" onClick={() => setIsAssisting(true)}>
+              <SparklesIcon />
+              Suggérer
+            </Button>
+          )}
+        </div>
       </CardHeader>
+      {isAssisting && (
+        <div className="px-6 pt-4">
+          <SubtasksAssistant taskId={taskId} onClose={() => setIsAssisting(false)} />
+        </div>
+      )}
       <CardContent className="flex flex-col gap-1 py-3">
         {total > 0 && (
           <div className="mb-2 h-1.5 overflow-hidden rounded-full bg-muted">
