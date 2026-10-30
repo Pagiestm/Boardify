@@ -136,12 +136,16 @@ export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
         : 0
     : 0;
 
-  const load = new Map<string, { name: string; total: number; open: number; tasks: number }>();
+  const load = new Map<
+    string,
+    { name: string; image?: string; total: number; open: number; tasks: number }
+  >();
   if (selected) {
     for (const task of (sprintTasks?.documents ?? []) as PopulatedTask[]) {
       const key = task.assigneeId;
       const entry = load.get(key) ?? {
         name: task.assignee?.name ?? task.assignee?.email ?? "Non assignée",
+        image: task.assignee?.avatarUrl,
         total: 0,
         open: 0,
         tasks: 0,
@@ -301,6 +305,7 @@ export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
                 <div key={entry.id} className="flex items-center gap-2 text-xs">
                   <MemberAvatar
                     name={entry.name}
+                    image={entry.image}
                     className="size-5"
                     fallbackClassName="text-[9px]"
                   />

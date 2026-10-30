@@ -150,7 +150,12 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
           <SelectSeparator />
           {members?.documents.map((member) => (
             <SelectItem key={member.$id} value={member.$id}>
-              <MemberAvatar name={member.name} className="size-5" fallbackClassName="text-[9px]" />
+              <MemberAvatar
+                name={member.name}
+                image={member.avatarUrl}
+                className="size-5"
+                fallbackClassName="text-[9px]"
+              />
               {member.name}
             </SelectItem>
           ))}

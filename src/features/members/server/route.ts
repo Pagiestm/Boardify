@@ -46,6 +46,7 @@ const app = new Hono()
         ...member,
         name: identities.get(member.userId)?.name ?? "",
         email: identities.get(member.userId)?.email ?? "",
+        avatarUrl: identities.get(member.userId)?.avatarUrl,
       }));
 
       return c.json({
@@ -82,7 +83,14 @@ const app = new Hono()
     }
 
     if (allMembersInWorkspace.total === 1) {
-      return c.json({ error: "Cannot delete the only member" }, 400);
+      return c.json({ error: "Le dernier membre ne peut pas être retiré." }, 400);
+    }
+
+    const adminCount = allMembersInWorkspace.documents.filter(
+      (item) => item.role === MemberRole.ADMIN,
+    ).length;
+    if (memberToDelete.role === MemberRole.ADMIN && adminCount === 1) {
+      return c.json({ error: "Nommez un autre administrateur avant de retirer le dernier." }, 400);
     }
 
     await databases.deleteDocument(DATABASE_ID, MEMBERS_ID, memberId);
@@ -121,8 +129,15 @@ const app = new Hono()
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      if (allMembersInWorkspace.total === 1) {
-        return c.json({ error: "Cannot downgrade the only member" }, 400);
+      const adminCount = allMembersInWorkspace.documents.filter(
+        (item) => item.role === MemberRole.ADMIN,
+      ).length;
+      if (
+        memberToUpdate.role === MemberRole.ADMIN &&
+        role !== MemberRole.ADMIN &&
+        adminCount === 1
+      ) {
+        return c.json({ error: "Il doit rester au moins un administrateur dans l'espace." }, 400);
       }
 
       await databases.updateDocument(DATABASE_ID, MEMBERS_ID, memberId, {

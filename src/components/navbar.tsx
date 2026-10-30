@@ -19,6 +19,7 @@ const pathnameMap: Record<string, string> = {
   projects: "Projet",
   members: "Membres",
   settings: "Paramètres",
+  account: "Mon compte",
 };
 
 const DEFAULT_TITLE = "Accueil";

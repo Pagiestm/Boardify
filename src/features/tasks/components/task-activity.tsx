@@ -106,6 +106,7 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
     projects?.documents.find((project) => project.$id === id)?.name ?? "un autre projet";
   const memberName = (id?: unknown) =>
     (typeof id === "string" && memberNames.get(id)) || "quelqu'un";
+  const memberAvatars = new Map(memberList.map((member) => [member.$id, member.avatarUrl]));
   const taskName = (id: string) =>
     tasks?.documents.find((item) => item.$id === id)?.name ?? "une tâche supprimée";
   const sprintName = (id?: unknown) =>
@@ -265,7 +266,11 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
     return dateA.localeCompare(dateB);
   });
 
-  const mentionable = memberList.map((member) => ({ id: member.$id, name: member.name }));
+  const mentionable = memberList.map((member) => ({
+    id: member.$id,
+    name: member.name,
+    avatarUrl: member.avatarUrl,
+  }));
   const isLoading = isLoadingComments || isLoadingActivities;
 
   const handleDelete = async (commentId: string) => {
@@ -312,7 +317,11 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
                     {fromGithub ? (
                       <FaGithub className="mt-0.5 size-5 shrink-0 text-foreground" />
                     ) : (
-                      <MemberAvatar name={actor} className="mt-0.5" />
+                      <MemberAvatar
+                        name={actor}
+                        image={memberAvatars.get(activity.memberId ?? "")}
+                        className="mt-0.5"
+                      />
                     )}
                     <p className="min-w-0">
                       <Strong>{actor}</Strong> {describe(activity.type, fromGithub ? {} : change)} ·{" "}
@@ -335,7 +344,11 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
                   {githubLogin ? (
                     <FaGithub className="mt-2 size-5 shrink-0" />
                   ) : (
-                    <MemberAvatar name={author} className="mt-2" />
+                    <MemberAvatar
+                      name={author}
+                      image={memberAvatars.get(comment.memberId)}
+                      className="mt-2"
+                    />
                   )}
                   <div className="min-w-0 flex-1 rounded-lg border bg-card px-3 py-2">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">

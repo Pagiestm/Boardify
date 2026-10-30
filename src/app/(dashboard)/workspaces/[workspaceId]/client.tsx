@@ -237,6 +237,7 @@ export const TaskList = ({ data, total, className }: TaskListProps) => {
                     />
                     <MemberAvatar
                       name={task.assignee?.name}
+                      image={task.assignee?.avatarUrl}
                       className="size-6"
                       fallbackClassName="text-[10px]"
                     />
@@ -347,7 +348,12 @@ export const MemberList = ({ data, total, className }: MemberListProps) => {
         <ul className="divide-y">
           {data.map((member) => (
             <li key={member.$id} className="flex items-center gap-3 px-4 py-3">
-              <MemberAvatar className="size-8" fallbackClassName="text-xs" name={member.name} />
+              <MemberAvatar
+                className="size-8"
+                fallbackClassName="text-xs"
+                name={member.name}
+                image={member.avatarUrl}
+              />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{member.name ?? "Membre"}</p>
                 <p className="truncate text-xs text-muted-foreground">{member.email}</p>

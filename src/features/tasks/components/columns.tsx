@@ -83,7 +83,12 @@ export const columns: ColumnDef<TaskTableFeatures, PopulatedTask, any>[] = [
 
       return (
         <div className="flex items-center gap-2">
-          <MemberAvatar name={name} className="size-6" fallbackClassName="text-[10px]" />
+          <MemberAvatar
+            name={name}
+            image={row.original.assignee?.avatarUrl}
+            className="size-6"
+            fallbackClassName="text-[10px]"
+          />
           <span className="line-clamp-1">{name}</span>
         </div>
       );

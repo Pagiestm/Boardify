@@ -11,4 +11,6 @@ export type Member = Models.Document & {
   role: MemberRole;
   name?: string;
   email?: string;
+  /** Photo de profil, quand l'utilisateur en a une. */
+  avatarUrl?: string;
 };

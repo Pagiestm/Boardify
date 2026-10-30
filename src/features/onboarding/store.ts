@@ -69,6 +69,20 @@ export const hasSeenTour = (userId: string, tourId: string) =>
 
 export const markTourSeen = (userId: string, tourId: string) => add(toursKey(userId), tourId);
 
+/** Fait revenir les visites guidées et la carte « Premiers pas ». */
+export const resetOnboarding = (userId: string) => {
+  try {
+    localStorage.removeItem(toursKey(userId));
+    localStorage.setItem(
+      stepsKey(userId),
+      JSON.stringify(read(stepsKey(userId)).filter((step) => !step.startsWith("hidden:"))),
+    );
+    window.dispatchEvent(new Event(EVENT));
+  } catch {
+    // Stockage indisponible : rien à réinitialiser.
+  }
+};
+
 /** Étapes franchies hors des données de l'espace (palette ouverte, carte masquée…). */
 export const markOnboarding = (userId: string, step: string) => add(stepsKey(userId), step);
 

@@ -15,7 +15,8 @@ export const useUpdateMember = () => {
       const response = await client.api.members[":memberId"]["$patch"]({ param, json });
 
       if (!response.ok) {
-        throw new Error("Erreur lors de la mise à jour du membre");
+        const body = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(body?.error ?? "Erreur lors de la mise à jour du membre");
       }
 
       return await response.json();
@@ -24,8 +25,8 @@ export const useUpdateMember = () => {
       toast.success("Membre mis à jour");
       queryClient.invalidateQueries({ queryKey: ["members"] });
     },
-    onError: () => {
-      toast.error("Erreur lors de la mise à jour du membre");
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 

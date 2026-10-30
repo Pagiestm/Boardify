@@ -109,6 +109,7 @@ export const TaskOverview = ({ task }: TaskOverviewProps) => {
               <>
                 <MemberAvatar
                   name={task.assignee.name}
+                  image={task.assignee.avatarUrl}
                   className="size-6"
                   fallbackClassName="text-[10px]"
                 />

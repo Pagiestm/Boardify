@@ -152,6 +152,7 @@ export const WorkloadTimeline = ({ workspaceId, tasks, members }: WorkloadTimeli
                     >
                       <MemberAvatar
                         name={name}
+                        image={member.avatarUrl}
                         className="size-6"
                         fallbackClassName="text-[10px]"
                       />

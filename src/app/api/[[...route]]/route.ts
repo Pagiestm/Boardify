@@ -20,6 +20,7 @@ import savedViews from "@/features/saved-views/server/route";
 import sprints from "@/features/sprints/server/route";
 import calendar from "@/features/calendar/server/route";
 import assistant from "@/features/assistant/server/route";
+import account from "@/features/account/server/route";
 
 const app = new Hono().basePath("/api");
 
@@ -51,7 +52,8 @@ const routes = app
   .route("/saved-views", savedViews)
   .route("/sprints", sprints)
   .route("/calendar", calendar)
-  .route("/assistant", assistant);
+  .route("/assistant", assistant)
+  .route("/account", account);
 
 export const GET = handle(app);
 export const POST = handle(app);

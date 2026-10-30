@@ -14,6 +14,7 @@ import { formatMention, splitMentions } from "../mentions";
 export interface MentionableMember {
   id: string;
   name: string;
+  avatarUrl?: string;
 }
 
 interface CommentComposerProps {
@@ -176,7 +177,7 @@ export const CommentComposer = ({
                   index === highlighted && "bg-accent",
                 )}
               >
-                <MemberAvatar name={member.name} />
+                <MemberAvatar name={member.name} image={member.avatarUrl} />
                 {member.name}
               </li>
             ))}

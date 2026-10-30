@@ -17,6 +17,7 @@ const SECTION_LABELS: Record<string, string> = {
   tasks: "Mes tâches",
   members: "Membres",
   settings: "Paramètres",
+  account: "Mon compte",
   projects: "Projets",
 };
 

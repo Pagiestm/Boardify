@@ -1,8 +1,15 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { MoreHorizontalIcon, ShieldCheckIcon, UserIcon, UserMinusIcon } from "lucide-react";
+import {
+  LogOutIcon,
+  MoreHorizontalIcon,
+  ShieldCheckIcon,
+  UserIcon,
+  UserMinusIcon,
+} from "lucide-react";
 
+import { useCurrent } from "@/features/auth/api/use-current";
 import { MemberRole } from "@/features/members/types";
 import { useGetMembers } from "@/features/members/api/use-get-members";
 import { MemberAvatar } from "@/features/members/components/member-avatar";
@@ -34,6 +41,12 @@ export const MembersList = () => {
     "Ce membre perdra l'accès à l'espace de travail et à ses projets.",
     "destructive",
   );
+  const [LeaveDialog, confirmLeave] = useConfirm(
+    "Quitter l'espace",
+    "Vous n'aurez plus accès à ses projets et à ses tâches, sauf si l'on vous invite à nouveau.",
+    "destructive",
+  );
+  const { data: user } = useCurrent();
 
   const { data, isLoading } = useGetMembers({ workspaceId });
   const { mutate: deleteMember, isPending: isDeletingMember } = useDeleteMember();
@@ -46,25 +59,29 @@ export const MembersList = () => {
     });
   };
 
-  const handleDeleteMember = async (memberId: string) => {
-    const ok = await confirm();
+  const handleDeleteMember = async (memberId: string, isSelf: boolean) => {
+    const ok = await (isSelf ? confirmLeave() : confirm());
     if (!ok) return;
 
     deleteMember(
       { param: { memberId } },
       {
-        onSuccess: () => {
-          window.location.reload();
-        },
+        // Après avoir quitté l'espace, on rejoint un autre espace.
+        onSuccess: () => (isSelf ? router.replace("/dashboard") : undefined),
       },
     );
   };
 
   const total = data?.documents.length ?? 0;
+  const members = data?.documents ?? [];
+  const currentMember = members.find((member) => member.userId === user?.$id);
+  const canManage = currentMember?.role === MemberRole.ADMIN;
+  const adminCount = members.filter((member) => member.role === MemberRole.ADMIN).length;
 
   return (
     <Card className="overflow-hidden">
       <ConfirmDialog />
+      <LeaveDialog />
       <FormHeader
         onBack={() => router.push(`/workspaces/${workspaceId}`)}
         title="Membres"
@@ -88,54 +105,105 @@ export const MembersList = () => {
             Aucun membre pour le moment.
           </li>
         )}
-        {data?.documents.map((member) => {
+        {members.map((member) => {
           const isAdmin = member.role === MemberRole.ADMIN;
+          const isSelf = member.$id === currentMember?.$id;
+          // Il doit toujours rester un administrateur dans l'espace.
+          const isLastAdmin = isAdmin && adminCount === 1;
+          const isAlone = total === 1;
+          const showMenu = isSelf ? !isAlone : canManage;
 
           return (
             <li key={member.$id} className="flex items-center gap-3 px-6 py-3">
-              <MemberAvatar className="size-8" fallbackClassName="text-xs" name={member.name} />
+              <MemberAvatar
+                className="size-8"
+                fallbackClassName="text-xs"
+                name={member.name}
+                image={member.avatarUrl}
+              />
               <div className="flex min-w-0 flex-1 flex-col">
-                <p className="truncate text-sm font-medium">{member.name}</p>
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  <span className="truncate">{member.name}</span>
+                  {isSelf && <span className="shrink-0 text-xs text-muted-foreground">(vous)</span>}
+                </p>
                 <p className="truncate text-xs text-muted-foreground">{member.email}</p>
               </div>
               <Badge variant={isAdmin ? "soft" : "secondary"}>{isAdmin ? "Admin" : "Membre"}</Badge>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon-sm" aria-label={`Actions pour ${member.name}`}>
-                    <MoreHorizontalIcon />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent side="bottom" align="end" className="w-56">
-                  <DropdownMenuLabel>Rôle</DropdownMenuLabel>
-                  {!isAdmin && (
-                    <DropdownMenuItem
-                      onClick={() => handleUpdateMember(member.$id, MemberRole.ADMIN)}
-                      disabled={isUpdatingMember}
+              {showMenu ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={isSelf ? "Vos actions" : `Actions pour ${member.name}`}
                     >
-                      <ShieldCheckIcon />
-                      Définir comme administrateur
-                    </DropdownMenuItem>
-                  )}
-                  {member.role !== MemberRole.MEMBER && (
-                    <DropdownMenuItem
-                      onClick={() => handleUpdateMember(member.$id, MemberRole.MEMBER)}
-                      disabled={isUpdatingMember}
-                    >
-                      <UserIcon />
-                      Définir comme membre
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    variant="destructive"
-                    onClick={() => handleDeleteMember(member.$id)}
-                    disabled={isDeletingMember}
-                  >
-                    <UserMinusIcon />
-                    Retirer {member.name}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      <MoreHorizontalIcon />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent side="bottom" align="end" className="w-60">
+                    {canManage && !isSelf && (
+                      <>
+                        <DropdownMenuLabel>Rôle</DropdownMenuLabel>
+                        {isAdmin ? (
+                          <DropdownMenuItem
+                            onClick={() => handleUpdateMember(member.$id, MemberRole.MEMBER)}
+                            disabled={isUpdatingMember || isLastAdmin}
+                          >
+                            <UserIcon />
+                            Définir comme membre
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem
+                            onClick={() => handleUpdateMember(member.$id, MemberRole.ADMIN)}
+                            disabled={isUpdatingMember}
+                          >
+                            <ShieldCheckIcon />
+                            Définir comme administrateur
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => handleDeleteMember(member.$id, false)}
+                          disabled={isDeletingMember || isLastAdmin}
+                        >
+                          <UserMinusIcon />
+                          Retirer {member.name}
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    {isSelf && (
+                      <>
+                        {isAdmin && !isLastAdmin && (
+                          <DropdownMenuItem
+                            onClick={() => handleUpdateMember(member.$id, MemberRole.MEMBER)}
+                            disabled={isUpdatingMember}
+                          >
+                            <UserIcon />
+                            Ne plus être administrateur
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => handleDeleteMember(member.$id, true)}
+                          disabled={isDeletingMember || isLastAdmin}
+                        >
+                          <LogOutIcon />
+                          Quitter l&apos;espace
+                        </DropdownMenuItem>
+                        {isLastAdmin && (
+                          <p className="px-2 py-1.5 text-xs text-muted-foreground">
+                            Vous êtes le seul administrateur : nommez-en un autre pour pouvoir
+                            quitter l&apos;espace.
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <span aria-hidden className="size-8 shrink-0" />
+              )}
             </li>
           );
         })}

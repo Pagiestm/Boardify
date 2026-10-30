@@ -1,13 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { BookOpenIcon, CompassIcon, KeyboardIcon, LogOutIcon, SearchIcon } from "lucide-react";
+import { useParams, usePathname } from "next/navigation";
+import {
+  BookOpenIcon,
+  CompassIcon,
+  KeyboardIcon,
+  LogOutIcon,
+  SearchIcon,
+  UserRoundIcon,
+} from "lucide-react";
 
 import { findTour } from "@/features/onboarding/tours";
 import { startTour } from "@/features/onboarding/store";
+import { MemberAvatar } from "@/features/members/components/member-avatar";
 
-import { cn, getAvatarColor, getInitial } from "@/lib/utils";
+import { avatarUrl } from "@/lib/avatar";
 import { Kbd } from "@/components/ui/kbd";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useShortcutsHelp } from "@/components/shortcuts-help";
@@ -29,6 +37,7 @@ export const UserButton = () => {
   const palette = useCommandPalette();
   const help = useShortcutsHelp();
   const tour = findTour(usePathname());
+  const { workspaceId } = useParams<{ workspaceId?: string }>();
 
   if (isLoading) {
     return <Skeleton className="size-8 rounded-full" />;
@@ -40,36 +49,42 @@ export const UserButton = () => {
 
   const { name, email } = user;
   const displayName = name || email;
-  const color = getAvatarColor(displayName);
+  const image = avatarUrl(user.$id, (user.prefs as Record<string, unknown>)?.avatarId);
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger
         data-tour="user-menu"
         aria-label="Menu du compte"
-        className={cn(
-          "flex size-8 items-center justify-center rounded-full text-xs font-semibold transition-opacity outline-none hover:opacity-85 focus-visible:ring-[3px] focus-visible:ring-ring/40",
-          color,
-        )}
+        className="rounded-full transition-opacity outline-none hover:opacity-85 focus-visible:ring-[3px] focus-visible:ring-ring/40"
       >
-        {getInitial(displayName)}
+        <MemberAvatar
+          name={displayName}
+          image={image}
+          className="size-8"
+          fallbackClassName="text-xs"
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" side="bottom" className="w-60" sideOffset={8}>
         <div className="flex items-center gap-3 px-2 py-2">
-          <div
-            className={cn(
-              "flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
-              color,
-            )}
-          >
-            {getInitial(displayName)}
-          </div>
+          <MemberAvatar
+            name={displayName}
+            image={image}
+            className="size-9 shrink-0"
+            fallbackClassName="text-sm"
+          />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{name || "Utilisateur"}</p>
             <p className="truncate text-xs text-muted-foreground">{email}</p>
           </div>
         </div>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href={workspaceId ? `/workspaces/${workspaceId}/account` : "/account"}>
+            <UserRoundIcon className="text-muted-foreground" />
+            Mon compte
+          </Link>
+        </DropdownMenuItem>
         {palette.available && (
           <>
             <DropdownMenuItem onSelect={palette.open}>

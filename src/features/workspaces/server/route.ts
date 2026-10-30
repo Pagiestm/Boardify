@@ -1,73 +1,19 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { Databases, ID, Models, Query, type Storage } from "node-appwrite";
+import { ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 
 import { MemberRole } from "@/features/members/types";
 import { forgetMembers, getMember } from "@/features/members/utils";
-import { Project } from "@/features/projects/types";
-import { deleteProject } from "@/features/projects/server/cleanup";
 
 import { generateInviteCode } from "@/lib/utils";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import {
-  DATABASE_ID,
-  IMAGES_BUCKET_ID,
-  LABELS_ID,
-  MEMBERS_ID,
-  NOTIFICATIONS_ID,
-  PROJECTS_ID,
-  SAVED_VIEWS_ID,
-  TASK_TEMPLATES_ID,
-  TASKS_ID,
-  WORKSPACES_ID,
-} from "@/config";
+import { DATABASE_ID, IMAGES_BUCKET_ID, MEMBERS_ID, TASKS_ID, WORKSPACES_ID } from "@/config";
 
 import { Workspace } from "../types";
 import { createWorkspaceSchema, updateWorkspaceSchema } from "../schemas";
-import { deleteWorkspaceAssistant } from "@/features/assistant/server/model";
-
-const deleteWorkspaceChildren = async (
-  databases: Databases,
-  storage: Storage,
-  workspaceId: string,
-): Promise<void> => {
-  let projects: Project[];
-  do {
-    ({ documents: projects } = await databases.listDocuments<Project>(DATABASE_ID, PROJECTS_ID, [
-      Query.equal("workspaceId", workspaceId),
-      Query.limit(25),
-    ]));
-    for (const project of projects) {
-      await deleteProject(databases, storage, project.$id);
-    }
-  } while (projects.length === 25);
-
-  for (const collectionId of [
-    TASKS_ID,
-    LABELS_ID,
-    TASK_TEMPLATES_ID,
-    SAVED_VIEWS_ID,
-    NOTIFICATIONS_ID,
-    MEMBERS_ID,
-  ]) {
-    let documents: Models.Document[];
-    do {
-      ({ documents } = await databases.listDocuments(DATABASE_ID, collectionId, [
-        Query.equal("workspaceId", workspaceId),
-        Query.limit(100),
-      ]));
-      await Promise.all(
-        documents.map((document) =>
-          databases.deleteDocument(DATABASE_ID, collectionId, document.$id),
-        ),
-      );
-    } while (documents.length === 100);
-  }
-
-  await deleteWorkspaceAssistant(workspaceId);
-};
+import { deleteWorkspaceChildren } from "./cleanup";
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {

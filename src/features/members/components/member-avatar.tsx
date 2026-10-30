@@ -1,16 +1,19 @@
 import { cn, getAvatarColor, getInitial } from "@/lib/utils";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface MemberAvatarProps {
   name?: string;
+  /** Photo de profil ; à défaut, l'initiale du nom. */
+  image?: string | null;
   className?: string;
   fallbackClassName?: string;
 }
 
-export const MemberAvatar = ({ name, className, fallbackClassName }: MemberAvatarProps) => {
+export const MemberAvatar = ({ name, image, className, fallbackClassName }: MemberAvatarProps) => {
   return (
     <Avatar className={cn("size-5 rounded-full", className)}>
+      {image && <AvatarImage src={image} alt={name ?? ""} className="object-cover" />}
       <AvatarFallback
         title={name}
         className={cn(

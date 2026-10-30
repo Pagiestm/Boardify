@@ -113,6 +113,7 @@ export const KanbanCard = ({ task, isDragging }: KanbanCardProps) => {
         />
         <MemberAvatar
           name={task.assignee?.name}
+          image={task.assignee?.avatarUrl}
           className="ml-auto size-6"
           fallbackClassName="text-[10px]"
         />

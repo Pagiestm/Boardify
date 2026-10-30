@@ -44,7 +44,7 @@ export type TaskFormControl = Control<
 
 export interface TaskFormOptions {
   projectOptions: { id: string; name: string; imageUrl: string }[];
-  memberOptions: { id: string; name?: string }[];
+  memberOptions: { id: string; name?: string; avatarUrl?: string }[];
 }
 
 interface TaskFormFieldsProps extends TaskFormOptions {
@@ -219,7 +219,7 @@ export const TaskFormFields = ({
               <SelectContent>
                 {memberOptions.map((member) => (
                   <SelectItem key={member.id} value={member.id}>
-                    <MemberAvatar className="size-5" name={member.name} />
+                    <MemberAvatar className="size-5" name={member.name} image={member.avatarUrl} />
                     {member.name}
                   </SelectItem>
                 ))}

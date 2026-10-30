@@ -169,6 +169,7 @@ const app = new Hono()
         ...member,
         name: identities.get(member.userId)?.name ?? "",
         email: identities.get(member.userId)?.email ?? "",
+        avatarUrl: identities.get(member.userId)?.avatarUrl,
       }));
 
       const populatedTasks = tasks.documents.map((task) => {
