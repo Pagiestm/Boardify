@@ -1,3 +1,9 @@
+## [1.14.0](https://github.com/Pagiestm/Boardify/compare/v1.13.0...v1.14.0) (2026-10-30)
+
+### Features
+
+* **realtime:** mises à jour en temps réel via Appwrite Realtime ([da0ca29](https://github.com/Pagiestm/Boardify/commit/da0ca298cc9edec0ffd436210c189a1d8203ad54))
+
 ## [1.13.0](https://github.com/Pagiestm/Boardify/compare/v1.12.0...v1.13.0) (2026-10-30)
 
 ### Features
