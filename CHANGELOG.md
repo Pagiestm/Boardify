@@ -1,3 +1,9 @@
+## [1.13.0](https://github.com/Pagiestm/Boardify/compare/v1.12.0...v1.13.0) (2026-10-30)
+
+### Features
+
+* **account:** page « Mon compte » avec photo de profil et règles des administrateurs ([0ee61c9](https://github.com/Pagiestm/Boardify/commit/0ee61c9b3d0a3d6c28bb04f3239bb0b9fbbb23ca))
+
 ## [1.12.0](https://github.com/Pagiestm/Boardify/compare/v1.11.1...v1.12.0) (2026-10-29)
 
 ### Features
