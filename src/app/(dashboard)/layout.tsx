@@ -4,6 +4,7 @@ import { CreateProjectModal } from "@/features/projects/components/create-projec
 import { CreateWorkspaceModal } from "@/features/workspaces/components/create-workspace-modal";
 import { DesktopBridge } from "@/features/desktop/components/desktop-bridge";
 import { TourHost } from "@/features/onboarding/components/tour-host";
+import { RealtimeBridge } from "@/features/realtime/components/realtime-bridge";
 
 import { Navbar } from "@/components/navbar";
 import { Sidebar } from "@/components/sidebar";
@@ -26,6 +27,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <GlobalHotkeys />
       <DesktopBridge />
       <TourHost />
+      <RealtimeBridge />
       <div className="fixed inset-y-0 left-0 hidden w-64 lg:block">
         <Sidebar />
       </div>
