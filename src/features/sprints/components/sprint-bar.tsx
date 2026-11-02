@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 
 import { useDeleteSprint, useGetSprints } from "../api/use-sprints";
+import { SprintBurndown, SprintVelocity } from "./sprint-charts";
 import { getSprintState, NO_SPRINT, Sprint, SPRINT_STATE_LABELS, SprintState } from "../types";
 import { SprintFormDialog, SprintFormValues } from "./sprint-form-dialog";
 import { CompleteSprintDialog } from "./complete-sprint-dialog";
@@ -327,6 +328,10 @@ export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
               ))}
             </div>
           )}
+          <div className="grid gap-3 md:col-span-2 md:grid-cols-2">
+            <SprintBurndown sprintId={selected.$id} />
+            <SprintVelocity sprints={sprints ?? []} />
+          </div>
         </div>
       )}
 

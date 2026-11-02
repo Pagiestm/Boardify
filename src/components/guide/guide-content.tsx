@@ -270,7 +270,8 @@ export const GuideContent = () => (
           {[
             <>
               <Ui>Description</Ui> : <Ui>Modifier</Ui> ou <Keys k="I" />, puis <Keys k="⌘S" /> pour
-              enregistrer.
+              enregistrer. Mettez en forme avec la barre d&apos;outils (gras, titres, listes, cases
+              à cocher, liens) et vérifiez le rendu dans <Ui>Aperçu</Ui>.
             </>,
             <>
               <Ui>Sous-tâches</Ui> : une liste à cocher avec sa barre de progression. Tapez un titre
@@ -283,6 +284,9 @@ export const GuideContent = () => (
             <>
               <Ui>Activité</Ui> : l&apos;historique de chaque changement et les commentaires. Tapez{" "}
               <Ui>@</Ui> pour mentionner quelqu&apos;un, <Keys k="⌘↵" /> pour envoyer.
+            </>,
+            <>
+              En haut de la page, les avatars des membres qui consultent la même tâche en ce moment.
             </>,
             <>
               <Ui>Détails</Ui> : statut, priorité, échéance, sprint, dépendances… <Keys k="E" />{" "}
@@ -350,6 +354,15 @@ export const GuideContent = () => (
           <Ui>Tous les membres</Ui> pour voir celles de toute l&apos;équipe.
         </Tip>
       </Part>
+
+      <Part title="Modifier plusieurs tâches à la fois">
+        <Text>
+          Dans la vue <Ui>Tableau</Ui>, cochez les tâches à modifier (la case de l&apos;en-tête
+          coche toute la page). Une barre apparaît pour changer d&apos;un coup leur <Ui>Statut</Ui>,
+          la personne <Ui>Assigné à</Ui>, la <Ui>Priorité</Ui> ou le <Ui>Sprint</Ui>, ou pour les{" "}
+          <Ui>Supprimer</Ui> (avec <Ui>Annuler</Ui>).
+        </Text>
+      </Part>
     </Chapter>
 
     <Chapter id="sprints">
@@ -378,6 +391,18 @@ export const GuideContent = () => (
           les jours restants, la progression en tâches et en points, et la charge restante de chaque
           membre.
         </Text>
+        <Bullets>
+          {[
+            <>
+              <Ui>Avancement du sprint</Ui> : le travail restant jour après jour, comparé au rythme
+              idéal pour finir à temps.
+            </>,
+            <>
+              <Ui>Vélocité</Ui> : ce que l&apos;équipe a livré à chaque sprint terminé, pour mieux
+              calibrer le suivant.
+            </>,
+          ]}
+        </Bullets>
         <Text>
           À la fin, cliquez sur <Ui>Terminer</Ui> : les tâches non terminées sont reportées vers le
           sprint de votre choix, ou remises dans le backlog.

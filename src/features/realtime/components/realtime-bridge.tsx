@@ -10,7 +10,7 @@ import { setRealtimeConnected } from "../store";
 
 /** Données à rafraîchir pour chaque type de changement. */
 const QUERIES: Record<RealtimeTopic, string[][]> = {
-  tasks: [["tasks"], ["task"], ["workspace-analytics"], ["project-analytics"]],
+  tasks: [["tasks"], ["task"], ["sprints"], ["workspace-analytics"], ["project-analytics"]],
   comments: [["comments"], ["activities"]],
   activities: [["activities"]],
   checklist: [["checklist"], ["tasks"]],
@@ -23,6 +23,7 @@ const QUERIES: Record<RealtimeTopic, string[][]> = {
   "saved-views": [["saved-views"]],
   templates: [["templates"]],
   notifications: [["notifications"]],
+  presence: [["presence"]],
 };
 
 /** Regroupe les changements reçus en rafale avant de rafraîchir. */

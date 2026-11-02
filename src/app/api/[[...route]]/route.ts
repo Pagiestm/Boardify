@@ -22,6 +22,7 @@ import calendar from "@/features/calendar/server/route";
 import assistant from "@/features/assistant/server/route";
 import account from "@/features/account/server/route";
 import realtime from "@/features/realtime/server/route";
+import presence from "@/features/presence/server/route";
 
 const app = new Hono().basePath("/api");
 
@@ -55,7 +56,8 @@ const routes = app
   .route("/calendar", calendar)
   .route("/assistant", assistant)
   .route("/account", account)
-  .route("/realtime", realtime);
+  .route("/realtime", realtime)
+  .route("/presence", presence);
 
 export const GET = handle(app);
 export const POST = handle(app);

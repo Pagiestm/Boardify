@@ -15,6 +15,7 @@ import { DATABASE_ID, PROJECTS_ID, SPRINTS_ID, TASKS_ID } from "@/config";
 
 import { Sprint, SprintStats, sprintFormSchema } from "../types";
 import { listSprintTasks, validateSprint } from "./sprints";
+import { computeBurndown } from "./burndown";
 
 const getProjectMember = async (databases: Databases, projectId: string, userId: string) => {
   const project = await databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, projectId);
@@ -92,6 +93,22 @@ const app = new Hono()
       });
     },
   )
+  .get("/:sprintId/burndown", sessionMiddleware, async (c) => {
+    const databases = c.get("databases");
+    const { sprintId } = c.req.param();
+
+    const { sprint, project, member } = await getSprintMember(
+      databases,
+      sprintId,
+      c.get("user").$id,
+    );
+    if (!member) {
+      return c.json({ error: "Unauthorized" }, 401);
+    }
+
+    const tasks = await listSprintTasks(databases, [sprint.$id]);
+    return c.json({ data: await computeBurndown(databases, sprint, project, tasks) });
+  })
   .post(
     "/",
     sessionMiddleware,

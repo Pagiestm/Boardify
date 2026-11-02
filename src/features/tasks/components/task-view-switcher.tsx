@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryState } from "nuqs";
 import { CalendarDaysIcon, GanttChartIcon, KanbanIcon, PlusIcon, TableIcon } from "lucide-react";
 
@@ -30,6 +30,8 @@ import { useGetTasks } from "../api/use-get-tasks";
 import { useTaskFilters } from "../hooks/use-task-filters";
 import { useOpenTask } from "../hooks/use-open-task";
 import { useAssigneeFilter } from "../hooks/use-assignee-filter";
+import { BulkActionsBar } from "./bulk-actions-bar";
+import { PopulatedTask } from "../types";
 import { useCreateTaskModal } from "../hooks/use-create-task-modal";
 import { useBulkUpdateTasks } from "../api/use-bulk-update-tasks";
 
@@ -114,6 +116,7 @@ export const TaskViewSwitcher = ({
   const paramProjectId = useProjectId();
   const { open } = useCreateTaskModal();
   const openTask = useOpenTask();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const { data: project } = useGetProject({
     projectId: paramProjectId,
@@ -150,6 +153,11 @@ export const TaskViewSwitcher = ({
     sprintId: paramProjectId ? sprintId : null,
     enabled: assigneeReady,
   });
+
+  // Tâches cochées encore affichées (une tâche filtrée ou supprimée sort de la sélection).
+  const selectedTasks = ((tasks?.documents ?? []) as PopulatedTask[]).filter((task) =>
+    selectedIds.has(task.$id),
+  );
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -222,7 +230,25 @@ export const TaskViewSwitcher = ({
         ) : (
           <>
             <TabsContent value="table" className="mt-0">
-              <DataTable columns={columns} data={tasks?.documents ?? []} onRowClick={openTask} />
+              {selectedTasks.length > 0 && (
+                <div className="mb-3">
+                  <BulkActionsBar
+                    workspaceId={workspaceId}
+                    tasks={selectedTasks}
+                    onClear={() => setSelectedIds(new Set())}
+                  />
+                </div>
+              )}
+              <DataTable
+                columns={columns}
+                data={tasks?.documents ?? []}
+                onRowClick={openTask}
+                selection={{
+                  selected: selectedIds,
+                  onChange: setSelectedIds,
+                  getId: (task) => task.$id,
+                }}
+              />
             </TabsContent>
             {hideKanban ? null : (
               <TabsContent value="kanban" className="mt-0">

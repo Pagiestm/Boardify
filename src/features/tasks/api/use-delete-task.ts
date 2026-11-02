@@ -8,34 +8,49 @@ import {
   sendTaskDelete,
 } from "../pending-deletes";
 
+type DeletableTask = { $id: string; name: string };
+
 /**
- * Supprime une tâche avec la possibilité d'annuler : elle disparaît aussitôt, et un message
- * propose « Annuler » pendant quelques secondes avant la suppression réelle.
+ * Supprime une ou plusieurs tâches avec la possibilité d'annuler : elles disparaissent aussitôt,
+ * et un message propose « Annuler » pendant quelques secondes avant la suppression réelle.
  */
 export const useDeleteTaskWithUndo = () => {
   const queryClient = useQueryClient();
 
-  return (task: { $id: string; name: string }) => {
+  return (input: DeletableTask | DeletableTask[]) => {
+    const tasks = Array.isArray(input) ? input : [input];
+    if (tasks.length === 0) return;
+
     const refresh = () => {
       queryClient.invalidateQueries({ queryKey: ["project-analytics"] });
       queryClient.invalidateQueries({ queryKey: ["workspace-analytics"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["task", task.$id] });
+      queryClient.invalidateQueries({ queryKey: ["task"] });
+      queryClient.invalidateQueries({ queryKey: ["sprints"] });
     };
 
-    scheduleTaskDelete(task.$id, async () => {
-      const response = await sendTaskDelete(task.$id).catch(() => null);
-      if (!response?.ok) toast.error("Erreur lors de la suppression de la tâche");
-      refresh();
-    });
+    let failed = 0;
+    let remaining = tasks.length;
+    for (const task of tasks) {
+      scheduleTaskDelete(task.$id, async () => {
+        const response = await sendTaskDelete(task.$id).catch(() => null);
+        if (!response?.ok) failed++;
+        if (--remaining === 0) {
+          if (failed) toast.error("Erreur lors de la suppression de la tâche");
+          refresh();
+        }
+      });
+    }
 
-    toast("Tâche supprimée", {
-      description: task.name,
+    const count = tasks.length;
+    toast(count > 1 ? `${count} tâches supprimées` : "Tâche supprimée", {
+      description: count > 1 ? undefined : tasks[0].name,
       duration: UNDO_DELAY_MS,
       action: {
         label: "Annuler",
         onClick: () => {
-          if (cancelTaskDelete(task.$id)) toast.success("Suppression annulée");
+          const restored = tasks.filter((task) => cancelTaskDelete(task.$id)).length;
+          if (restored) toast.success("Suppression annulée");
         },
       },
     });

@@ -17,6 +17,7 @@ import {
   LABELS_ID,
   MEMBERS_ID,
   NOTIFICATIONS_ID,
+  PRESENCE_ID,
   PROJECTS_ID,
   SAVED_VIEWS_ID,
   SPRINTS_ID,
@@ -42,6 +43,7 @@ const TOPICS: Record<string, RealtimeTopic> = {
   [SAVED_VIEWS_ID]: "saved-views",
   [TASK_TEMPLATES_ID]: "templates",
   [NOTIFICATIONS_ID]: "notifications",
+  ...(PRESENCE_ID ? { [PRESENCE_ID]: "presence" as const } : {}),
 };
 
 /** Au-delà, la connexion est rouverte par le navigateur (durée maximale d'une fonction). */

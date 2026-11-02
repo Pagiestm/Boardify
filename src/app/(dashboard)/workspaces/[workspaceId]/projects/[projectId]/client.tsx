@@ -19,6 +19,8 @@ import {
   type ProjectAssistantAction,
 } from "@/features/assistant/components/project-assistant-menu";
 
+import { PresenceAvatars } from "@/features/presence/components/presence-avatars";
+
 import { Button } from "@/components/ui/button";
 import { PageError } from "@/components/page-error";
 import { PageLoader } from "@/components/page-loader";
@@ -62,7 +64,8 @@ export const ProjectIdClient = () => {
           />
           <h1 className="truncate text-xl font-semibold tracking-tight">{project.name}</h1>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <PresenceAvatars className="mr-1" />
           {assistantReady && (
             <div data-tour="project-assistant" className="flex">
               <ProjectAssistantMenu onSelect={setDialog} />

@@ -11,7 +11,8 @@ export type RealtimeTopic =
   | "workspaces"
   | "saved-views"
   | "templates"
-  | "notifications";
+  | "notifications"
+  | "presence";
 
 export interface RealtimeChange {
   topic: RealtimeTopic;

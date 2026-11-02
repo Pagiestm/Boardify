@@ -110,3 +110,24 @@ export const useDeleteSprint = () =>
     },
     () => "Sprint supprimé",
   );
+
+export const useSprintBurndown = (sprintId: string | null | undefined) =>
+  useQuery({
+    queryKey: ["sprints", "burndown", sprintId],
+    enabled: Boolean(sprintId),
+    queryFn: async () => {
+      const response = await client.api.sprints[":sprintId"].burndown.$get({
+        param: { sprintId: sprintId! },
+      });
+
+      if (!response.ok) {
+        throw new HttpError(
+          response.status,
+          httpErrorMessage(response.status, "Erreur lors du calcul de l'avancement"),
+        );
+      }
+
+      const { data } = await response.json();
+      return data;
+    },
+  });

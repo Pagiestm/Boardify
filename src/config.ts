@@ -14,3 +14,5 @@ export const TASK_TEMPLATES_ID = process.env.NEXT_PUBLIC_APPWRITE_TASK_TEMPLATES
 export const SAVED_VIEWS_ID = process.env.NEXT_PUBLIC_APPWRITE_SAVED_VIEWS_ID!;
 export const SPRINTS_ID = process.env.NEXT_PUBLIC_APPWRITE_SPRINTS_ID!;
 export const AI_SETTINGS_ID = process.env.NEXT_PUBLIC_APPWRITE_AI_SETTINGS_ID!;
+/** Facultatif : sans cette collection, la présence en direct est désactivée. */
+export const PRESENCE_ID = process.env.NEXT_PUBLIC_APPWRITE_PRESENCE_ID;

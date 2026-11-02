@@ -11,6 +11,8 @@ import { useCreateTemplate } from "@/features/templates/api/use-templates";
 import { Button } from "@/components/ui/button";
 
 import { PopulatedTask } from "../types";
+import { PresenceAvatars } from "@/features/presence/components/presence-avatars";
+
 import { useDeleteTaskWithUndo } from "../api/use-delete-task";
 
 interface TaskBreadcrumbsProps {
@@ -69,10 +71,11 @@ export const TaskBreadcrumbs = ({ project, task }: TaskBreadcrumbsProps) => {
         <ChevronRightIcon aria-hidden className="size-4 shrink-0 text-muted-foreground" />
         <h1 className="truncate font-semibold">{task.name}</h1>
       </nav>
+      <PresenceAvatars className="ml-auto shrink-0" />
       <Button
         onClick={handleSaveTemplate}
         disabled={isSavingTemplate}
-        className="ml-auto shrink-0"
+        className="shrink-0 [nav+&]:ml-auto"
         variant="outline"
         size="sm"
         title="Enregistrer comme modèle"

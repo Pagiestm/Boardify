@@ -13,7 +13,9 @@ import {
 } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import {
   Table,
@@ -32,12 +34,19 @@ interface DataTableProps<TData extends RowData> {
   data: TData[];
   /** Clic sur une ligne (en dehors de ses boutons et liens). */
   onRowClick?: (row: TData, event: React.MouseEvent) => void;
+  /** Cases à cocher pour agir sur plusieurs lignes. */
+  selection?: {
+    selected: ReadonlySet<string>;
+    onChange: (selected: Set<string>) => void;
+    getId: (row: TData) => string;
+  };
 }
 
 export function DataTable<TData extends RowData>({
   columns,
   data,
   onRowClick,
+  selection,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -59,6 +68,18 @@ export function DataTable<TData extends RowData>({
   const pageIndex = table.state.pagination?.pageIndex ?? 0;
   const totalRows = table.getFilteredRowModel().rows.length;
   const search = (table.getColumn("name")?.getFilterValue() as string) ?? "";
+
+  const pageIds = selection ? rows.map((row) => selection.getId(row.original)) : [];
+  const selectedOnPage = pageIds.filter((id) => selection?.selected.has(id)).length;
+  const toggle = (ids: string[], checked: boolean) => {
+    if (!selection) return;
+    const next = new Set(selection.selected);
+    for (const id of ids) {
+      if (checked) next.add(id);
+      else next.delete(id);
+    }
+    selection.onChange(next);
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -98,6 +119,21 @@ export function DataTable<TData extends RowData>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                {selection && (
+                  <TableHead className="h-10 w-10 px-3">
+                    <Checkbox
+                      aria-label="Tout sélectionner sur cette page"
+                      checked={
+                        selectedOnPage === 0
+                          ? false
+                          : selectedOnPage === pageIds.length
+                            ? true
+                            : "indeterminate"
+                      }
+                      onCheckedChange={(checked) => toggle(pageIds, checked === true)}
+                    />
+                  </TableHead>
+                )}
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id} className="h-10 px-3 tracking-normal normal-case">
                     {header.isPlaceholder
@@ -115,8 +151,32 @@ export function DataTable<TData extends RowData>({
                   key={row.id}
                   onClick={onRowClick && ((event) => onRowClick(row.original, event))}
                   onAuxClick={onRowClick && ((event) => onRowClick(row.original, event))}
-                  className={onRowClick ? "cursor-pointer" : undefined}
+                  className={cn(
+                    onRowClick && "cursor-pointer",
+                    selection?.selected.has(selection.getId(row.original)) && "bg-primary/5",
+                  )}
                 >
+                  {selection && (
+                    <TableCell
+                      className="w-10 px-3 py-2.5"
+                      onClick={(event) => {
+                        // Cliquer autour de la case la coche aussi, sans ouvrir la tâche.
+                        event.stopPropagation();
+                        const id = selection.getId(row.original);
+                        if (event.target === event.currentTarget) {
+                          toggle([id], !selection.selected.has(id));
+                        }
+                      }}
+                    >
+                      <Checkbox
+                        aria-label="Sélectionner la tâche"
+                        checked={selection.selected.has(selection.getId(row.original))}
+                        onCheckedChange={(checked) =>
+                          toggle([selection.getId(row.original)], checked === true)
+                        }
+                      />
+                    </TableCell>
+                  )}
                   {row.getAllCells().map((cell) => (
                     <TableCell key={cell.id} className="px-3 py-2.5">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -127,7 +187,7 @@ export function DataTable<TData extends RowData>({
             ) : (
               <TableRow className="hover:bg-transparent">
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={columns.length + (selection ? 1 : 0)}
                   className="h-32 text-center text-sm text-muted-foreground"
                 >
                   <p className="font-medium text-foreground">Aucune tâche trouvée</p>

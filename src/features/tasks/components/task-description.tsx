@@ -5,7 +5,8 @@ import { useAssistantReady } from "@/features/assistant/api/use-assistant";
 import { DescriptionAssistant } from "@/features/assistant/components/description-assistant";
 
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Markdown } from "@/components/markdown";
+import { MarkdownEditor } from "@/components/markdown-editor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Task } from "../types";
@@ -112,12 +113,12 @@ export const TaskDescription = ({ task }: TaskDescriptionProps) => {
         )}
         {isEditing ? (
           <div className="flex flex-col gap-3">
-            <Textarea
+            <MarkdownEditor
               placeholder="Ajoutez une description : contexte, étapes, liens utiles…"
               value={value}
               rows={10}
               autoFocus
-              onChange={(e) => setValue(e.target.value)}
+              onChange={setValue}
               onKeyDown={(e) => {
                 if (e.key === "Escape") handleCancel();
                 if (e.key === "s" && (e.metaKey || e.ctrlKey)) {
@@ -137,7 +138,7 @@ export const TaskDescription = ({ task }: TaskDescriptionProps) => {
             </div>
           </div>
         ) : task.description ? (
-          <p className="text-sm leading-relaxed whitespace-pre-wrap">{task.description}</p>
+          <Markdown>{task.description}</Markdown>
         ) : (
           <button
             type="button"

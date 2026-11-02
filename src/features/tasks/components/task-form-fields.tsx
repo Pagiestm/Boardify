@@ -15,7 +15,7 @@ import { getSprintState, NO_SPRINT, SPRINT_STATE_LABELS } from "@/features/sprin
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { MarkdownEditor } from "@/components/markdown-editor";
 import { DateRangePicker } from "@/components/date-range-picker";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import {
@@ -112,9 +112,12 @@ export const TaskFormFields = ({
           <FormItem className="sm:col-span-2">
             <FormLabel>Description</FormLabel>
             <FormControl>
-              <Textarea
-                {...field}
+              <MarkdownEditor
+                name={field.name}
+                onBlur={field.onBlur}
+                ref={field.ref}
                 value={field.value ?? ""}
+                onChange={field.onChange}
                 rows={4}
                 placeholder="Contexte, étapes, liens utiles…"
               />
