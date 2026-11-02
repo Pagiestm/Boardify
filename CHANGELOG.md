@@ -1,3 +1,9 @@
+## [1.17.0](https://github.com/Pagiestm/Boardify/compare/v1.16.0...v1.17.0) (2026-11-02)
+
+### Features
+
+* **quality:** tests unitaires, suivi des erreurs Sentry et release après la CI ([9b48ece](https://github.com/Pagiestm/Boardify/commit/9b48ece5a4668b44015e933ef9879fff87b153d2))
+
 ## [1.16.0](https://github.com/Pagiestm/Boardify/compare/v1.15.0...v1.16.0) (2026-11-02)
 
 ### Features
