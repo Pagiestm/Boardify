@@ -4,6 +4,8 @@ import { client } from "@/lib/rpc";
 import { LIVE_QUERY_OPTIONS } from "@/lib/live-query";
 import { HttpError, httpErrorMessage } from "@/lib/http-error";
 
+import { usePendingTaskDeletes } from "../pending-deletes";
+
 interface useGetTasksProps {
   workspaceId: string;
   projectId?: string | null;
@@ -27,9 +29,17 @@ export const useGetTasks = ({
   sprintId,
   enabled = true,
 }: useGetTasksProps) => {
+  // Les tâches en cours de suppression (encore annulables) sont déjà masquées.
+  const hidden = usePendingTaskDeletes();
+
   const query = useQuery({
     ...LIVE_QUERY_OPTIONS,
     enabled,
+    select: (data) => {
+      if (hidden.size === 0) return data;
+      const documents = data.documents.filter((task) => !hidden.has(task.$id));
+      return { ...data, documents, total: data.total - (data.documents.length - documents.length) };
+    },
     queryKey: [
       "tasks",
       workspaceId,

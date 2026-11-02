@@ -11,9 +11,20 @@ export const metadata = privatePage(
   "Rejoignez un espace de travail sur invitation.",
 );
 
-const WorspacesIdJoinPage = async () => {
+interface JoinPageProps {
+  params: Promise<{ workspaceId: string; inviteCode: string }>;
+}
+
+const WorspacesIdJoinPage = async ({ params }: JoinPageProps) => {
   const user = await getCurrent();
-  if (!user) redirect("/sign-in");
+
+  if (!user) {
+    // Après connexion ou inscription, la personne revient directement sur l'invitation.
+    const { workspaceId, inviteCode } = await params;
+    redirect(
+      `/sign-in?next=${encodeURIComponent(`/workspaces/${workspaceId}/join/${inviteCode}`)}`,
+    );
+  }
 
   return <WorkspaceIdJoinClient />;
 };

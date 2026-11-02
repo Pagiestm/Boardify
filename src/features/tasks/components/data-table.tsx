@@ -30,9 +30,15 @@ interface DataTableProps<TData extends RowData> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   columns: ColumnDef<TaskTableFeatures, TData, any>[];
   data: TData[];
+  /** Clic sur une ligne (en dehors de ses boutons et liens). */
+  onRowClick?: (row: TData, event: React.MouseEvent) => void;
 }
 
-export function DataTable<TData extends RowData>({ columns, data }: DataTableProps<TData>) {
+export function DataTable<TData extends RowData>({
+  columns,
+  data,
+  onRowClick,
+}: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
@@ -105,7 +111,12 @@ export function DataTable<TData extends RowData>({ columns, data }: DataTablePro
           <TableBody>
             {rows.length ? (
               rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  onClick={onRowClick && ((event) => onRowClick(row.original, event))}
+                  onAuxClick={onRowClick && ((event) => onRowClick(row.original, event))}
+                  className={onRowClick ? "cursor-pointer" : undefined}
+                >
                   {row.getAllCells().map((cell) => (
                     <TableCell key={cell.id} className="px-3 py-2.5">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

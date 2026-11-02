@@ -22,7 +22,7 @@ import { useLogin } from "../api/use-login";
 import { AuthPane } from "./auth-pane";
 import { AuthDivider, OAuthButtons, PasswordInput } from "./auth-fields";
 
-export const SignInCard = () => {
+export const SignInCard = ({ next }: { next?: string | null }) => {
   const { mutate, isPending } = useLogin();
 
   const form = useForm<z.input<typeof loginShema>, unknown, z.output<typeof loginShema>>({
@@ -45,7 +45,7 @@ export const SignInCard = () => {
         <>
           Pas encore de compte ?{" "}
           <Link
-            href="/sign-up"
+            href={next ? `/sign-up?next=${encodeURIComponent(next)}` : "/sign-up"}
             className="font-medium text-foreground underline-offset-4 hover:underline"
           >
             Créer un compte
@@ -53,7 +53,7 @@ export const SignInCard = () => {
         </>
       }
     >
-      <OAuthButtons disabled={isPending} />
+      <OAuthButtons disabled={isPending} next={next} />
       <AuthDivider />
 
       <Form {...form}>
@@ -81,7 +81,15 @@ export const SignInCard = () => {
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mot de passe</FormLabel>
+                <div className="flex items-center justify-between gap-2">
+                  <FormLabel>Mot de passe</FormLabel>
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                  >
+                    Mot de passe oublié ?
+                  </Link>
+                </div>
                 <FormControl>
                   <PasswordInput
                     {...field}

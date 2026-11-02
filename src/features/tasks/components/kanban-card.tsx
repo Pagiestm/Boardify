@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ListChecksIcon, LockIcon, MoreHorizontalIcon, RepeatIcon } from "lucide-react";
 
 import { MemberAvatar } from "@/features/members/components/member-avatar";
@@ -12,6 +13,7 @@ import { LabelBadge } from "@/features/labels/components/label-badge";
 import { TaskActions } from "./task-actions";
 
 import { PopulatedTask } from "../types";
+import { useOpenTask } from "../hooks/use-open-task";
 import { isTaskDone } from "../utils";
 import { TASK_PRIORITY_CONFIG } from "../constants";
 
@@ -22,25 +24,29 @@ interface KanbanCardProps {
 
 export const KanbanCard = ({ task, isDragging }: KanbanCardProps) => {
   const isDone = isTaskDone(task);
+  const openTask = useOpenTask();
 
   return (
     <div
+      onClick={(event) => openTask(task, event)}
+      onAuxClick={(event) => openTask(task, event)}
       className={cn(
-        "group/card mb-2 flex flex-col gap-2.5 rounded-md border bg-card p-3 shadow-xs transition-[border-color,box-shadow]",
+        "group/card mb-2 flex cursor-pointer flex-col gap-2.5 rounded-md border bg-card p-3 shadow-xs transition-[border-color,box-shadow]",
         "hover:border-foreground/20",
         isDragging && "shadow-md ring-1 ring-primary/30",
       )}
     >
       <div className="flex items-start gap-2">
-        <p
+        <Link
+          href={`/workspaces/${task.workspaceId}/tasks/${task.$id}`}
           className={cn(
-            "line-clamp-2 flex-1 text-sm leading-snug font-medium",
+            "line-clamp-2 flex-1 text-sm leading-snug font-medium outline-none focus-visible:underline",
             isDone && "text-muted-foreground line-through",
           )}
         >
           {task.name}
-        </p>
-        <TaskActions id={task.$id} projectId={task.projectId}>
+        </Link>
+        <TaskActions id={task.$id} name={task.name} projectId={task.projectId}>
           <button
             type="button"
             aria-label="Actions de la tâche"

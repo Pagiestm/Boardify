@@ -9,10 +9,9 @@ import { useGetChecklist } from "@/features/checklist/api/use-checklist";
 import { useCreateTemplate } from "@/features/templates/api/use-templates";
 
 import { Button } from "@/components/ui/button";
-import { useConfirm } from "@/hooks/use-confirm";
 
 import { PopulatedTask } from "../types";
-import { useDeleteTask } from "../api/use-delete-task";
+import { useDeleteTaskWithUndo } from "../api/use-delete-task";
 
 interface TaskBreadcrumbsProps {
   project?: Project;
@@ -23,27 +22,13 @@ export const TaskBreadcrumbs = ({ project, task }: TaskBreadcrumbsProps) => {
   const router = useRouter();
   const workspaceId = useWorkspaceId();
 
-  const { mutate, isPending } = useDeleteTask();
+  const deleteTask = useDeleteTaskWithUndo();
   const { data: checklist } = useGetChecklist({ taskId: task.$id });
   const { mutate: createTemplate, isPending: isSavingTemplate } = useCreateTemplate();
-  const [ConfirmDialog, confirm] = useConfirm(
-    "Supprimer la tâche ?",
-    "Cette action est définitive et ne peut pas être annulée.",
-    "destructive",
-  );
-
-  const handleDeleteTask = async () => {
-    const ok = await confirm();
-    if (!ok) return;
-
-    mutate(
-      { param: { taskId: task.$id } },
-      {
-        onSuccess: () => {
-          router.push(`/workspaces/${workspaceId}/tasks`);
-        },
-      },
-    );
+  // On quitte la page de la tâche, puis la suppression reste annulable quelques secondes.
+  const handleDeleteTask = () => {
+    router.push(`/workspaces/${workspaceId}/projects/${task.projectId}`);
+    deleteTask(task);
   };
 
   const handleSaveTemplate = () =>
@@ -64,7 +49,6 @@ export const TaskBreadcrumbs = ({ project, task }: TaskBreadcrumbsProps) => {
 
   return (
     <div className="flex items-center gap-x-3">
-      <ConfirmDialog />
       <nav aria-label="Fil d'Ariane" className="flex min-w-0 items-center gap-x-2 text-sm">
         {project ? (
           <Link
@@ -98,7 +82,6 @@ export const TaskBreadcrumbs = ({ project, task }: TaskBreadcrumbsProps) => {
       </Button>
       <Button
         onClick={handleDeleteTask}
-        disabled={isPending}
         className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
         variant="outline"
         size="sm"

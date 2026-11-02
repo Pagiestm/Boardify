@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Column, ColumnDef } from "@tanstack/react-table";
 import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon, MoreHorizontalIcon } from "lucide-react";
 
@@ -47,14 +48,15 @@ export const columns: ColumnDef<TaskTableFeatures, PopulatedTask, any>[] = [
     accessorKey: "name",
     header: ({ column }) => <SortableHeader column={column} label="Tâche" />,
     cell: ({ row }) => (
-      <p
+      <Link
+        href={`/workspaces/${row.original.workspaceId}/tasks/${row.original.$id}`}
         className={cn(
-          "line-clamp-1 max-w-[320px] font-medium",
+          "line-clamp-1 max-w-[320px] font-medium underline-offset-4 outline-none hover:underline focus-visible:underline",
           isTaskDone(row.original) && "text-muted-foreground line-through",
         )}
       >
         {row.original.name}
-      </p>
+      </Link>
     ),
   },
   {
@@ -123,7 +125,11 @@ export const columns: ColumnDef<TaskTableFeatures, PopulatedTask, any>[] = [
   {
     id: "actions",
     cell: ({ row }) => (
-      <TaskActions id={row.original.$id} projectId={row.original.projectId}>
+      <TaskActions
+        id={row.original.$id}
+        name={row.original.name}
+        projectId={row.original.projectId}
+      >
         <Button
           variant="ghost"
           size="icon-sm"

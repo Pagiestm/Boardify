@@ -29,16 +29,19 @@ import {
 } from "@/components/ui/select";
 
 import { useTaskFilters } from "../hooks/use-task-filters";
+import { ALL_MEMBERS, useAssigneeFilter } from "../hooks/use-assignee-filter";
 
 interface DataFiltersProps {
   hideProjectFilter?: boolean;
+  /** « Mes tâches » : le filtre des membres vaut l'utilisateur par défaut. */
+  mine?: boolean;
 }
 
 const triggerClassName =
   "h-8 w-full text-[13px] lg:w-auto lg:min-w-44 [&>svg:first-child]:text-muted-foreground";
 const activeClassName = "border-primary/40 bg-primary/5";
 
-export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
+export const DataFilters = ({ hideProjectFilter, mine }: DataFiltersProps) => {
   const workspaceId = useWorkspaceId();
   const paramProjectId = useProjectId();
   const { data: currentProject } = useGetProject({
@@ -58,11 +61,29 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
 
   const [{ assigneeId, projectId, dueDate, labelId, status }, setFilters] = useTaskFilters();
 
+  const { me } = useAssigneeFilter(mine);
+  // Sur « Mes tâches », l'absence de filtre signifie « moi » et « Tous les membres » est explicite.
+  const assigneeValue = mine
+    ? assigneeId === ALL_MEMBERS
+      ? "all"
+      : (assigneeId ?? me ?? "all")
+    : assigneeId && assigneeId !== ALL_MEMBERS
+      ? assigneeId
+      : "all";
+
   const hasActiveFilters = Boolean(
-    assigneeId || dueDate || labelId || status || (!hideProjectFilter && projectId),
+    (mine ? assigneeId : assigneeId && assigneeId !== ALL_MEMBERS) ||
+    dueDate ||
+    labelId ||
+    status ||
+    (!hideProjectFilter && projectId),
   );
 
   const onAssigneeChange = (value: string) => {
+    if (mine) {
+      setFilters({ assigneeId: value === "all" ? ALL_MEMBERS : value === me ? null : value });
+      return;
+    }
     setFilters({ assigneeId: value === "all" ? null : value });
   };
 
@@ -137,10 +158,10 @@ export const DataFilters = ({ hideProjectFilter }: DataFiltersProps) => {
               ))}
         </SelectContent>
       </Select>
-      <Select value={assigneeId ?? "all"} onValueChange={onAssigneeChange}>
+      <Select value={assigneeValue} onValueChange={onAssigneeChange}>
         <SelectTrigger
           aria-label="Filtrer par membre"
-          className={cn(triggerClassName, assigneeId && activeClassName)}
+          className={cn(triggerClassName, assigneeValue !== "all" && activeClassName)}
         >
           <UserIcon />
           <SelectValue placeholder="Tous les membres" />

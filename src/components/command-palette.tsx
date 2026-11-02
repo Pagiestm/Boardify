@@ -5,6 +5,8 @@ import { Command } from "cmdk";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import {
+  CircleCheckIcon,
+  CircleIcon,
   FolderIcon,
   FolderPlusIcon,
   HomeIcon,
@@ -29,6 +31,9 @@ import { useCreateTaskModal } from "@/features/tasks/hooks/use-create-task-modal
 import { useCreateProjectModal } from "@/features/projects/hooks/use-create-project-modal";
 import { useCreateWorkspaceModal } from "@/features/workspaces/hooks/use-create-workspace-modal";
 import { PaletteSearch } from "@/features/assistant/components/palette-search";
+import { PopulatedTask } from "@/features/tasks/types";
+import { isTaskDone } from "@/features/tasks/utils";
+import { useGetTasks } from "@/features/tasks/api/use-get-tasks";
 
 import { useHotkeys } from "@/hooks/use-hotkeys";
 import { Kbd } from "@/components/ui/kbd";
@@ -98,6 +103,21 @@ export const GlobalHotkeys = () => {
   return null;
 };
 
+const normalize = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase();
+
+const MAX_TASK_RESULTS = 8;
+
+/** Tâches dont le nom contient le texte saisi (sans tenir compte des accents). */
+const searchTasks = (tasks: PopulatedTask[], search: string) => {
+  const query = normalize(search.trim());
+  if (query.length < 2) return [];
+  return tasks.filter((task) => normalize(task.name).includes(query)).slice(0, MAX_TASK_RESULTS);
+};
+
 const groupClasses =
   "p-1.5 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground";
 
@@ -143,6 +163,7 @@ export const CommandPalette = () => {
   const { data: workspaces } = useGetWorkspaces();
   const { data: projects } = useGetProjects({ workspaceId });
   const [search, setSearch] = useState("");
+  const { data: tasks } = useGetTasks({ workspaceId, enabled: open && Boolean(workspaceId) });
   const { data: user } = useCurrent();
 
   // Étape « Essayer la recherche » des premiers pas.
@@ -158,6 +179,7 @@ export const CommandPalette = () => {
 
   const go = (path: string) => run(() => router.push(path));
   const base = `/workspaces/${workspaceId}`;
+  const taskResults = searchTasks((tasks?.documents ?? []) as PopulatedTask[], search);
   const isDark = resolvedTheme === "dark";
 
   return (
@@ -199,6 +221,29 @@ export const CommandPalette = () => {
                 go(path)();
               }}
             />
+
+            {taskResults.length > 0 && (
+              <Command.Group heading="Tâches" className={groupClasses}>
+                {taskResults.map((task) => (
+                  <Item
+                    key={task.$id}
+                    value={`tache ${task.name} ${task.$id}`}
+                    icon={isTaskDone(task) ? <CircleCheckIcon /> : <CircleIcon />}
+                    onSelect={() => {
+                      setSearch("");
+                      go(`${base}/tasks/${task.$id}`)();
+                    }}
+                  >
+                    {task.name}
+                    {task.project && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        {task.project.name}
+                      </span>
+                    )}
+                  </Item>
+                ))}
+              </Command.Group>
+            )}
 
             <Command.Group heading="Navigation" className={groupClasses}>
               <Item

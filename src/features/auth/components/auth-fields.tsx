@@ -31,16 +31,18 @@ export const PasswordInput = ({ className, ...props }: InputProps) => {
 
 interface OAuthButtonsProps {
   disabled?: boolean;
+  /** Page à rouvrir une fois connecté. */
+  next?: string | null;
 }
 
-export const OAuthButtons = ({ disabled }: OAuthButtonsProps) => {
+export const OAuthButtons = ({ disabled, next }: OAuthButtonsProps) => {
   const [pendingProvider, setPendingProvider] = useState<"google" | "github" | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const handle = (provider: "google" | "github") => {
     setPendingProvider(provider);
     startTransition(async () => {
-      await (provider === "google" ? signUpWithGoogle() : signUpWithGithub());
+      await (provider === "google" ? signUpWithGoogle(next) : signUpWithGithub(next));
     });
   };
 

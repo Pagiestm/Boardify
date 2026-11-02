@@ -1,37 +1,43 @@
 import { toast } from "sonner";
-import { InferRequestType, InferResponseType } from "hono";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { client } from "@/lib/rpc";
+import {
+  UNDO_DELAY_MS,
+  cancelTaskDelete,
+  scheduleTaskDelete,
+  sendTaskDelete,
+} from "../pending-deletes";
 
-type ResponseType = InferResponseType<(typeof client.api.tasks)[":taskId"]["$delete"], 200>;
-type RequestType = InferRequestType<(typeof client.api.tasks)[":taskId"]["$delete"]>;
-
-export const useDeleteTask = () => {
+/**
+ * Supprime une tâche avec la possibilité d'annuler : elle disparaît aussitôt, et un message
+ * propose « Annuler » pendant quelques secondes avant la suppression réelle.
+ */
+export const useDeleteTaskWithUndo = () => {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ param }) => {
-      const response = await client.api.tasks[":taskId"]["$delete"]({ param });
-
-      if (!response.ok) {
-        throw new Error("Erreur lors de la suppression de la tâche");
-      }
-
-      return await response.json();
-    },
-    onSuccess: ({ data }) => {
-      toast.success("Tâche supprimée");
-
+  return (task: { $id: string; name: string }) => {
+    const refresh = () => {
       queryClient.invalidateQueries({ queryKey: ["project-analytics"] });
       queryClient.invalidateQueries({ queryKey: ["workspace-analytics"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
-      queryClient.invalidateQueries({ queryKey: ["task", data.$id] });
-    },
-    onError: () => {
-      toast.error("Erreur lors de la suppression de la tâche");
-    },
-  });
+      queryClient.invalidateQueries({ queryKey: ["task", task.$id] });
+    };
 
-  return mutation;
+    scheduleTaskDelete(task.$id, async () => {
+      const response = await sendTaskDelete(task.$id).catch(() => null);
+      if (!response?.ok) toast.error("Erreur lors de la suppression de la tâche");
+      refresh();
+    });
+
+    toast("Tâche supprimée", {
+      description: task.name,
+      duration: UNDO_DELAY_MS,
+      action: {
+        label: "Annuler",
+        onClick: () => {
+          if (cancelTaskDelete(task.$id)) toast.success("Suppression annulée");
+        },
+      },
+    });
+  };
 };

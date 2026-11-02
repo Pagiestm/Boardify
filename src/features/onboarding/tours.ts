@@ -51,7 +51,7 @@ export const TOURS: Tour[] = [
       {
         target: "search",
         title: "Tout trouver avec ⌘K",
-        body: "Pages, projets, actions et espaces de travail. Avec l'assistant IA, posez aussi une question sur vos tâches.",
+        body: "Tâches (tapez une partie de leur nom), pages, projets, actions et espaces de travail. Avec l'assistant IA, posez aussi une question sur vos tâches.",
       },
       {
         target: "notifications",

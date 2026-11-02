@@ -28,12 +28,16 @@ import { DataCalendar } from "./data-calendar";
 
 import { useGetTasks } from "../api/use-get-tasks";
 import { useTaskFilters } from "../hooks/use-task-filters";
+import { useOpenTask } from "../hooks/use-open-task";
+import { useAssigneeFilter } from "../hooks/use-assignee-filter";
 import { useCreateTaskModal } from "../hooks/use-create-task-modal";
 import { useBulkUpdateTasks } from "../api/use-bulk-update-tasks";
 
 interface TaskViewSwitcherProps {
   hideProjectFilter?: boolean;
   hideKanban?: boolean;
+  /** « Mes tâches » : les tâches de l'utilisateur par défaut. */
+  mine?: boolean;
 }
 
 const views = [
@@ -91,8 +95,13 @@ export const isTypingTarget = (target: EventTarget | null) => {
   );
 };
 
-export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwitcherProps) => {
-  const [{ status, assigneeId, projectId, dueDate, labelId, sprintId }] = useTaskFilters();
+export const TaskViewSwitcher = ({
+  hideProjectFilter,
+  hideKanban,
+  mine,
+}: TaskViewSwitcherProps) => {
+  const [{ status, projectId, dueDate, labelId, sprintId }] = useTaskFilters();
+  const { assigneeId, ready: assigneeReady } = useAssigneeFilter(mine);
 
   const [view, setView] = useQueryState("task-view", {
     defaultValue: "table",
@@ -104,6 +113,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwit
   const workspaceId = useWorkspaceId();
   const paramProjectId = useProjectId();
   const { open } = useCreateTaskModal();
+  const openTask = useOpenTask();
 
   const { data: project } = useGetProject({
     projectId: paramProjectId,
@@ -138,6 +148,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwit
     dueDate,
     labelId,
     sprintId: paramProjectId ? sprintId : null,
+    enabled: assigneeReady,
   });
 
   useEffect(() => {
@@ -203,7 +214,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwit
         </div>
       </div>
       <div data-tour="filters" className="border-b px-4 py-3">
-        <DataFilters hideProjectFilter={hideProjectFilter} />
+        <DataFilters hideProjectFilter={hideProjectFilter} mine={mine} />
       </div>
       <div className="p-4">
         {isLoadingTasks ? (
@@ -211,7 +222,7 @@ export const TaskViewSwitcher = ({ hideProjectFilter, hideKanban }: TaskViewSwit
         ) : (
           <>
             <TabsContent value="table" className="mt-0">
-              <DataTable columns={columns} data={tasks?.documents ?? []} />
+              <DataTable columns={columns} data={tasks?.documents ?? []} onRowClick={openTask} />
             </TabsContent>
             {hideKanban ? null : (
               <TabsContent value="kanban" className="mt-0">

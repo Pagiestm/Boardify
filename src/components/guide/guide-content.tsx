@@ -151,10 +151,13 @@ export const GuideContent = () => (
             </>,
           ]}
         </Steps>
+        <Text>
+          Une personne qui n&apos;a pas encore de compte crée le sien, puis arrive directement sur
+          l&apos;invitation.
+        </Text>
         <Tip tone="warning">
-          Une personne qui n&apos;a pas encore de compte doit d&apos;abord s&apos;inscrire, puis
-          rouvrir le lien d&apos;invitation. Si le lien a circulé trop largement, cliquez sur{" "}
-          <Ui>Réinitialiser le lien</Ui> : l&apos;ancien cesse de fonctionner.
+          Si le lien a circulé trop largement, cliquez sur <Ui>Réinitialiser le lien</Ui> :
+          l&apos;ancien cesse de fonctionner.
         </Tip>
       </Part>
 
@@ -260,8 +263,8 @@ export const GuideContent = () => (
 
       <Part title="La page d'une tâche">
         <Text>
-          Ouvrez une tâche avec le menu <Ui>…</Ui> d&apos;une ligne ou d&apos;une carte, puis{" "}
-          <Ui>Voir la tâche</Ui>. Vous y trouvez :
+          Cliquez sur une carte ou une ligne pour ouvrir la tâche (<Keys k="⌘" /> + clic pour
+          l&apos;ouvrir dans un nouvel onglet). Vous y trouvez :
         </Text>
         <Bullets>
           {[
@@ -303,7 +306,9 @@ export const GuideContent = () => (
               décochées.
             </>,
             <>
-              Le menu <Ui>…</Ui> propose aussi <Ui>Dupliquer</Ui> pour copier une tâche.
+              Le menu <Ui>…</Ui> propose aussi <Ui>Dupliquer</Ui> pour copier une tâche, et{" "}
+              <Ui>Supprimer</Ui> : la tâche disparaît aussitôt, et <Ui>Annuler</Ui> la fait revenir
+              pendant quelques secondes.
             </>,
           ]}
         </Bullets>
@@ -341,8 +346,8 @@ export const GuideContent = () => (
           le sprint sont mémorisés dans <Ui>Mes vues</Ui>, propres à chacun.
         </Text>
         <Tip>
-          <Ui>Mes tâches</Ui> affiche toutes les tâches de l&apos;espace. Choisissez votre nom dans{" "}
-          <Ui>Tous les membres</Ui>, puis enregistrez la vue pour retrouver uniquement les vôtres.
+          <Ui>Mes tâches</Ui> affiche les tâches qui vous sont assignées. Choisissez{" "}
+          <Ui>Tous les membres</Ui> pour voir celles de toute l&apos;équipe.
         </Tip>
       </Part>
     </Chapter>
@@ -619,9 +624,10 @@ export const GuideContent = () => (
       <Part title="La palette ⌘K">
         <Demo id="command-palette" />
         <Text>
-          <Keys k="⌘K" /> (Ctrl+K sous Windows et Linux) ouvre la palette : allez à une page ou à un
-          projet, créez une tâche, un projet ou un espace, changez de thème ou d&apos;espace de
-          travail. Avec l&apos;assistant IA, posez aussi une question sur vos tâches.
+          <Keys k="⌘K" /> (Ctrl+K sous Windows et Linux) ouvre la palette : retrouvez une tâche en
+          tapant une partie de son nom, allez à une page ou à un projet, créez une tâche, un projet
+          ou un espace, changez de thème ou d&apos;espace de travail. Avec l&apos;assistant IA,
+          posez aussi une question sur vos tâches.
         </Text>
       </Part>
       <Part title="Tous les raccourcis">
@@ -639,6 +645,7 @@ export const GuideContent = () => (
             [<Keys key="e" k="E" />, "Modifier la tâche ouverte"],
             [<Keys key="i" k="I" />, "Modifier sa description"],
             [<Keys key="enter" k="⌘↵" />, "Envoyer un commentaire"],
+            [<Keys key="click" k="⌘ + clic" />, "Ouvrir une tâche dans un nouvel onglet"],
             [<Keys key="q" k="⌃⌥N" />, "Ajout rapide (application desktop)"],
             [<Keys key="h" k="?" />, "Afficher les raccourcis"],
           ]}

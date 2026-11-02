@@ -21,6 +21,7 @@ export const SHORTCUTS: { keys: string[]; label: string }[] = [
   { keys: ["G", "T"], label: "Aller à mes tâches" },
   { keys: ["G", "S"], label: "Aller aux paramètres" },
   { keys: ["G", "M"], label: "Aller aux membres" },
+  { keys: ["⌘", "clic"], label: "Ouvrir une tâche dans un nouvel onglet" },
   { keys: ["?"], label: "Afficher les raccourcis" },
 ];
 

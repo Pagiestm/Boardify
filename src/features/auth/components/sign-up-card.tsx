@@ -23,7 +23,7 @@ import { useRegister } from "../api/use-register";
 import { AuthPane } from "./auth-pane";
 import { AuthDivider, OAuthButtons, PasswordInput } from "./auth-fields";
 
-export const SignUpCard = () => {
+export const SignUpCard = ({ next }: { next?: string | null }) => {
   const { mutate, isPending } = useRegister();
 
   const form = useForm<z.input<typeof registerShema>, unknown, z.output<typeof registerShema>>({
@@ -47,7 +47,7 @@ export const SignUpCard = () => {
         <>
           Déjà un compte ?{" "}
           <Link
-            href="/sign-in"
+            href={next ? `/sign-in?next=${encodeURIComponent(next)}` : "/sign-in"}
             className="font-medium text-foreground underline-offset-4 hover:underline"
           >
             Se connecter
@@ -55,7 +55,7 @@ export const SignUpCard = () => {
         </>
       }
     >
-      <OAuthButtons disabled={isPending} />
+      <OAuthButtons disabled={isPending} next={next} />
       <AuthDivider />
 
       <Form {...form}>
