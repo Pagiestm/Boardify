@@ -1,3 +1,9 @@
+## [1.15.0](https://github.com/Pagiestm/Boardify/compare/v1.14.0...v1.15.0) (2026-11-02)
+
+### Features
+
+* **tasks:** mot de passe oublié, tâches cliquables, recherche ⌘K et annulation ([ce03b8f](https://github.com/Pagiestm/Boardify/commit/ce03b8f3c29f52b96bc0ae7f2d91b922a35621f6))
+
 ## [1.14.0](https://github.com/Pagiestm/Boardify/compare/v1.13.0...v1.14.0) (2026-10-30)
 
 ### Features
