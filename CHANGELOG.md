@@ -1,3 +1,9 @@
+## [1.16.0](https://github.com/Pagiestm/Boardify/compare/v1.15.0...v1.16.0) (2026-11-02)
+
+### Features
+
+* **collaboration:** descriptions Markdown, actions groupées, graphiques de sprint et présence ([95c167d](https://github.com/Pagiestm/Boardify/commit/95c167d575452ec2b3ff40becdcd49a5b56badec))
+
 ## [1.15.0](https://github.com/Pagiestm/Boardify/compare/v1.14.0...v1.15.0) (2026-11-02)
 
 ### Features
