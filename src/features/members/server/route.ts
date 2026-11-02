@@ -11,6 +11,7 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 
 import { forgetMembers, getMember } from "../utils";
 import { Member, MemberRole } from "../types";
+import { isLastAdmin } from "../rules";
 
 const app = new Hono()
   .get(
@@ -62,9 +63,9 @@ const app = new Hono()
     const user = c.get("user");
     const databases = c.get("databases");
 
-    const memberToDelete = await databases.getDocument(DATABASE_ID, MEMBERS_ID, memberId);
+    const memberToDelete = await databases.getDocument<Member>(DATABASE_ID, MEMBERS_ID, memberId);
 
-    const allMembersInWorkspace = await databases.listDocuments(DATABASE_ID, MEMBERS_ID, [
+    const allMembersInWorkspace = await databases.listDocuments<Member>(DATABASE_ID, MEMBERS_ID, [
       Query.equal("workspaceId", memberToDelete.workspaceId),
     ]);
 
@@ -86,10 +87,7 @@ const app = new Hono()
       return c.json({ error: "Le dernier membre ne peut pas être retiré." }, 400);
     }
 
-    const adminCount = allMembersInWorkspace.documents.filter(
-      (item) => item.role === MemberRole.ADMIN,
-    ).length;
-    if (memberToDelete.role === MemberRole.ADMIN && adminCount === 1) {
+    if (isLastAdmin(allMembersInWorkspace.documents, memberToDelete)) {
       return c.json({ error: "Nommez un autre administrateur avant de retirer le dernier." }, 400);
     }
 
@@ -109,9 +107,9 @@ const app = new Hono()
       const user = c.get("user");
       const databases = c.get("databases");
 
-      const memberToUpdate = await databases.getDocument(DATABASE_ID, MEMBERS_ID, memberId);
+      const memberToUpdate = await databases.getDocument<Member>(DATABASE_ID, MEMBERS_ID, memberId);
 
-      const allMembersInWorkspace = await databases.listDocuments(DATABASE_ID, MEMBERS_ID, [
+      const allMembersInWorkspace = await databases.listDocuments<Member>(DATABASE_ID, MEMBERS_ID, [
         Query.equal("workspaceId", memberToUpdate.workspaceId),
       ]);
 
@@ -129,13 +127,9 @@ const app = new Hono()
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const adminCount = allMembersInWorkspace.documents.filter(
-        (item) => item.role === MemberRole.ADMIN,
-      ).length;
       if (
-        memberToUpdate.role === MemberRole.ADMIN &&
         role !== MemberRole.ADMIN &&
-        adminCount === 1
+        isLastAdmin(allMembersInWorkspace.documents, memberToUpdate)
       ) {
         return c.json({ error: "Il doit rester au moins un administrateur dans l'espace." }, 400);
       }

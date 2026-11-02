@@ -17,6 +17,7 @@ import { isDoneStatus } from "@/features/tasks/server/done";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { COMMENTS_ID, DATABASE_ID, LABELS_ID, PROJECTS_ID, SPRINTS_ID, TASKS_ID } from "@/config";
 
+import { matchTasks } from "./match";
 import { describeAiError, getWorkspaceModel, streamTextResponse } from "./model";
 import {
   formatDay,
@@ -109,33 +110,6 @@ const publicTask = (context: TaskContext, task: Task) => {
 };
 
 const workspaceParam = z.object({ workspaceId: z.string() });
-
-/**
- * Retrouve une tâche à partir de l'identifiant renvoyé par le modèle : les modèles le
- * recopient parfois avec ses crochets, ou donnent le titre à la place.
- */
-const findTask = (tasks: Task[], raw: string) => {
-  const key = raw
-    .trim()
-    .replace(/^\[|\]$/g, "")
-    .trim();
-  return (
-    tasks.find((task) => task.$id === key) ??
-    tasks.find((task) => key.includes(task.$id)) ??
-    tasks.find((task) => task.name.toLowerCase() === key.toLowerCase())
-  );
-};
-
-/** Associe les éléments du modèle à leurs tâches, sans doublon. */
-const matchTasks = <T extends { taskId: string }>(tasks: Task[], items: T[]) => {
-  const seen = new Set<string>();
-  return items.flatMap((item) => {
-    const task = findTask(tasks, item.taskId);
-    if (!task || seen.has(task.$id)) return [];
-    seen.add(task.$id);
-    return [{ item, task }];
-  });
-};
 
 const app = new Hono()
   /** Ma journée : les tâches à traiter aujourd'hui, avec une raison pour chacune. */

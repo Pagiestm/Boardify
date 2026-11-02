@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
+import * as Sentry from "@sentry/nextjs";
 import { AppwriteException } from "node-appwrite";
 
 import auth from "@/features/auth/server/route";
@@ -32,6 +33,7 @@ app.onError((error, c) => {
   }
 
   console.error(error);
+  Sentry.captureException(error);
   return c.json({ error: "Internal Server Error" }, 500);
 });
 

@@ -32,30 +32,35 @@ const listCompletionActivities = async (databases: Databases, taskIds: string[])
   return activities;
 };
 
+interface BurndownInput {
+  sprint: Pick<Sprint, "startDate" | "endDate">;
+  project: Project;
+  tasks: Task[];
+  activities: Activity[];
+  now?: Date;
+}
+
 /**
  * Courbe d'avancement d'un sprint : travail restant jour après jour (en points si les tâches
  * sont estimées, sinon en nombre de tâches), à partir du moment où chaque tâche a été terminée.
  */
-export const computeBurndown = async (
-  databases: Databases,
-  sprint: Sprint,
-  project: Project,
-  tasks: Task[],
+export const buildBurndown = ({
+  sprint,
+  project,
+  tasks,
+  activities,
   now = new Date(),
-) => {
+}: BurndownInput) => {
   const usePoints = tasks.some((task) => (task.estimate ?? 0) > 0);
   const weight = (task: Task) => (usePoints ? (task.estimate ?? 0) : 1);
   const total = tasks.reduce((sum, task) => sum + weight(task), 0);
-
   const doneTasks = tasks.filter((task) => isDoneStatus(project, task.status));
-  const activities = await listCompletionActivities(
-    databases,
-    doneTasks.map((task) => task.$id),
-  );
+  const doneIds = new Set(doneTasks.map((task) => task.$id));
 
   // Moment où la tâche est passée pour la dernière fois dans une colonne « terminé ».
   const completedAt = new Map<string, Date>();
   for (const activity of activities) {
+    if (!doneIds.has(activity.taskId)) continue;
     let finished = activity.type === ActivityType.GITHUB_CLOSED;
     if (activity.type === ActivityType.STATUS && activity.data) {
       try {
@@ -93,4 +98,19 @@ export const computeBurndown = async (
   });
 
   return { unit: usePoints ? ("points" as const) : ("tasks" as const), total, days: series };
+};
+
+export const computeBurndown = async (
+  databases: Databases,
+  sprint: Sprint,
+  project: Project,
+  tasks: Task[],
+  now = new Date(),
+) => {
+  const doneTasks = tasks.filter((task) => isDoneStatus(project, task.status));
+  const activities = await listCompletionActivities(
+    databases,
+    doneTasks.map((task) => task.$id),
+  );
+  return buildBurndown({ sprint, project, tasks, activities, now });
 };

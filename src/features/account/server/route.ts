@@ -6,6 +6,7 @@ import { AppwriteException, ID, Models, Permission, Query, Role } from "node-app
 import { AUTH_COOKIE } from "@/features/auth/constants";
 import { Member, MemberRole } from "@/features/members/types";
 import { forgetMembers } from "@/features/members/utils";
+import { countAdmins, leaveBlocker } from "@/features/members/rules";
 import { Workspace } from "@/features/workspaces/types";
 import { deleteWorkspaceChildren } from "@/features/workspaces/server/cleanup";
 
@@ -76,7 +77,7 @@ const getMemberships = async (userId: string) => {
         membership,
         workspace,
         memberCount: members.total,
-        adminCount: members.documents.filter((member) => member.role === MemberRole.ADMIN).length,
+        adminCount: countAdmins(members.documents),
       };
     }),
   );
@@ -84,23 +85,12 @@ const getMemberships = async (userId: string) => {
 };
 
 /** Pourquoi l'utilisateur ne peut pas quitter cet espace, s'il ne peut pas. */
-const leaveBlocker = ({
-  membership,
-  memberCount,
-  adminCount,
-}: {
-  membership: Member;
-  memberCount: number;
-  adminCount: number;
-}) => {
-  if (memberCount === 1) {
-    return "Vous êtes seul dans cet espace : supprimez-le depuis ses paramètres.";
-  }
-  if (membership.role === MemberRole.ADMIN && adminCount === 1) {
-    return "Nommez un autre administrateur avant de quitter cet espace.";
-  }
-  return null;
-};
+const leaveBlockerFor = (item: { membership: Member; memberCount: number; adminCount: number }) =>
+  leaveBlocker({
+    role: item.membership.role,
+    memberCount: item.memberCount,
+    adminCount: item.adminCount,
+  });
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
@@ -269,7 +259,7 @@ const app = new Hono()
         imageUrl: item.workspace.imageUrl ?? null,
         role: item.membership.role,
         memberCount: item.memberCount,
-        leaveBlocker: leaveBlocker(item),
+        leaveBlocker: leaveBlockerFor(item),
       })),
     });
   })
@@ -280,7 +270,7 @@ const app = new Hono()
     const item = memberships.find((entry) => entry.workspace.$id === workspaceId);
 
     if (!item) return c.json({ error: "Espace introuvable." }, 404);
-    const blocker = leaveBlocker(item);
+    const blocker = leaveBlockerFor(item);
     if (blocker) return c.json({ error: blocker }, 400);
 
     const { databases } = await createAdminClient();

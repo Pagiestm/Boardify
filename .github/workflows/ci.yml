@@ -11,8 +11,20 @@ concurrency:
 
 jobs:
   verify:
-    name: Lint & build
+    name: Lint, tests & build
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_APP_URL: https://boardify.theotimepagies.com
+      NEXT_PUBLIC_APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
+      NEXT_PUBLIC_APPWRITE_PROJECT: ci
+      NEXT_APPWRITE_KEY: ci
+      NEXT_PUBLIC_APPWRITE_DATABASE_ID: ci
+      NEXT_PUBLIC_APPWRITE_WORKSPACES_ID: ci
+      NEXT_PUBLIC_APPWRITE_MEMBERS_ID: ci
+      NEXT_PUBLIC_APPWRITE_PROJECTS_ID: ci
+      NEXT_PUBLIC_APPWRITE_TASKS_ID: ci
+      NEXT_PUBLIC_APPWRITE_LABELS_ID: ci
+      NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID: ci
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -32,19 +44,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Unit tests
+        run: npm test
+
       # Toutes les routes sont rendues à la demande : le build ne contacte
       # jamais Appwrite, des valeurs factices suffisent à le faire aboutir.
       - name: Build
-        env:
-          NEXT_PUBLIC_APP_URL: https://boardify.theotimepagies.com
-          NEXT_PUBLIC_APPWRITE_ENDPOINT: https://fra.cloud.appwrite.io/v1
-          NEXT_PUBLIC_APPWRITE_PROJECT: ci
-          NEXT_APPWRITE_KEY: ci
-          NEXT_PUBLIC_APPWRITE_DATABASE_ID: ci
-          NEXT_PUBLIC_APPWRITE_WORKSPACES_ID: ci
-          NEXT_PUBLIC_APPWRITE_MEMBERS_ID: ci
-          NEXT_PUBLIC_APPWRITE_PROJECTS_ID: ci
-          NEXT_PUBLIC_APPWRITE_TASKS_ID: ci
-          NEXT_PUBLIC_APPWRITE_LABELS_ID: ci
-          NEXT_PUBLIC_APPWRITE_IMAGES_BUCKET_ID: ci
         run: npm run build

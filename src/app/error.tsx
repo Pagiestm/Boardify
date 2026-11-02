@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 import { Button } from "@/components/ui/button";
 import { PageError } from "@/components/page-error";
@@ -42,6 +43,7 @@ const ErrorPage = ({ error, reset }: ErrorPageProps) => {
   useEffect(() => {
     if (updating && reloadOnce()) return;
     console.error(error);
+    if (!updating) Sentry.captureException(error);
   }, [error, updating]);
 
   if (updating) {

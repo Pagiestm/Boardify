@@ -34,6 +34,7 @@ import { PaletteSearch } from "@/features/assistant/components/palette-search";
 import { PopulatedTask } from "@/features/tasks/types";
 import { isTaskDone } from "@/features/tasks/utils";
 import { useGetTasks } from "@/features/tasks/api/use-get-tasks";
+import { searchTasks } from "@/features/tasks/search";
 
 import { useHotkeys } from "@/hooks/use-hotkeys";
 import { Kbd } from "@/components/ui/kbd";
@@ -101,21 +102,6 @@ export const GlobalHotkeys = () => {
   });
 
   return null;
-};
-
-const normalize = (value: string) =>
-  value
-    .normalize("NFD")
-    .replace(/\p{Diacritic}/gu, "")
-    .toLowerCase();
-
-const MAX_TASK_RESULTS = 8;
-
-/** Tâches dont le nom contient le texte saisi (sans tenir compte des accents). */
-const searchTasks = (tasks: PopulatedTask[], search: string) => {
-  const query = normalize(search.trim());
-  if (query.length < 2) return [];
-  return tasks.filter((task) => normalize(task.name).includes(query)).slice(0, MAX_TASK_RESULTS);
 };
 
 const groupClasses =

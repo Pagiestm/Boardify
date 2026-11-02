@@ -14,7 +14,8 @@ import { Task, TaskRecurrence } from "../types";
 import { createTaskIssue } from "./github-sync";
 import { getOpenStatus, isDoneStatus } from "./done";
 
-const shift = (value: string, recurrence: TaskRecurrence) => {
+/** Date de la prochaine occurrence d'une tâche répétée. */
+export const shift = (value: string, recurrence: TaskRecurrence) => {
   const date = new Date(value);
   if (recurrence === TaskRecurrence.DAILY) return addDays(date, 1);
   if (recurrence === TaskRecurrence.WEEKLY) return addDays(date, 7);
