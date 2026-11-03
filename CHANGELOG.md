@@ -1,3 +1,9 @@
+## [1.18.1](https://github.com/Pagiestm/Boardify/compare/v1.18.0...v1.18.1) (2026-11-03)
+
+### Bug Fixes
+
+* **deps:** @hookform/resolvers v7 ([095c498](https://github.com/Pagiestm/Boardify/commit/095c498b0438c3b4713ca2b71292e256c1a7c737))
+
 ## [1.18.0](https://github.com/Pagiestm/Boardify/compare/v1.17.0...v1.18.0) (2026-11-03)
 
 ### Features
