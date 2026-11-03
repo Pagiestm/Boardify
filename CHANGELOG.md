@@ -1,3 +1,9 @@
+## [1.18.0](https://github.com/Pagiestm/Boardify/compare/v1.17.0...v1.18.0) (2026-11-03)
+
+### Features
+
+* **portabilite:** données, connexion, fichiers et temps réel interchangeables ([111ef63](https://github.com/Pagiestm/Boardify/commit/111ef630872d4627e1623c05c0b8e1bdeec9cdbd))
+
 ## [1.17.0](https://github.com/Pagiestm/Boardify/compare/v1.16.0...v1.17.0) (2026-11-02)
 
 ### Features
