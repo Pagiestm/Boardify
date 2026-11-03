@@ -203,15 +203,15 @@ flowchart LR
         Browser["Navigateur"]
     end
     Next["Boardify (Next.js)<br/>pages et API"]
-    Appwrite[("Appwrite")]
+    Appwrite[("Appwrite<br/>ou Postgres, S3")]
     GitHub["GitHub"]
 
-    WebView -- HTTPS --> Next
-    Browser -- HTTPS --> Next
+    WebView -->|HTTPS| Next
+    Browser -->|HTTPS| Next
     Next --> Appwrite
     Next --> GitHub
-    Shell -. liens externes .-> Browser
-    Shell -. latest.json .-> GitHub
+    Shell -.->|liens externes| Browser
+    Shell -.->|"latest.json"| GitHub
 ```
 
 ### Fonctionnalités natives
