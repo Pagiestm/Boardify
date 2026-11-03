@@ -1,3 +1,9 @@
+## [1.18.2](https://github.com/Pagiestm/Boardify/compare/v1.18.1...v1.18.2) (2026-11-03)
+
+### Bug Fixes
+
+* **security:** contrôle des espaces sur les actions groupées, étiquettes et résumés de sprint ([aac7ddb](https://github.com/Pagiestm/Boardify/commit/aac7ddb918d6ba7c2163aa32d5d008fdd1ae2460))
+
 ## [1.18.1](https://github.com/Pagiestm/Boardify/compare/v1.18.0...v1.18.1) (2026-11-03)
 
 ### Bug Fixes
