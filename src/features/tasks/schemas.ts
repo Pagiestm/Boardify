@@ -15,7 +15,7 @@ export const createtaskSchema = z.object({
   assigneeId: z.string({ error: "Requis" }).trim().min(1, "Requis"),
   priority: z.nativeEnum(TaskPriority, { error: "Requis" }),
   description: z.string().optional(),
-  labelIds: z.array(z.string()).optional(),
+  labelIds: z.array(z.string()).max(20).optional(),
   blockedBy: z.array(z.string()).max(20).optional(),
   recurrence: z.nativeEnum(TaskRecurrence).nullable().optional(),
   sprintId: z.string().trim().min(1).max(50).nullable().optional(),

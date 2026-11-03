@@ -35,13 +35,15 @@ export const notifyTasksDueSoon = async (db: Db, now = new Date()) => {
   });
   if (tasks.length === 0) return 0;
 
+  // Par lots de 100 identifiants, le maximum accepté par une requête Appwrite.
   const projectIds = [...new Set(tasks.map((task) => task.projectId))];
-  const projects = new Map(
-    (await listAll<Project>(db.projects, { $id: projectIds })).map((project) => [
-      project.$id,
-      project,
-    ]),
-  );
+  const found: Project[] = [];
+  for (let index = 0; index < projectIds.length; index += 100) {
+    found.push(
+      ...(await listAll<Project>(db.projects, { $id: projectIds.slice(index, index + 100) })),
+    );
+  }
+  const projects = new Map(found.map((project) => [project.$id, project]));
 
   const alreadyNotified = new Set(
     (

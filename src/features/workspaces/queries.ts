@@ -13,7 +13,7 @@ export const getWorkspaces = async () => {
 
   const db = createDb(requestDatabases(session));
 
-  const members = await db.members.list({ where: { userId: user.$id } });
+  const members = await db.members.list({ where: { userId: user.$id }, limit: 100 });
 
   if (members.total === 0) {
     return { documents: [], total: 0 };
@@ -24,6 +24,7 @@ export const getWorkspaces = async () => {
   const workspaces = await db.workspaces.list({
     where: { $id: workspaceIds },
     orderBy: { $createdAt: "desc" },
+    limit: 100,
   });
 
   return workspaces;

@@ -34,6 +34,14 @@ const isWorkspaceMember = async (db: Db, workspaceId: string, memberId: string) 
   return member?.workspaceId === workspaceId;
 };
 
+/** Les étiquettes doivent toutes appartenir à l'espace de la tâche. */
+const validateLabels = async (db: Db, workspaceId: string, labelIds: string[] | undefined) => {
+  const ids = [...new Set(labelIds ?? [])];
+  if (ids.length === 0) return null;
+  const count = await db.labels.count({ $id: ids, workspaceId });
+  return count === ids.length ? null : "Étiquette introuvable dans cet espace";
+};
+
 const nextPosition = async (db: Db, workspaceId: string, status: string) => {
   const { documents } = await db.tasks.list({
     where: { status, workspaceId },
@@ -71,6 +79,9 @@ export const createTask = async (
 
   const sprintError = await validateSprint(db, sprintId, projectId);
   if (sprintError) return { error: sprintError };
+
+  const labelsError = await validateLabels(db, workspaceId, input.labelIds);
+  if (labelsError) return { error: labelsError };
 
   const task = await db.tasks.create({
     name: input.name,
@@ -142,6 +153,9 @@ export const updateTask = async (
     const error = await validateSprint(db, nextSprintId, targetProjectId);
     if (error) return { error };
   }
+
+  const labelsError = await validateLabels(db, existing.workspaceId, input.labelIds);
+  if (labelsError) return { error: labelsError };
 
   const task = await db.tasks.update(existing.$id, {
     name: input.name,

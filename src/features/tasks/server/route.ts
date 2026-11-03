@@ -23,6 +23,11 @@ import { getBlockerStates } from "./dependencies";
 import { syncTaskIssues } from "./github-sync";
 import { createTask, deleteTask, updateTask } from "./mutations";
 
+/** Une colonne Kanban peut compter jusqu'à 1 000 tâches (positions de 1 000 à 1 000 000). */
+const BULK_UPDATE_LIMIT = 1000;
+/** Nombre d'identifiants par requête (Appwrite en accepte 100 au plus). */
+const ID_BATCH = 100;
+
 const app = new Hono()
   .delete("/:taskId", sessionMiddleware, async (c) => {
     const user = c.get("user");
@@ -124,17 +129,11 @@ const app = new Hono()
 
       const tasks = await db.tasks.list({ where, limit: 5000 });
 
-      const projectIds = tasks.documents.map((task) => task.projectId);
-      const assigneeIds = tasks.documents.map((task) => task.assigneeId);
-
+      // Projets et membres de l'espace en une requête chacun, quel que soit le nombre de tâches.
       const [projects, members, workspaceLabels, checklistItems, blockerStates] = await Promise.all(
         [
-          db.projects.list({
-            where: projectIds.length > 0 ? { $id: projectIds } : undefined,
-          }),
-          db.members.list({
-            where: assigneeIds.length > 0 ? { $id: assigneeIds } : undefined,
-          }),
+          db.projects.list({ where: { workspaceId }, limit: 500 }),
+          db.members.list({ where: { workspaceId }, limit: 500 }),
           db.labels.list({ where: { workspaceId }, limit: 100 }),
           listChecklistItems(
             db,
@@ -301,13 +300,15 @@ const app = new Hono()
     zValidator(
       "json",
       z.object({
-        tasks: z.array(
-          z.object({
-            $id: z.string(),
-            status: z.string().max(50),
-            position: z.number().int().positive().min(1000).max(1_000_000),
-          }),
-        ),
+        tasks: z
+          .array(
+            z.object({
+              $id: z.string(),
+              status: z.string().max(50),
+              position: z.number().int().positive().min(1000).max(1_000_000),
+            }),
+          )
+          .max(BULK_UPDATE_LIMIT),
       }),
     ),
     async (c) => {
@@ -315,11 +316,20 @@ const app = new Hono()
       const user = c.get("user");
       const { tasks } = await c.req.valid("json");
 
-      const tasksToUpdate = await db.tasks.list({
-        where: { $id: tasks.map((task) => task.$id) },
-      });
+      // Toutes les tâches envoyées sont vérifiées : aucune ne doit manquer ni venir d'un autre espace.
+      const ids = [...new Set(tasks.map((task) => task.$id))];
+      const found: Task[] = [];
+      for (let index = 0; index < ids.length; index += ID_BATCH) {
+        const batch = ids.slice(index, index + ID_BATCH);
+        found.push(
+          ...(await db.tasks.list({ where: { $id: batch }, limit: batch.length })).documents,
+        );
+      }
+      if (found.length !== ids.length) {
+        return c.json({ error: "Task not found" }, 404);
+      }
 
-      const workspaceIds = new Set(tasksToUpdate.documents.map((task) => task.workspaceId));
+      const workspaceIds = new Set(found.map((task) => task.workspaceId));
       if (workspaceIds.size !== 1) {
         return c.json({ error: "All tasks must belong to the same workspace" }, 400);
       }
@@ -343,7 +353,7 @@ const app = new Hono()
         }),
       );
 
-      const tasksBefore = new Map(tasksToUpdate.documents.map((task) => [task.$id, task]));
+      const tasksBefore = new Map(found.map((task) => [task.$id, task]));
       const statusChanges = updatedTasks
         .map((after) => ({ before: tasksBefore.get(after.$id)!, after }))
         .filter(({ before, after }) => before && before.status !== after.status);

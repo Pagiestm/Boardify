@@ -506,11 +506,15 @@ ${text}
       });
       if (!member) return c.json({ error: "Unauthorized" }, 401);
 
-      const model = await getWorkspaceModel(project.workspaceId);
-      if (!model) return c.json(NOT_CONFIGURED, 400);
-
       const sprint =
         sprintId && db.sprints.enabled ? await db.sprints.get(sprintId).catch(() => null) : null;
+      // Le sprint doit appartenir au projet : sinon son nom et son objectif fuiraient dans le résumé.
+      if (sprintId && db.sprints.enabled && sprint?.projectId !== project.$id) {
+        return c.json({ error: "Sprint introuvable dans ce projet" }, 404);
+      }
+
+      const model = await getWorkspaceModel(project.workspaceId);
+      if (!model) return c.json(NOT_CONFIGURED, 400);
 
       const [{ documents: tasks }, names] = await Promise.all([
         db.tasks.list({
