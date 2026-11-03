@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Models } from "node-appwrite";
+import type { BaseDocument } from "@/lib/db/types";
 
 export const savedViewFiltersSchema = z.object({
   projectId: z.string().nullable().optional(),
@@ -12,7 +12,7 @@ export const savedViewFiltersSchema = z.object({
 
 export type SavedViewFilters = z.infer<typeof savedViewFiltersSchema>;
 
-export type SavedView = Models.Document & {
+export type SavedView = BaseDocument & {
   workspaceId: string;
   memberId: string;
   name: string;

@@ -1,17 +1,13 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import type { Databases } from "node-appwrite";
 import { randomBytes } from "crypto";
 import { zValidator } from "@hono/zod-validator";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 
 import { getMember } from "@/features/members/utils";
 import { MemberRole } from "@/features/members/types";
-import { Task } from "@/features/tasks/types";
-import { Project } from "@/features/projects/types";
-import { Workspace } from "@/features/workspaces/types";
 
-import { DATABASE_ID, PROJECTS_ID, TASKS_ID, WORKSPACES_ID } from "@/config";
+import { createDb, type Db } from "@/lib/db";
 import { createAdminClient } from "@/lib/appwrite";
 import { forgetSession, sessionMiddleware } from "@/lib/session-middleware";
 import { AUTH_COOKIE } from "@/features/auth/constants";
@@ -44,16 +40,12 @@ const stateCookieOptions = {
   maxAge: 60 * 10,
 } as const;
 
-const getLinkedTask = async (databases: Databases, userId: string, taskId: string) => {
-  const task = await databases.getDocument<Task>(DATABASE_ID, TASKS_ID, taskId);
-  const member = await getMember({ databases, workspaceId: task.workspaceId, userId });
+const getLinkedTask = async (db: Db, userId: string, taskId: string) => {
+  const task = await db.tasks.get(taskId);
+  const member = await getMember({ db, workspaceId: task.workspaceId, userId });
   if (!member) return { error: "Unauthorized" as const };
 
-  const workspace = await databases.getDocument<Workspace>(
-    DATABASE_ID,
-    WORKSPACES_ID,
-    task.workspaceId,
-  );
+  const workspace = await db.workspaces.get(task.workspaceId);
   if (!task.githubIssueUrl || !workspace.githubInstallationId) {
     return { error: "Tâche non liée à une issue GitHub" as const };
   }
@@ -77,7 +69,7 @@ const app = new Hono()
     const { databases } = await createAdminClient();
 
     try {
-      const result = await handleGithubWebhook(databases, eventName, JSON.parse(payload));
+      const result = await handleGithubWebhook(createDb(databases), eventName, JSON.parse(payload));
       return c.json({ data: { result } });
     } catch (error) {
       console.error(`Webhook GitHub ${eventName} impossible à traiter`, error);
@@ -89,7 +81,7 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("query", z.object({ workspaceId: z.string().min(1) })),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const user = c.get("user");
       const { workspaceId } = c.req.valid("query");
 
@@ -97,7 +89,7 @@ const app = new Hono()
         return c.json({ error: "GitHub App non configurée" }, 501);
       }
 
-      const member = await getMember({ databases, workspaceId, userId: user.$id });
+      const member = await getMember({ db, workspaceId, userId: user.$id });
 
       if (!member || member.role !== MemberRole.ADMIN) {
         return c.json({ error: "Unauthorized" }, 401);
@@ -122,7 +114,7 @@ const app = new Hono()
       }),
     ),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const user = c.get("user");
       const { installationId, state, code } = c.req.valid("json");
 
@@ -133,7 +125,7 @@ const app = new Hono()
         return c.json({ error: "Lien de connexion expiré, recommencez" }, 400);
       }
 
-      const member = await getMember({ databases, workspaceId, userId: user.$id });
+      const member = await getMember({ db, workspaceId, userId: user.$id });
 
       if (!member || member.role !== MemberRole.ADMIN) {
         return c.json({ error: "Unauthorized" }, 401);
@@ -147,27 +139,23 @@ const app = new Hono()
         return c.json({ error: "Installation GitHub inaccessible" }, 403);
       }
 
-      await databases.updateDocument(DATABASE_ID, WORKSPACES_ID, workspaceId, {
-        githubInstallationId: linkedInstallationId,
-      });
+      await db.workspaces.update(workspaceId, { githubInstallationId: linkedInstallationId });
 
       return c.json({ data: { workspaceId } });
     },
   )
   .delete("/installations/:workspaceId", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
     const user = c.get("user");
     const { workspaceId } = c.req.param();
 
-    const member = await getMember({ databases, workspaceId, userId: user.$id });
+    const member = await getMember({ db, workspaceId, userId: user.$id });
 
     if (!member || member.role !== MemberRole.ADMIN) {
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    await databases.updateDocument(DATABASE_ID, WORKSPACES_ID, workspaceId, {
-      githubInstallationId: null,
-    });
+    await db.workspaces.update(workspaceId, { githubInstallationId: null });
 
     return c.json({ data: { workspaceId } });
   })
@@ -235,13 +223,13 @@ const app = new Hono()
     return c.json({ data: { userId: user.$id } });
   })
   .post("/projects/:projectId/import", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
     const user = c.get("user");
     const { projectId } = c.req.param();
 
-    const project = await databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, projectId);
+    const project = await db.projects.get(projectId);
     const member = await getMember({
-      databases,
+      db,
       workspaceId: project.workspaceId,
       userId: user.$id,
     });
@@ -250,11 +238,7 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const workspace = await databases.getDocument<Workspace>(
-      DATABASE_ID,
-      WORKSPACES_ID,
-      project.workspaceId,
-    );
+    const workspace = await db.workspaces.get(project.workspaceId);
     const { githubRepo } = project;
 
     if (!workspace.githubInstallationId || !githubRepo) {
@@ -262,7 +246,7 @@ const app = new Hono()
     }
 
     const result = await importGithubIssues({
-      databases,
+      db,
       project: { ...project, githubRepo },
       installationId: workspace.githubInstallationId,
       fallbackMemberId: member.$id,
@@ -271,11 +255,7 @@ const app = new Hono()
     return c.json({ data: { ...result, projectId, workspaceId: project.workspaceId } });
   })
   .get("/tasks/:taskId/development", sessionMiddleware, async (c) => {
-    const linked = await getLinkedTask(
-      c.get("databases"),
-      c.get("user").$id,
-      c.req.param("taskId"),
-    );
+    const linked = await getLinkedTask(c.get("db"), c.get("user").$id, c.req.param("taskId"));
 
     if ("error" in linked) {
       return c.json({ error: linked.error }, linked.error === "Unauthorized" ? 401 : 400);
@@ -289,11 +269,7 @@ const app = new Hono()
     }
   })
   .post("/tasks/:taskId/branch", sessionMiddleware, async (c) => {
-    const linked = await getLinkedTask(
-      c.get("databases"),
-      c.get("user").$id,
-      c.req.param("taskId"),
-    );
+    const linked = await getLinkedTask(c.get("db"), c.get("user").$id, c.req.param("taskId"));
 
     if ("error" in linked) {
       return c.json({ error: linked.error }, linked.error === "Unauthorized" ? 401 : 400);
@@ -312,11 +288,11 @@ const app = new Hono()
     }
   })
   .get("/:workspaceId", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
     const user = c.get("user");
     const { workspaceId } = c.req.param();
 
-    const member = await getMember({ databases, workspaceId, userId: user.$id });
+    const member = await getMember({ db, workspaceId, userId: user.$id });
 
     if (!member) {
       return c.json({ error: "Unauthorized" }, 401);
@@ -328,22 +304,17 @@ const app = new Hono()
       return c.json({ data: { canManage, configured: false, broken: false, connection: null } });
     }
 
-    const workspace = await databases.getDocument<Workspace>(
-      DATABASE_ID,
-      WORKSPACES_ID,
-      workspaceId,
-    );
+    const workspace = await db.workspaces.get(workspaceId);
 
     if (!workspace.githubInstallationId) {
       return c.json({ data: { canManage, configured: true, broken: false, connection: null } });
     }
 
     try {
-      const { users } = await createAdminClient();
       const [installation, repositories, viewer] = await Promise.all([
         getGithubInstallation(workspace.githubInstallationId),
         listGithubRepositories(workspace.githubInstallationId),
-        resolveGithubAccount(users, user.$id, workspace.githubInstallationId).catch(() => null),
+        resolveGithubAccount(user.$id, workspace.githubInstallationId).catch(() => null),
       ]);
 
       return c.json({

@@ -1,8 +1,8 @@
 import "server-only";
 
 import { unstable_cache, revalidateTag } from "next/cache";
-import { Query, type Users } from "node-appwrite";
 
+import { getAuth } from "@/lib/auth";
 import { getGithubLoginById } from "@/lib/github";
 
 const LOGIN_TTL = 10 * 60;
@@ -13,20 +13,16 @@ const loginTag = (userId: string) => `github-login:${userId}`;
 
 export const forgetGithubLogin = (userId: string) => revalidateTag(loginTag(userId), { expire: 0 });
 
-export const resolveGithubAccount = (users: Users, userId: string, installationId?: string) =>
+export const resolveGithubAccount = (userId: string, installationId?: string) =>
   unstable_cache(
     async (): Promise<{ login: string; linked: boolean } | null> => {
-      const user = await users.get(userId);
+      const user = await getAuth().admin.getUser(userId);
       const { githubLogin } = user.prefs as GithubAccountPrefs;
       if (githubLogin) return { login: githubLogin, linked: true };
 
       if (!installationId) return null;
 
-      const { identities } = await users.listIdentities([
-        Query.equal("userId", userId),
-        Query.equal("provider", "github"),
-        Query.limit(1),
-      ]);
+      const identities = await getAuth().admin.listIdentities(userId, "github");
       if (identities.length === 0) return null;
 
       return {

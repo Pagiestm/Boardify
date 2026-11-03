@@ -1,11 +1,11 @@
-import { Models } from "node-appwrite";
+import type { BaseDocument } from "@/lib/db/types";
 
-export type Project = Models.Document & {
+export type Project = BaseDocument & {
   name: string;
   imageUrl: string;
   workspaceId: string;
   columnConfig?: string;
-  githubRepo?: string;
+  githubRepo?: string | null;
 };
 
 export const COLUMN_COLORS = ["teal", "blue", "amber", "violet", "green", "rose", "zinc"] as const;

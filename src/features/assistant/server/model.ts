@@ -6,15 +6,15 @@ import { createGoogle } from "@ai-sdk/google";
 import { createMistral } from "@ai-sdk/mistral";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { Query, type Models } from "node-appwrite";
 
+import { createDb } from "@/lib/db";
+import type { BaseDocument } from "@/lib/db/types";
 import { createAdminClient } from "@/lib/appwrite";
-import { AI_SETTINGS_ID, DATABASE_ID } from "@/config";
 
 import { AiProvider } from "../types";
 import { decryptSecret } from "./crypto";
 
-export type AiSettings = Models.Document & {
+export type AiSettings = BaseDocument & {
   workspaceId: string;
   provider: AiProvider;
   model: string;
@@ -26,12 +26,10 @@ export type AiSettings = Models.Document & {
 };
 
 export const getAiSettings = async (workspaceId: string) => {
-  if (!AI_SETTINGS_ID) return null;
   const { databases } = await createAdminClient();
-  const { documents } = await databases.listDocuments<AiSettings>(DATABASE_ID, AI_SETTINGS_ID, [
-    Query.equal("workspaceId", workspaceId),
-    Query.limit(1),
-  ]);
+  const db = createDb(databases);
+  if (!db.aiSettings.enabled) return null;
+  const { documents } = await db.aiSettings.list({ where: { workspaceId }, limit: 1 });
   return documents[0] ?? null;
 };
 
@@ -40,7 +38,7 @@ export const deleteWorkspaceAssistant = async (workspaceId: string) => {
   const settings = await getAiSettings(workspaceId);
   if (!settings) return;
   const { databases } = await createAdminClient();
-  await databases.deleteDocument(DATABASE_ID, AI_SETTINGS_ID, settings.$id);
+  await createDb(databases).aiSettings.delete(settings.$id);
 };
 
 export const createModel = (config: {

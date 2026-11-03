@@ -1,30 +1,19 @@
 import { z } from "zod";
 import { Hono } from "hono";
 import { generateText, Output, streamText } from "ai";
-import { ID, Query, type Databases } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { getMember } from "@/features/members/utils";
 import { MemberRole } from "@/features/members/types";
-import { Label } from "@/features/labels/types";
-import { Project } from "@/features/projects/types";
 import { parseBoardColumns } from "@/features/projects/utils";
-import { Task, TaskPriority, TaskStatus } from "@/features/tasks/types";
+import { TaskPriority, TaskStatus } from "@/features/tasks/types";
 import { isDoneStatus, getOpenStatus } from "@/features/tasks/server/done";
 import { createTask } from "@/features/tasks/server/mutations";
 import { listChecklistItems } from "@/features/checklist/server/items";
-import { Sprint } from "@/features/sprints/types";
 
+import { createDb, type Db } from "@/lib/db";
 import { createAdminClient } from "@/lib/appwrite";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import {
-  AI_SETTINGS_ID,
-  DATABASE_ID,
-  LABELS_ID,
-  PROJECTS_ID,
-  SPRINTS_ID,
-  TASKS_ID,
-} from "@/config";
 
 import {
   AiProvider,
@@ -79,19 +68,17 @@ const toStatus = (settings: AiSettings | null, canManage: boolean): AssistantSta
 });
 
 /** Tâche et projet accessibles au membre connecté. */
-const getTaskContext = async (databases: Databases, taskId: string, userId: string) => {
-  const task = await databases.getDocument<Task>(DATABASE_ID, TASKS_ID, taskId);
-  const member = await getMember({ databases, workspaceId: task.workspaceId, userId });
+const getTaskContext = async (db: Db, taskId: string, userId: string) => {
+  const task = await db.tasks.get(taskId);
+  const member = await getMember({ db, workspaceId: task.workspaceId, userId });
   if (!member) return null;
 
   const [project, labels, checklist] = await Promise.all([
-    databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, task.projectId),
+    db.projects.get(task.projectId),
     task.labelIds?.length
-      ? databases
-          .listDocuments<Label>(DATABASE_ID, LABELS_ID, [Query.equal("$id", task.labelIds)])
-          .then(({ documents }) => documents)
-      : Promise.resolve([] as Label[]),
-    listChecklistItems(databases, [task.$id]),
+      ? db.labels.list({ where: { $id: task.labelIds } }).then(({ documents }) => documents)
+      : Promise.resolve([]),
+    listChecklistItems(db, [task.$id]),
   ]);
   const column = parseBoardColumns(project.columnConfig).find((item) => item.id === task.status);
 
@@ -121,7 +108,7 @@ const app = new Hono()
     async (c) => {
       const { workspaceId } = c.req.valid("query");
       const member = await getMember({
-        databases: c.get("databases"),
+        db: c.get("db"),
         workspaceId,
         userId: c.get("user").$id,
       });
@@ -134,7 +121,7 @@ const app = new Hono()
   .put("/", sessionMiddleware, zValidator("json", assistantSettingsSchema), async (c) => {
     const values = c.req.valid("json");
     const member = await getMember({
-      databases: c.get("databases"),
+      db: c.get("db"),
       workspaceId: values.workspaceId,
       userId: c.get("user").$id,
     });
@@ -160,12 +147,10 @@ const app = new Hono()
       : null;
 
     const { databases } = await createAdminClient();
+    const { aiSettings } = createDb(databases);
     const settings = existing
-      ? await databases.updateDocument<AiSettings>(DATABASE_ID, AI_SETTINGS_ID, existing.$id, {
-          ...data,
-          ...key,
-        })
-      : await databases.createDocument<AiSettings>(DATABASE_ID, AI_SETTINGS_ID, ID.unique(), {
+      ? await aiSettings.update(existing.$id, { ...data, ...key })
+      : await aiSettings.create({
           ...data,
           apiKeyEncrypted: key!.apiKeyEncrypted,
           apiKeyHint: key!.apiKeyHint,
@@ -180,7 +165,7 @@ const app = new Hono()
     async (c) => {
       const { workspaceId } = c.req.valid("query");
       const member = await getMember({
-        databases: c.get("databases"),
+        db: c.get("db"),
         workspaceId,
         userId: c.get("user").$id,
       });
@@ -191,7 +176,7 @@ const app = new Hono()
       const existing = await getAiSettings(workspaceId);
       if (existing) {
         const { databases } = await createAdminClient();
-        await databases.deleteDocument(DATABASE_ID, AI_SETTINGS_ID, existing.$id);
+        await createDb(databases).aiSettings.delete(existing.$id);
       }
       return c.json({ data: toStatus(null, true) });
     },
@@ -199,7 +184,7 @@ const app = new Hono()
   .post("/models", sessionMiddleware, zValidator("json", modelsRequestSchema), async (c) => {
     const values = c.req.valid("json");
     const member = await getMember({
-      databases: c.get("databases"),
+      db: c.get("db"),
       workspaceId: values.workspaceId,
       userId: c.get("user").$id,
     });
@@ -227,7 +212,7 @@ const app = new Hono()
   .post("/test", sessionMiddleware, zValidator("json", assistantSettingsSchema), async (c) => {
     const values = c.req.valid("json");
     const member = await getMember({
-      databases: c.get("databases"),
+      db: c.get("db"),
       workspaceId: values.workspaceId,
       userId: c.get("user").$id,
     });
@@ -257,17 +242,15 @@ const app = new Hono()
     }
   })
   .post("/draft", sessionMiddleware, zValidator("json", taskDraftRequestSchema), async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
     const { workspaceId, projectId, name, description } = c.req.valid("json");
-    const member = await getMember({ databases, workspaceId, userId: c.get("user").$id });
+    const member = await getMember({ db, workspaceId, userId: c.get("user").$id });
     if (!member) return c.json({ error: "Unauthorized" }, 401);
 
     const model = await getWorkspaceModel(workspaceId);
     if (!model) return c.json(NOT_CONFIGURED, 400);
 
-    const project = projectId
-      ? await databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, projectId).catch(() => null)
-      : null;
+    const project = projectId ? await db.projects.get(projectId).catch(() => null) : null;
 
     try {
       const { output } = await generateText({
@@ -316,11 +299,7 @@ const app = new Hono()
     zValidator("json", z.object({ instructions: z.string().trim().max(500).optional() })),
     async (c) => {
       const { instructions } = c.req.valid("json");
-      const found = await getTaskContext(
-        c.get("databases"),
-        c.req.param("taskId"),
-        c.get("user").$id,
-      );
+      const found = await getTaskContext(c.get("db"), c.req.param("taskId"), c.get("user").$id);
       if (!found) return c.json({ error: "Unauthorized" }, 401);
 
       const model = await getWorkspaceModel(found.task.workspaceId);
@@ -342,11 +321,7 @@ ${found.task.description?.trim() ? "Améliore et complète la description actuel
     },
   )
   .post("/tasks/:taskId/subtasks", sessionMiddleware, async (c) => {
-    const found = await getTaskContext(
-      c.get("databases"),
-      c.req.param("taskId"),
-      c.get("user").$id,
-    );
+    const found = await getTaskContext(c.get("db"), c.req.param("taskId"), c.get("user").$id);
     if (!found) return c.json({ error: "Unauthorized" }, 401);
 
     const model = await getWorkspaceModel(found.task.workspaceId);
@@ -392,15 +367,11 @@ Découpe cette tâche en sous-tâches concrètes, sans reprendre les sous-tâche
     sessionMiddleware,
     zValidator("json", z.object({ text: z.string().trim().min(10).max(MAX_SOURCE_TEXT) })),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { text } = c.req.valid("json");
-      const project = await databases.getDocument<Project>(
-        DATABASE_ID,
-        PROJECTS_ID,
-        c.req.param("projectId"),
-      );
+      const project = await db.projects.get(c.req.param("projectId"));
       const member = await getMember({
-        databases,
+        db,
         workspaceId: project.workspaceId,
         userId: c.get("user").$id,
       });
@@ -409,7 +380,7 @@ Découpe cette tâche en sous-tâches concrètes, sans reprendre les sous-tâche
       const model = await getWorkspaceModel(project.workspaceId);
       if (!model) return c.json(NOT_CONFIGURED, 400);
 
-      const names = await getMemberNames(databases, project.workspaceId);
+      const names = await getMemberNames(db, project.workspaceId);
       const idByName = new Map([...names].map(([id, name]) => [name.toLowerCase(), id]));
 
       try {
@@ -471,15 +442,11 @@ ${text}
       }),
     ),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { tasks } = c.req.valid("json");
-      const project = await databases.getDocument<Project>(
-        DATABASE_ID,
-        PROJECTS_ID,
-        c.req.param("projectId"),
-      );
+      const project = await db.projects.get(c.req.param("projectId"));
       const member = await getMember({
-        databases,
+        db,
         workspaceId: project.workspaceId,
         userId: c.get("user").$id,
       });
@@ -495,7 +462,7 @@ ${text}
 
       for (const task of tasks) {
         const result = await createTask(
-          databases,
+          db,
           member.$id,
           {
             name: task.name,
@@ -529,15 +496,11 @@ ${text}
       }),
     ),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { sprintId, mode, days } = c.req.valid("json");
-      const project = await databases.getDocument<Project>(
-        DATABASE_ID,
-        PROJECTS_ID,
-        c.req.param("projectId"),
-      );
+      const project = await db.projects.get(c.req.param("projectId"));
       const member = await getMember({
-        databases,
+        db,
         workspaceId: project.workspaceId,
         userId: c.get("user").$id,
       });
@@ -547,18 +510,15 @@ ${text}
       if (!model) return c.json(NOT_CONFIGURED, 400);
 
       const sprint =
-        sprintId && SPRINTS_ID
-          ? await databases.getDocument<Sprint>(DATABASE_ID, SPRINTS_ID, sprintId).catch(() => null)
-          : null;
+        sprintId && db.sprints.enabled ? await db.sprints.get(sprintId).catch(() => null) : null;
 
       const [{ documents: tasks }, names] = await Promise.all([
-        databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-          Query.equal("projectId", project.$id),
-          ...(sprint ? [Query.equal("sprintId", sprint.$id)] : []),
-          Query.orderDesc("$updatedAt"),
-          Query.limit(MAX_SUMMARY_TASKS),
-        ]),
-        getMemberNames(databases, project.workspaceId),
+        db.tasks.list({
+          where: { projectId: project.$id, ...(sprint ? { sprintId: sprint.$id } : {}) },
+          orderBy: { $updatedAt: "desc" },
+          limit: MAX_SUMMARY_TASKS,
+        }),
+        getMemberNames(db, project.workspaceId),
       ]);
       const now = today();
       const since = formatDay(new Date(Date.now() - days * 864e5).toISOString());

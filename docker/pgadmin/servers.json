@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Boardify (local)",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "boardify",
+      "Username": "boardify",
+      "PassFile": "/var/lib/pgadmin/pgpass",
+      "SSLMode": "prefer"
+    }
+  }
+}

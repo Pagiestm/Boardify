@@ -1,8 +1,8 @@
 import "server-only";
 
 import { revalidateTag, unstable_cache } from "next/cache";
-import { type Users } from "node-appwrite";
 
+import { getAuth } from "./auth";
 import { avatarUrl } from "./avatar";
 
 const IDENTITY_TTL = 10 * 60;
@@ -17,24 +17,24 @@ export interface UserIdentity {
 export const forgetUserIdentity = (userId: string) =>
   revalidateTag(`user-identity:${userId}`, { expire: 0 });
 
-export const getUserIdentity = (users: Users, userId: string) =>
+export const getUserIdentity = (userId: string) =>
   unstable_cache(
     async (): Promise<UserIdentity> => {
-      const user = await users.get(userId);
+      const user = await getAuth().admin.getUser(userId);
 
       return {
         name: user.name || user.email,
         email: user.email,
-        avatarUrl: avatarUrl(userId, user.prefs?.avatarId),
+        avatarUrl: avatarUrl(userId, user.prefs.avatarId),
       };
     },
     ["user-identity", userId],
     { revalidate: IDENTITY_TTL, tags: [`user-identity:${userId}`] },
   )();
 
-export const getUserIdentities = async (users: Users, userIds: string[]) => {
+export const getUserIdentities = async (userIds: string[]) => {
   const unique = [...new Set(userIds)];
-  const identities = await Promise.all(unique.map((userId) => getUserIdentity(users, userId)));
+  const identities = await Promise.all(unique.map((userId) => getUserIdentity(userId)));
 
   return new Map(unique.map((userId, index) => [userId, identities[index]]));
 };

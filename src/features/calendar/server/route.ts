@@ -1,22 +1,21 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { Query, type Databases } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 
-import { Task } from "@/features/tasks/types";
 import { Member } from "@/features/members/types";
-import { Project } from "@/features/projects/types";
 import { getMember } from "@/features/members/utils";
-import { Workspace } from "@/features/workspaces/types";
 
+import { createDb, type Collection, type Db } from "@/lib/db";
 import { createAdminClient } from "@/lib/appwrite";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID, WORKSPACES_ID } from "@/config";
 
 import { buildCalendar } from "./ics";
 
 type CalendarMember = Member & { calendarToken?: string | null };
+
+/** Membres vus avec leur jeton de calendrier. */
+const calendarMembers = (db: Db) => db.members as unknown as Collection<CalendarMember>;
 
 const appUrl = () => process.env.NEXT_PUBLIC_APP_URL!;
 
@@ -30,9 +29,9 @@ const feedUrl = (member: CalendarMember) =>
     ? `${appUrl()}/api/calendar/feed/${member.$id}/${sign(member.$id, member.calendarToken)}.ics`
     : null;
 
-const getCurrentMember = async (databases: Databases, workspaceId: string, userId: string) => {
-  const member = await getMember({ databases, workspaceId, userId });
-  return member ? databases.getDocument<CalendarMember>(DATABASE_ID, MEMBERS_ID, member.$id) : null;
+const getCurrentMember = async (db: Db, workspaceId: string, userId: string) => {
+  const member = await getMember({ db, workspaceId, userId });
+  return member ? calendarMembers(db).get(member.$id) : null;
 };
 
 const workspaceQuery = z.object({ workspaceId: z.string().min(1) });
@@ -42,9 +41,10 @@ const app = new Hono()
     const { memberId, file } = c.req.param();
     const signature = file.replace(/\.ics$/, "");
     const { databases } = await createAdminClient();
+    const db = createDb(databases);
 
-    const member = await databases
-      .getDocument<CalendarMember>(DATABASE_ID, MEMBERS_ID, memberId)
+    const member = await calendarMembers(db)
+      .get(memberId)
       .catch(() => null);
 
     const expected = member?.calendarToken ? sign(member.$id, member.calendarToken) : null;
@@ -58,16 +58,12 @@ const app = new Hono()
     }
 
     const [workspace, { documents: tasks }, { documents: projects }] = await Promise.all([
-      databases.getDocument<Workspace>(DATABASE_ID, WORKSPACES_ID, member.workspaceId),
-      databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-        Query.equal("workspaceId", member.workspaceId),
-        Query.equal("assigneeId", member.$id),
-        Query.limit(5000),
-      ]),
-      databases.listDocuments<Project>(DATABASE_ID, PROJECTS_ID, [
-        Query.equal("workspaceId", member.workspaceId),
-        Query.limit(5000),
-      ]),
+      db.workspaces.get(member.workspaceId),
+      db.tasks.list({
+        where: { workspaceId: member.workspaceId, assigneeId: member.$id },
+        limit: 5000,
+      }),
+      db.projects.list({ where: { workspaceId: member.workspaceId }, limit: 5000 }),
     ]);
 
     const body = buildCalendar({
@@ -84,10 +80,10 @@ const app = new Hono()
     });
   })
   .get("/subscription", sessionMiddleware, zValidator("query", workspaceQuery), async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
     const { workspaceId } = c.req.valid("query");
 
-    const member = await getCurrentMember(databases, workspaceId, c.get("user").$id);
+    const member = await getCurrentMember(db, workspaceId, c.get("user").$id);
     if (!member) {
       return c.json({ error: "Unauthorized" }, 401);
     }
@@ -95,33 +91,30 @@ const app = new Hono()
     return c.json({ data: { url: feedUrl(member) } });
   })
   .post("/subscription", sessionMiddleware, zValidator("json", workspaceQuery), async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
     const { workspaceId } = c.req.valid("json");
 
-    const member = await getCurrentMember(databases, workspaceId, c.get("user").$id);
+    const member = await getCurrentMember(db, workspaceId, c.get("user").$id);
     if (!member) {
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const updated = await databases.updateDocument<CalendarMember>(
-      DATABASE_ID,
-      MEMBERS_ID,
-      member.$id,
-      { calendarToken: randomBytes(16).toString("hex") },
-    );
+    const updated = await calendarMembers(db).update(member.$id, {
+      calendarToken: randomBytes(16).toString("hex"),
+    });
 
     return c.json({ data: { url: feedUrl(updated) } });
   })
   .delete("/subscription", sessionMiddleware, zValidator("query", workspaceQuery), async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
     const { workspaceId } = c.req.valid("query");
 
-    const member = await getCurrentMember(databases, workspaceId, c.get("user").$id);
+    const member = await getCurrentMember(db, workspaceId, c.get("user").$id);
     if (!member) {
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    await databases.updateDocument(DATABASE_ID, MEMBERS_ID, member.$id, { calendarToken: null });
+    await calendarMembers(db).update(member.$id, { calendarToken: null });
 
     return c.json({ data: { url: null } });
   });

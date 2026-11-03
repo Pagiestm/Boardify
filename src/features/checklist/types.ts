@@ -1,6 +1,6 @@
-import { Models } from "node-appwrite";
+import type { BaseDocument } from "@/lib/db/types";
 
-export type ChecklistItem = Models.Document & {
+export type ChecklistItem = BaseDocument & {
   workspaceId: string;
   taskId: string;
   title: string;

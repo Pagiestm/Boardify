@@ -1,6 +1,6 @@
-import { Models } from "node-appwrite";
+import type { BaseDocument } from "@/lib/db/types";
 
-export type Label = Models.Document & {
+export type Label = BaseDocument & {
   name: string;
   color: LabelColor;
   workspaceId: string;

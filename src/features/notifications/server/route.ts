@@ -1,38 +1,26 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
-import { Task } from "@/features/tasks/types";
-import { Member } from "@/features/members/types";
-
-import { createAdminClient } from "@/lib/appwrite";
 import { getUserIdentities } from "@/lib/users";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, MEMBERS_ID, NOTIFICATIONS_ID, TASKS_ID } from "@/config";
 
 import { GITHUB_AUTHOR_PREFIX } from "@/features/comments/types";
-
-import { Notification } from "../types";
 
 const NOTIFICATIONS_LIMIT = 30;
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
     const user = c.get("user");
 
-    const [notifications, unread] = await Promise.all([
-      databases.listDocuments<Notification>(DATABASE_ID, NOTIFICATIONS_ID, [
-        Query.equal("userId", user.$id),
-        Query.orderDesc("$createdAt"),
-        Query.limit(NOTIFICATIONS_LIMIT),
-      ]),
-      databases.listDocuments<Notification>(DATABASE_ID, NOTIFICATIONS_ID, [
-        Query.equal("userId", user.$id),
-        Query.equal("read", false),
-        Query.limit(1),
-      ]),
+    const [notifications, unreadCount] = await Promise.all([
+      db.notifications.list({
+        where: { userId: user.$id },
+        orderBy: { $createdAt: "desc" },
+        limit: NOTIFICATIONS_LIMIT,
+      }),
+      db.notifications.count({ userId: user.$id, read: false }),
     ]);
 
     const taskIds = [...new Set(notifications.documents.map((item) => item.taskId))];
@@ -46,22 +34,14 @@ const app = new Hono()
 
     const [tasks, actors] = await Promise.all([
       taskIds.length > 0
-        ? databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-            Query.equal("$id", taskIds),
-            Query.limit(NOTIFICATIONS_LIMIT),
-          ])
+        ? db.tasks.list({ where: { $id: taskIds }, limit: NOTIFICATIONS_LIMIT })
         : null,
       actorIds.length > 0
-        ? databases.listDocuments<Member>(DATABASE_ID, MEMBERS_ID, [
-            Query.equal("$id", actorIds),
-            Query.limit(NOTIFICATIONS_LIMIT),
-          ])
+        ? db.members.list({ where: { $id: actorIds }, limit: NOTIFICATIONS_LIMIT })
         : null,
     ]);
 
-    const { users } = await createAdminClient();
     const identities = await getUserIdentities(
-      users,
       (actors?.documents ?? []).map((actor) => actor.userId),
     );
     const taskNames = new Map((tasks?.documents ?? []).map((task) => [task.$id, task.name]));
@@ -71,7 +51,7 @@ const app = new Hono()
 
     return c.json({
       data: {
-        unreadCount: unread.total,
+        unreadCount,
         notifications: notifications.documents
           .filter((item) => taskNames.has(item.taskId))
           .map((item) => ({
@@ -94,21 +74,17 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("json", z.object({ ids: z.array(z.string()).max(100).optional() })),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const user = c.get("user");
       const { ids } = c.req.valid("json");
 
-      const unread = await databases.listDocuments<Notification>(DATABASE_ID, NOTIFICATIONS_ID, [
-        Query.equal("userId", user.$id),
-        Query.equal("read", false),
-        ...(ids ? [Query.equal("$id", ids)] : []),
-        Query.limit(100),
-      ]);
+      const unread = await db.notifications.list({
+        where: { userId: user.$id, read: false, ...(ids ? { $id: ids } : {}) },
+        limit: 100,
+      });
 
       await Promise.all(
-        unread.documents.map((item) =>
-          databases.updateDocument(DATABASE_ID, NOTIFICATIONS_ID, item.$id, { read: true }),
-        ),
+        unread.documents.map((item) => db.notifications.update(item.$id, { read: true })),
       );
 
       return c.json({ data: { updated: unread.documents.length } });

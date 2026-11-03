@@ -1,33 +1,24 @@
 import "server-only";
 
-import { Query, type Databases } from "node-appwrite";
+import type { BaseDocument } from "@/lib/db/types";
+import type { Collection, Db, Where } from "@/lib/db";
 
 import { Task } from "@/features/tasks/types";
 import { Project } from "@/features/projects/types";
 import { isTaskDone } from "@/features/tasks/utils";
 import { parseBoardColumns } from "@/features/projects/utils";
 
-import { DATABASE_ID, NOTIFICATIONS_ID, PROJECTS_ID, TASKS_ID } from "@/config";
-
 import { NotificationType } from "../types";
 import { notifyMembers } from "./notify";
 
 const HOUR = 60 * 60 * 1000;
 
-const listAll = async <T extends Task | Project>(
-  databases: Databases,
-  collectionId: string,
-  queries: string[],
-) => {
+const listAll = async <T extends BaseDocument>(collection: Collection<T>, where: Where<T>) => {
   const documents: T[] = [];
   let cursor: string | undefined;
 
   do {
-    const page = await databases.listDocuments<T>(DATABASE_ID, collectionId, [
-      ...queries,
-      Query.limit(100),
-      ...(cursor ? [Query.cursorAfter(cursor)] : []),
-    ]);
+    const page = await collection.list({ where, limit: 100, cursorAfter: cursor });
     documents.push(...page.documents);
     cursor = page.documents.length === 100 ? page.documents[99].$id : undefined;
   } while (cursor);
@@ -35,32 +26,34 @@ const listAll = async <T extends Task | Project>(
   return documents;
 };
 
-export const notifyTasksDueSoon = async (databases: Databases, now = new Date()) => {
-  const tasks = await listAll<Task>(databases, TASKS_ID, [
-    Query.greaterThanEqual("dueDate", new Date(now.getTime() + 12 * HOUR).toISOString()),
-    Query.lessThan("dueDate", new Date(now.getTime() + 36 * HOUR).toISOString()),
-  ]);
+export const notifyTasksDueSoon = async (db: Db, now = new Date()) => {
+  const tasks: Task[] = await listAll(db.tasks, {
+    dueDate: {
+      gte: new Date(now.getTime() + 12 * HOUR).toISOString(),
+      lt: new Date(now.getTime() + 36 * HOUR).toISOString(),
+    },
+  });
   if (tasks.length === 0) return 0;
 
   const projectIds = [...new Set(tasks.map((task) => task.projectId))];
   const projects = new Map(
-    (await listAll<Project>(databases, PROJECTS_ID, [Query.equal("$id", projectIds)])).map(
-      (project) => [project.$id, project],
-    ),
+    (await listAll<Project>(db.projects, { $id: projectIds })).map((project) => [
+      project.$id,
+      project,
+    ]),
   );
 
   const alreadyNotified = new Set(
     (
-      await databases.listDocuments(DATABASE_ID, NOTIFICATIONS_ID, [
-        Query.equal("type", NotificationType.DUE_SOON),
-        Query.equal(
-          "taskId",
-          tasks.map((task) => task.$id),
-        ),
-        Query.greaterThan("$createdAt", new Date(now.getTime() - 20 * HOUR).toISOString()),
-        Query.limit(500),
-      ])
-    ).documents.map((notification) => notification.taskId as string),
+      await db.notifications.list({
+        where: {
+          type: NotificationType.DUE_SOON,
+          taskId: tasks.map((task) => task.$id),
+          $createdAt: { gt: new Date(now.getTime() - 20 * HOUR).toISOString() },
+        },
+        limit: 500,
+      })
+    ).documents.map((notification) => notification.taskId),
   );
 
   const dueTasks = tasks.filter((task) => {
@@ -72,7 +65,7 @@ export const notifyTasksDueSoon = async (databases: Databases, now = new Date())
 
   await Promise.all(
     dueTasks.map((task) =>
-      notifyMembers(databases, {
+      notifyMembers(db, {
         workspaceId: task.workspaceId,
         taskId: task.$id,
         type: NotificationType.DUE_SOON,

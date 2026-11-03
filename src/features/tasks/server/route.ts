@@ -1,18 +1,15 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { getMember } from "@/features/members/utils";
 import { Label } from "@/features/labels/types";
 import { parseBoardColumns } from "@/features/projects/utils";
-import { Member } from "@/features/members/types";
-import { Project } from "@/features/projects/types";
 
-import { createAdminClient } from "@/lib/appwrite";
 import { getUserIdentities, getUserIdentity } from "@/lib/users";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, LABELS_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID } from "@/config";
+
+import type { Where } from "@/lib/db";
 
 import { Task, TaskPriority } from "../types";
 import { createtaskSchema } from "../schemas";
@@ -29,13 +26,13 @@ import { createTask, deleteTask, updateTask } from "./mutations";
 const app = new Hono()
   .delete("/:taskId", sessionMiddleware, async (c) => {
     const user = c.get("user");
-    const databases = c.get("databases");
+    const db = c.get("db");
     const { taskId } = c.req.param();
 
-    const task = await databases.getDocument<Task>(DATABASE_ID, TASKS_ID, taskId);
+    const task = await db.tasks.get(taskId);
 
     const member = await getMember({
-      databases,
+      db,
       workspaceId: task.workspaceId,
       userId: user.$id,
     });
@@ -44,7 +41,7 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    await deleteTask(databases, c.get("storage"), task);
+    await deleteTask(db, c.get("files"), task);
 
     return c.json({ data: { $id: task.$id } });
   })
@@ -66,8 +63,7 @@ const app = new Hono()
       }),
     ),
     async (c) => {
-      const { users } = await createAdminClient();
-      const databases = c.get("databases");
+      const db = c.get("db");
       const user = c.get("user");
 
       const {
@@ -83,7 +79,7 @@ const app = new Hono()
       } = c.req.valid("query");
 
       const member = await getMember({
-        databases,
+        db,
         workspaceId,
         userId: user.$id,
       });
@@ -92,78 +88,63 @@ const app = new Hono()
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const query = [Query.equal("workspaceId", workspaceId)];
+      const where: Where<Task> = { workspaceId };
 
       if (projectId) {
-        query.push(Query.equal("projectId", projectId));
+        where.projectId = projectId;
       }
 
       if (status) {
-        query.push(Query.equal("status", status));
+        where.status = status;
       }
 
       if (assigneeId) {
-        query.push(Query.equal("assigneeId", assigneeId));
+        where.assigneeId = assigneeId;
       }
 
       if (dueDate) {
-        query.push(Query.equal("dueDate", dueDate));
+        where.dueDate = dueDate;
       }
 
       if (priority) {
-        query.push(Query.equal("priority", priority));
+        where.priority = priority;
       }
 
       if (labelId) {
-        query.push(Query.contains("labelIds", labelId));
+        where.labelIds = { has: labelId };
       }
 
       if (search) {
-        query.push(Query.contains("name", search));
+        where.name = { search };
       }
 
       if (sprintId) {
-        query.push(
-          sprintId === NO_SPRINT ? Query.isNull("sprintId") : Query.equal("sprintId", sprintId),
-        );
+        where.sprintId = sprintId === NO_SPRINT ? null : sprintId;
       }
 
-      const tasks = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-        ...query,
-        Query.limit(5000),
-      ]);
+      const tasks = await db.tasks.list({ where, limit: 5000 });
 
       const projectIds = tasks.documents.map((task) => task.projectId);
       const assigneeIds = tasks.documents.map((task) => task.assigneeId);
 
       const [projects, members, workspaceLabels, checklistItems, blockerStates] = await Promise.all(
         [
-          databases.listDocuments<Project>(
-            DATABASE_ID,
-            PROJECTS_ID,
-            projectIds.length > 0 ? [Query.contains("$id", projectIds)] : [],
-          ),
-          databases.listDocuments<Member>(
-            DATABASE_ID,
-            MEMBERS_ID,
-            assigneeIds.length > 0 ? [Query.contains("$id", assigneeIds)] : [],
-          ),
-          databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
-            Query.equal("workspaceId", workspaceId),
-            Query.limit(100),
-          ]),
+          db.projects.list({
+            where: projectIds.length > 0 ? { $id: projectIds } : undefined,
+          }),
+          db.members.list({
+            where: assigneeIds.length > 0 ? { $id: assigneeIds } : undefined,
+          }),
+          db.labels.list({ where: { workspaceId }, limit: 100 }),
           listChecklistItems(
-            databases,
+            db,
             tasks.documents.map((task) => task.$id),
           ),
-          getBlockerStates(databases, tasks.documents),
+          getBlockerStates(db, tasks.documents),
         ],
       );
 
-      const identities = await getUserIdentities(
-        users,
-        members.documents.map((member) => member.userId),
-      );
+      const identities = await getUserIdentities(members.documents.map((member) => member.userId));
 
       const assignees = members.documents.map((member) => ({
         ...member,
@@ -210,11 +191,11 @@ const app = new Hono()
   )
   .post("/", sessionMiddleware, zValidator("json", createtaskSchema), async (c) => {
     const user = c.get("user");
-    const databases = c.get("databases");
+    const db = c.get("db");
     const input = c.req.valid("json");
 
     const member = await getMember({
-      databases,
+      db,
       workspaceId: input.workspaceId,
       userId: user.$id,
     });
@@ -223,7 +204,7 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const result = await createTask(databases, member.$id, input);
+    const result = await createTask(db, member.$id, input);
     if (result.error !== undefined) return c.json({ error: result.error }, 400);
 
     return c.json({ data: result.data });
@@ -234,14 +215,14 @@ const app = new Hono()
     zValidator("json", createtaskSchema.partial()),
     async (c) => {
       const user = c.get("user");
-      const databases = c.get("databases");
+      const db = c.get("db");
       const input = c.req.valid("json");
       const { taskId } = c.req.param();
 
-      const existingTask = await databases.getDocument<Task>(DATABASE_ID, TASKS_ID, taskId);
+      const existingTask = await db.tasks.get(taskId);
 
       const member = await getMember({
-        databases,
+        db,
         workspaceId: existingTask.workspaceId,
         userId: user.$id,
       });
@@ -250,7 +231,7 @@ const app = new Hono()
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const result = await updateTask(databases, member.$id, existingTask, input);
+      const result = await updateTask(db, member.$id, existingTask, input);
       if (result.error !== undefined) return c.json({ error: result.error }, 400);
 
       return c.json({ data: result.data });
@@ -258,14 +239,13 @@ const app = new Hono()
   )
   .get("/:taskId", sessionMiddleware, async (c) => {
     const currentUser = c.get("user");
-    const databases = c.get("databases");
-    const { users } = await createAdminClient();
+    const db = c.get("db");
     const { taskId } = c.req.param();
 
-    const task = await databases.getDocument<Task>(DATABASE_ID, TASKS_ID, taskId);
+    const task = await db.tasks.get(taskId);
 
     const currentMember = await getMember({
-      databases,
+      db,
       workspaceId: task.workspaceId,
       userId: currentUser.$id,
     });
@@ -277,29 +257,25 @@ const app = new Hono()
     const labelIds = task.labelIds ?? [];
 
     const [project, member, labels] = await Promise.all([
-      databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, task.projectId),
-      databases.getDocument<Member>(DATABASE_ID, MEMBERS_ID, task.assigneeId),
+      db.projects.get(task.projectId),
+      db.members.get(task.assigneeId),
       labelIds.length > 0
-        ? databases
-            .listDocuments<Label>(DATABASE_ID, LABELS_ID, [
-              Query.equal("$id", labelIds),
-              Query.limit(100),
-            ])
+        ? db.labels
+            .list({ where: { $id: labelIds }, limit: 100 })
             .then((response) => response.documents)
         : Promise.resolve([]),
     ]);
 
     const assignee = {
       ...member,
-      ...(await getUserIdentity(users, member.userId)),
+      ...(await getUserIdentity(member.userId)),
     };
 
-    const { documents: blockedTasks } = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-      Query.equal("workspaceId", task.workspaceId),
-      Query.contains("blockedBy", [task.$id]),
-      Query.limit(100),
-    ]);
-    const states = await getBlockerStates(databases, [task, ...blockedTasks]);
+    const { documents: blockedTasks } = await db.tasks.list({
+      where: { workspaceId: task.workspaceId, blockedBy: { has: [task.$id] } },
+      limit: 100,
+    });
+    const states = await getBlockerStates(db, [task, ...blockedTasks]);
 
     const statusColumn = parseBoardColumns(project.columnConfig).find(
       (column) => column.id === task.status,
@@ -335,16 +311,13 @@ const app = new Hono()
       }),
     ),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const user = c.get("user");
       const { tasks } = await c.req.valid("json");
 
-      const tasksToUpdate = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-        Query.contains(
-          "$id",
-          tasks.map((task) => task.$id),
-        ),
-      ]);
+      const tasksToUpdate = await db.tasks.list({
+        where: { $id: tasks.map((task) => task.$id) },
+      });
 
       const workspaceIds = new Set(tasksToUpdate.documents.map((task) => task.workspaceId));
       if (workspaceIds.size !== 1) {
@@ -354,7 +327,7 @@ const app = new Hono()
       const workspaceId = [...workspaceIds][0];
 
       const member = await getMember({
-        databases,
+        db,
         workspaceId,
         userId: user.$id,
       });
@@ -366,7 +339,7 @@ const app = new Hono()
       const updatedTasks = await Promise.all(
         tasks.map(async (task) => {
           const { $id, status, position } = task;
-          return databases.updateDocument<Task>(DATABASE_ID, TASKS_ID, $id, { status, position });
+          return db.tasks.update($id, { status, position });
         }),
       );
 
@@ -376,12 +349,12 @@ const app = new Hono()
         .filter(({ before, after }) => before && before.status !== after.status);
 
       await Promise.all([
-        syncTaskIssues(databases, workspaceId, statusChanges),
+        syncTaskIssues(db, workspaceId, statusChanges),
         ...statusChanges.map(({ before, after }) =>
-          logActivities(databases, after, member.$id, describeTaskChanges(before, after)),
+          logActivities(db, after, member.$id, describeTaskChanges(before, after)),
         ),
         ...statusChanges.map(({ before, after }) =>
-          createNextOccurrence(databases, before, after, member.$id),
+          createNextOccurrence(db, before, after, member.$id),
         ),
       ]);
 

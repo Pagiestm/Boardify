@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 import * as Sentry from "@sentry/nextjs";
-import { AppwriteException } from "node-appwrite";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 
 import auth from "@/features/auth/server/route";
 import members from "@/features/members/server/route";
@@ -25,17 +25,42 @@ import account from "@/features/account/server/route";
 import realtime from "@/features/realtime/server/route";
 import presence from "@/features/presence/server/route";
 
+import { isNotFound } from "@/lib/db";
+import { AUTH_PROVIDER, isAuthError, type AuthError } from "@/lib/auth";
+import { getBetterAuth } from "@/lib/auth/better-auth";
+
+/** Erreurs de connexion attendues (mauvais mot de passe…) : un statut HTTP, sans alerte Sentry. */
+const AUTH_STATUS: Record<AuthError["reason"], ContentfulStatusCode> = {
+  invalid_credentials: 401,
+  unauthorized: 401,
+  email_taken: 409,
+  invalid_value: 400,
+  password_recently_used: 400,
+  password_personal_data: 400,
+  invalid_token: 400,
+  missing_scope: 500,
+  unknown: 500,
+};
+
 const app = new Hono().basePath("/api");
 
 app.onError((error, c) => {
-  if (error instanceof AppwriteException && error.code === 404) {
+  if (isNotFound(error)) {
     return c.json({ error: "Not found" }, 404);
+  }
+  if (isAuthError(error) && AUTH_STATUS[error.reason] < 500) {
+    return c.json({ error: error.reason }, AUTH_STATUS[error.reason]);
   }
 
   console.error(error);
   Sentry.captureException(error);
   return c.json({ error: "Internal Server Error" }, 500);
 });
+
+// Retours de Google et GitHub, gérés par Better Auth quand il assure la connexion.
+app.on(["GET", "POST"], "/better-auth/*", (c) =>
+  AUTH_PROVIDER === "better-auth" ? getBetterAuth().handler(c.req.raw) : c.notFound(),
+);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routes = app

@@ -1,20 +1,19 @@
 import { Hono } from "hono";
 import { getCookie, deleteCookie } from "hono/cookie";
 import { zValidator } from "@hono/zod-validator";
-import { AppwriteException, ID, Models, Permission, Query, Role } from "node-appwrite";
 
 import { AUTH_COOKIE } from "@/features/auth/constants";
 import { Member, MemberRole } from "@/features/members/types";
 import { forgetMembers } from "@/features/members/utils";
 import { countAdmins, leaveBlocker } from "@/features/members/rules";
-import { Workspace } from "@/features/workspaces/types";
 import { deleteWorkspaceChildren } from "@/features/workspaces/server/cleanup";
 
+import { createDb } from "@/lib/db";
 import { createAdminClient } from "@/lib/appwrite";
+import { getAuth, isAuthError, type AuthUser } from "@/lib/auth";
 import { avatarUrl } from "@/lib/avatar";
 import { forgetUserIdentity } from "@/lib/users";
 import { forgetSession, sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, IMAGES_BUCKET_ID, MEMBERS_ID, WORKSPACES_ID } from "@/config";
 
 import {
   deleteAccountSchema,
@@ -26,25 +25,24 @@ import {
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
 
 /** Fichier de la photo de profil, gardé dans les préférences du compte. */
-const avatarIdOf = (user: Models.User<Models.Preferences>) => {
-  const value = (user.prefs as Record<string, unknown> | undefined)?.avatarId;
+const avatarIdOf = (user: Pick<AuthUser, "prefs">) => {
+  const value = user.prefs.avatarId;
   return typeof value === "string" && value ? value : null;
 };
 
-/** Message d'erreur Appwrite lisible, en français. */
+/** Message d'erreur de connexion lisible, en français. */
 const describeError = (error: unknown, fallback: string) => {
-  if (error instanceof AppwriteException) {
-    switch (error.type) {
-      case "user_invalid_credentials":
+  if (isAuthError(error)) {
+    switch (error.reason) {
+      case "invalid_credentials":
         return "Mot de passe actuel incorrect.";
-      case "user_email_already_exists":
-      case "user_target_already_exists":
+      case "email_taken":
         return "Cette adresse e-mail est déjà utilisée.";
-      case "user_password_recently_used":
+      case "password_recently_used":
         return "Choisissez un mot de passe que vous n'avez pas utilisé récemment.";
       case "password_personal_data":
         return "Le mot de passe ne doit pas contenir votre nom ou votre e-mail.";
-      case "general_argument_invalid":
+      case "invalid_value":
         return "Valeur invalide.";
     }
   }
@@ -54,23 +52,15 @@ const describeError = (error: unknown, fallback: string) => {
 /** Les espaces de l'utilisateur, avec son rôle et le nombre de membres et d'admins. */
 const getMemberships = async (userId: string) => {
   const { databases } = await createAdminClient();
-  const { documents: memberships } = await databases.listDocuments<Member>(
-    DATABASE_ID,
-    MEMBERS_ID,
-    [Query.equal("userId", userId), Query.limit(100)],
-  );
+  const db = createDb(databases);
+  const { documents: memberships } = await db.members.list({ where: { userId }, limit: 100 });
 
   const items = await Promise.all(
     memberships.map(async (membership) => {
       const [workspace, members] = await Promise.all([
         // Une adhésion peut pointer vers un espace déjà supprimé.
-        databases
-          .getDocument<Workspace>(DATABASE_ID, WORKSPACES_ID, membership.workspaceId)
-          .catch(() => null),
-        databases.listDocuments<Member>(DATABASE_ID, MEMBERS_ID, [
-          Query.equal("workspaceId", membership.workspaceId),
-          Query.limit(500),
-        ]),
+        db.workspaces.get(membership.workspaceId).catch(() => null),
+        db.members.list({ where: { workspaceId: membership.workspaceId }, limit: 500 }),
       ]);
       if (!workspace) return null;
       return {
@@ -101,8 +91,8 @@ const app = new Hono()
         name: user.name,
         email: user.email,
         avatarUrl: avatarUrl(user.$id, avatarIdOf(user)),
-        hasPassword: Boolean(user.passwordUpdate),
-        createdAt: user.registration,
+        hasPassword: user.hasPassword,
+        createdAt: user.createdAt,
       },
     });
   })
@@ -162,20 +152,18 @@ const app = new Hono()
     }
 
     // Enregistrée avec la session de l'utilisateur, lisible par tous les utilisateurs connectés.
-    const storage = c.get("storage");
-    const file = await storage.createFile(IMAGES_BUCKET_ID, ID.unique(), image, [
-      Permission.read(Role.users()),
-    ]);
+    const files = c.get("files");
+    const file = await files.upload(image, { readableByUsers: true });
     const previous = avatarIdOf(user);
 
-    await account.updatePrefs({ ...user.prefs, avatarId: file.$id });
+    await account.updatePrefs({ ...user.prefs, avatarId: file.id });
     if (previous) {
-      await storage.deleteFile(IMAGES_BUCKET_ID, previous).catch(() => undefined);
+      await files.delete(previous).catch(() => undefined);
     }
     forgetSession(getCookie(c, AUTH_COOKIE)!);
     forgetUserIdentity(user.$id);
 
-    return c.json({ data: { avatarUrl: avatarUrl(user.$id, file.$id) } });
+    return c.json({ data: { avatarUrl: avatarUrl(user.$id, file.id) } });
   })
   .delete("/avatar", sessionMiddleware, async (c) => {
     const account = c.get("account");
@@ -185,8 +173,8 @@ const app = new Hono()
     await account.updatePrefs({ ...user.prefs, avatarId: null });
     if (previous) {
       await c
-        .get("storage")
-        .deleteFile(IMAGES_BUCKET_ID, previous)
+        .get("files")
+        .delete(previous)
         .catch(() => undefined);
     }
     forgetSession(getCookie(c, AUTH_COOKIE)!);
@@ -196,38 +184,37 @@ const app = new Hono()
   })
   .get("/avatar/:userId", sessionMiddleware, async (c) => {
     const { userId } = c.req.param();
-    const { users } = await createAdminClient();
-    const storage = c.get("storage");
-
-    const prefs = await users.getPrefs(userId).catch(() => null);
-    const avatarId = prefs?.avatarId;
+    const owner = await getAuth()
+      .admin.getUser(userId)
+      .catch(() => null);
+    const avatarId = owner?.prefs.avatarId;
     if (typeof avatarId !== "string" || !avatarId) {
       return c.json({ error: "Not found" }, 404);
     }
 
     // La photo est déjà recadrée et réduite par le navigateur avant l'envoi.
-    const [file, image] = await Promise.all([
-      storage.getFile(IMAGES_BUCKET_ID, avatarId).catch(() => null),
-      storage.getFileView(IMAGES_BUCKET_ID, avatarId).catch(() => null),
-    ]);
+    const image = await c
+      .get("files")
+      .read(avatarId)
+      .catch(() => null);
     if (!image) return c.json({ error: "Not found" }, 404);
 
     // L'adresse change avec la photo : elle peut rester en cache longtemps.
-    return c.body(new Uint8Array(image), 200, {
-      "Content-Type": file?.mimeType || "image/webp",
+    return c.body(image.data, 200, {
+      "Content-Type": image.mimeType || "image/webp",
       "Cache-Control": "private, max-age=31536000, immutable",
     });
   })
   .get("/identities", sessionMiddleware, async (c) => {
     const account = c.get("account");
-    const { identities } = await account.listIdentities();
+    const identities = await account.listIdentities();
 
     return c.json({
       data: identities.map((identity) => ({
-        id: identity.$id,
+        id: identity.id,
         provider: identity.provider,
-        email: identity.providerEmail,
-        createdAt: identity.$createdAt,
+        email: identity.email,
+        createdAt: identity.createdAt,
       })),
     });
   })
@@ -235,10 +222,10 @@ const app = new Hono()
     const account = c.get("account");
     const user = c.get("user");
     const { identityId } = c.req.param();
-    const { identities } = await account.listIdentities();
+    const identities = await account.listIdentities();
 
     // Il doit rester une façon de se connecter.
-    if (!user.passwordUpdate && identities.length <= 1) {
+    if (!user.hasPassword && identities.length <= 1) {
       return c.json(
         { error: "Définissez d'abord un mot de passe pour garder un moyen de vous connecter." },
         400,
@@ -274,7 +261,7 @@ const app = new Hono()
     if (blocker) return c.json({ error: blocker }, 400);
 
     const { databases } = await createAdminClient();
-    await databases.deleteDocument(DATABASE_ID, MEMBERS_ID, item.membership.$id);
+    await createDb(databases).members.delete(item.membership.$id);
     forgetMembers(workspaceId);
 
     return c.json({ data: { id: workspaceId } });
@@ -303,37 +290,38 @@ const app = new Hono()
     }
 
     // Les espaces sont supprimés avec la session de l'utilisateur, comme depuis leurs paramètres.
-    const databases = c.get("databases");
-    const storage = c.get("storage");
-    const { users } = await createAdminClient();
+    const db = c.get("db");
+    const files = c.get("files");
     for (const item of memberships) {
       if (item.memberCount === 1) {
         // Espace où l'utilisateur est seul : supprimé avec le compte.
-        await deleteWorkspaceChildren(databases, storage, item.workspace.$id);
-        await databases.deleteDocument(DATABASE_ID, WORKSPACES_ID, item.workspace.$id);
+        await deleteWorkspaceChildren(db, files, item.workspace.$id);
+        await db.workspaces.delete(item.workspace.$id);
       } else {
-        await databases.deleteDocument(DATABASE_ID, MEMBERS_ID, item.membership.$id);
+        await db.members.delete(item.membership.$id);
         forgetMembers(item.workspace.$id);
       }
     }
 
     const avatarId = avatarIdOf(user);
     if (avatarId) {
-      await storage.deleteFile(IMAGES_BUCKET_ID, avatarId).catch(() => undefined);
+      await files.delete(avatarId).catch(() => undefined);
     }
 
-    // Sans le droit « users.write » sur la clé d'API, le compte est bloqué plutôt que supprimé :
-    // la personne ne peut plus se connecter et ses données ont déjà été retirées.
-    await users.delete(user.$id).catch(async (error) => {
-      if (error instanceof AppwriteException && error.type === "general_unauthorized_scope") {
-        console.warn(
-          "[account] clé d'API sans users.write : compte bloqué au lieu d'être supprimé",
-        );
-        await c.get("account").updateStatus();
-        return;
-      }
-      throw error;
-    });
+    // Sans le droit « users.write » sur la clé d'API Appwrite, le compte est bloqué plutôt que
+    // supprimé : la personne ne peut plus se connecter et ses données ont déjà été retirées.
+    await getAuth()
+      .admin.deleteUser(user.$id)
+      .catch(async (error) => {
+        if (isAuthError(error, "missing_scope")) {
+          console.warn(
+            "[account] clé d'API sans users.write : compte bloqué au lieu d'être supprimé",
+          );
+          await c.get("account").block();
+          return;
+        }
+        throw error;
+      });
 
     const session = getCookie(c, AUTH_COOKIE);
     deleteCookie(c, AUTH_COOKIE);

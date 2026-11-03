@@ -1,17 +1,12 @@
 import "server-only";
 
-import { ID, Query, type Databases } from "node-appwrite";
-
-import { Label } from "@/features/labels/types";
-import { Member } from "@/features/members/types";
 import { Project } from "@/features/projects/types";
 import { parseBoardColumns } from "@/features/projects/utils";
-import { Task, TaskPriority } from "@/features/tasks/types";
+import { TaskPriority } from "@/features/tasks/types";
 import { extractTaskDescription, PRIORITY_LABELS } from "@/features/tasks/server/github-sync";
 
-import { createAdminClient } from "@/lib/appwrite";
+import type { Db } from "@/lib/db";
 import { listGithubOpenIssues } from "@/lib/github";
-import { DATABASE_ID, LABELS_ID, MEMBERS_ID, TASKS_ID } from "@/config";
 
 import { resolveGithubAccount } from "./accounts";
 
@@ -23,12 +18,12 @@ const chunk = <T>(values: T[], size: number) =>
   );
 
 export const importGithubIssues = async ({
-  databases,
+  db,
   project,
   installationId,
   fallbackMemberId,
 }: {
-  databases: Databases;
+  db: Db;
   project: Project & { githubRepo: string };
   installationId: string;
   fallbackMemberId: string;
@@ -40,11 +35,10 @@ export const importGithubIssues = async ({
     issues.map((issue) => issue.url),
     100,
   )) {
-    const { documents } = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-      Query.equal("workspaceId", project.workspaceId),
-      Query.equal("githubIssueUrl", urls),
-      Query.limit(100),
-    ]);
+    const { documents } = await db.tasks.list({
+      where: { workspaceId: project.workspaceId, githubIssueUrl: urls },
+      limit: 100,
+    });
     documents.forEach((task) => task.githubIssueUrl && linkedUrls.add(task.githubIssueUrl));
   }
 
@@ -52,23 +46,13 @@ export const importGithubIssues = async ({
   if (toImport.length === 0) return { imported: 0, skipped: issues.length };
 
   const [{ documents: members }, { documents: labels }] = await Promise.all([
-    databases.listDocuments<Member>(DATABASE_ID, MEMBERS_ID, [
-      Query.equal("workspaceId", project.workspaceId),
-      Query.limit(100),
-    ]),
-    databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
-      Query.equal("workspaceId", project.workspaceId),
-      Query.limit(100),
-    ]),
+    db.members.list({ where: { workspaceId: project.workspaceId }, limit: 100 }),
+    db.labels.list({ where: { workspaceId: project.workspaceId }, limit: 100 }),
   ]);
-
-  const { users } = await createAdminClient();
   const memberByLogin = new Map<string, string>();
   await Promise.all(
     members.map(async (member) => {
-      const account = await resolveGithubAccount(users, member.userId, installationId).catch(
-        () => null,
-      );
+      const account = await resolveGithubAccount(member.userId, installationId).catch(() => null);
       if (account) memberByLogin.set(account.login.toLowerCase(), member.$id);
     }),
   );
@@ -84,12 +68,11 @@ export const importGithubIssues = async ({
   const columns = parseBoardColumns(project.columnConfig);
   const status = (columns.find((column) => !column.done && !column.hidden) ?? columns[0]).id;
 
-  const lowestPositionTask = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-    Query.equal("status", status),
-    Query.equal("workspaceId", project.workspaceId),
-    Query.orderAsc("position"),
-    Query.limit(1),
-  ]);
+  const lowestPositionTask = await db.tasks.list({
+    where: { status, workspaceId: project.workspaceId },
+    orderBy: { position: "asc" },
+    limit: 1,
+  });
   const basePosition = lowestPositionTask.documents[0]?.position ?? 0;
 
   const now = Date.now();
@@ -103,7 +86,7 @@ export const importGithubIssues = async ({
     const startDate = new Date(Math.min(now, dueDate.getTime()));
 
     try {
-      await databases.createDocument<Task>(DATABASE_ID, TASKS_ID, ID.unique(), {
+      await db.tasks.create({
         name: issue.title,
         description: extractTaskDescription(issue.body),
         status,

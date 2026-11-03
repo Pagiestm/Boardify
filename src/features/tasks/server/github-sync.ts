@@ -1,16 +1,12 @@
 import "server-only";
 
-import { Databases, Query } from "node-appwrite";
-
 import { Label, LabelColor } from "@/features/labels/types";
 import { Member } from "@/features/members/types";
 import { Project } from "@/features/projects/types";
-import { Workspace } from "@/features/workspaces/types";
 import { parseBoardColumns } from "@/features/projects/utils";
 import { resolveGithubAccount } from "@/features/github/server/accounts";
 
 import { getUserIdentity } from "@/lib/users";
-import { createAdminClient } from "@/lib/appwrite";
 import {
   createGithubIssue,
   editGithubIssueMetadata,
@@ -20,7 +16,7 @@ import {
   isGithubAssignable,
   updateGithubIssue,
 } from "@/lib/github";
-import { DATABASE_ID, LABELS_ID, MEMBERS_ID, PROJECTS_ID, TASKS_ID, WORKSPACES_ID } from "@/config";
+import type { Collection, Db, Where } from "@/lib/db";
 
 import { Task, TaskPriority } from "../types";
 import { isDoneStatus } from "./done";
@@ -47,7 +43,7 @@ const LABEL_HEX: Record<LabelColor, string> = {
 };
 
 interface IssueContext {
-  databases: Databases;
+  db: Db;
   installationId: string;
   projects: Map<string, Project>;
   assignees: Map<string, { name: string; githubLogin: string | null }>;
@@ -55,21 +51,15 @@ interface IssueContext {
 }
 
 const listByIds = async <T extends Label | Member | Project>(
-  databases: Databases,
-  collectionId: string,
+  collection: Collection<T>,
   ids: string[],
 ) =>
   ids.length > 0
-    ? (
-        await databases.listDocuments<T>(DATABASE_ID, collectionId, [
-          Query.equal("$id", ids),
-          Query.limit(100),
-        ])
-      ).documents
+    ? (await collection.list({ where: { $id: ids } as Where<T>, limit: 100 })).documents
     : [];
 
 const loadIssueContext = async (
-  databases: Databases,
+  db: Db,
   installationId: string,
   tasks: Task[],
 ): Promise<IssueContext> => {
@@ -78,17 +68,16 @@ const loadIssueContext = async (
   ];
 
   const [projects, members, labels] = await Promise.all([
-    listByIds<Project>(databases, PROJECTS_ID, unique(tasks.map((task) => task.projectId))),
-    listByIds<Member>(databases, MEMBERS_ID, unique(tasks.map((task) => task.assigneeId))),
-    listByIds<Label>(databases, LABELS_ID, unique(tasks.flatMap((task) => task.labelIds ?? []))),
+    listByIds(db.projects, unique(tasks.map((task) => task.projectId))),
+    listByIds(db.members, unique(tasks.map((task) => task.assigneeId))),
+    listByIds(db.labels, unique(tasks.flatMap((task) => task.labelIds ?? []))),
   ]);
 
-  const { users } = await createAdminClient();
   const assignees = await Promise.all(
     members.map(async (member) => {
       const [identity, account] = await Promise.all([
-        getUserIdentity(users, member.userId),
-        resolveGithubAccount(users, member.userId, installationId).catch((error) => {
+        getUserIdentity(member.userId),
+        resolveGithubAccount(member.userId, installationId).catch((error) => {
           console.error("Compte GitHub du membre introuvable", error);
           return null;
         }),
@@ -99,7 +88,7 @@ const loadIssueContext = async (
   );
 
   return {
-    databases,
+    db,
     installationId,
     projects: new Map(projects.map((project) => [project.$id, project])),
     assignees: new Map(assignees),
@@ -177,12 +166,12 @@ const buildIssueText = (task: Task, context: IssueContext, githubLogin: string |
   };
 };
 
-const getProjectDueDay = async (databases: Databases, projectId: string) => {
-  const { documents } = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-    Query.equal("projectId", projectId),
-    Query.orderDesc("dueDate"),
-    Query.limit(1),
-  ]);
+const getProjectDueDay = async (db: Db, projectId: string) => {
+  const { documents } = await db.tasks.list({
+    where: { projectId },
+    orderBy: { dueDate: "desc" },
+    limit: 1,
+  });
   const dueDate = documents[0]?.dueDate;
 
   return dueDate ? dayFormatter.format(new Date(dueDate)) : null;
@@ -190,7 +179,7 @@ const getProjectDueDay = async (databases: Databases, projectId: string) => {
 
 const syncMilestone = async (project: Project, repo: string, context: IssueContext) => {
   try {
-    const dueDay = await getProjectDueDay(context.databases, project.$id);
+    const dueDay = await getProjectDueDay(context.db, project.$id);
     return await getGithubMilestone(context.installationId, repo, project.name, dueDay);
   } catch (error) {
     console.error("Milestone GitHub impossible", error);
@@ -212,21 +201,21 @@ const prepareRepository = async (task: Task, repo: string, context: IssueContext
   return { labels: labels.map((label) => label.name), milestone };
 };
 
-const getInstallationId = async (databases: Databases, workspaceId: string) => {
-  const workspace = await databases.getDocument<Workspace>(DATABASE_ID, WORKSPACES_ID, workspaceId);
+const getInstallationId = async (db: Db, workspaceId: string) => {
+  const workspace = await db.workspaces.get(workspaceId);
 
   return workspace.githubInstallationId;
 };
 
-export const createTaskIssue = async (databases: Databases, task: Task) => {
+export const createTaskIssue = async (db: Db, task: Task) => {
   try {
     const [installationId, project] = await Promise.all([
-      getInstallationId(databases, task.workspaceId),
-      databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, task.projectId),
+      getInstallationId(db, task.workspaceId),
+      db.projects.get(task.projectId),
     ]);
     if (!installationId || !project.githubRepo) return null;
 
-    const context = await loadIssueContext(databases, installationId, [task]);
+    const context = await loadIssueContext(db, installationId, [task]);
 
     const repo = project.githubRepo;
     const [githubLogin, { labels, milestone }] = await Promise.all([
@@ -244,9 +233,7 @@ export const createTaskIssue = async (databases: Databases, task: Task) => {
       state: isDoneStatus(project, task.status) ? "closed" : "open",
     });
 
-    return await databases.updateDocument<Task>(DATABASE_ID, TASKS_ID, task.$id, {
-      githubIssueUrl,
-    });
+    return await db.tasks.update(task.$id, { githubIssueUrl });
   } catch (error) {
     console.error("Création de l'issue GitHub impossible", error);
     return null;
@@ -254,7 +241,7 @@ export const createTaskIssue = async (databases: Databases, task: Task) => {
 };
 
 export const syncTaskIssues = async (
-  databases: Databases,
+  db: Db,
   workspaceId: string,
   changes: { before: Task; after: Task }[],
   { syncState = true }: { syncState?: boolean } = {},
@@ -263,11 +250,11 @@ export const syncTaskIssues = async (
   if (linked.length === 0) return;
 
   try {
-    const installationId = await getInstallationId(databases, workspaceId);
+    const installationId = await getInstallationId(db, workspaceId);
     if (!installationId) return;
 
     const context = await loadIssueContext(
-      databases,
+      db,
       installationId,
       linked.flatMap(({ before, after }) => [before, after]),
     );
@@ -320,11 +307,11 @@ export const syncTaskIssues = async (
   }
 };
 
-export const closeDeletedTaskIssue = async (databases: Databases, task: Task) => {
+export const closeDeletedTaskIssue = async (db: Db, task: Task) => {
   if (!task.githubIssueUrl) return;
 
   try {
-    const installationId = await getInstallationId(databases, task.workspaceId);
+    const installationId = await getInstallationId(db, task.workspaceId);
     if (!installationId) return;
 
     await updateGithubIssue(installationId, task.githubIssueUrl, {

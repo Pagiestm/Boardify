@@ -1,9 +1,8 @@
 import "server-only";
 
-import { Query, type Databases } from "node-appwrite";
 import { eachDayOfInterval, endOfDay, format, min, startOfDay } from "date-fns";
 
-import { ACTIVITIES_ID, DATABASE_ID } from "@/config";
+import type { Db } from "@/lib/db";
 import { Task } from "@/features/tasks/types";
 import { Project } from "@/features/projects/types";
 import { isDoneStatus } from "@/features/tasks/server/done";
@@ -19,14 +18,16 @@ export interface BurndownDay {
   ideal: number;
 }
 
-const listCompletionActivities = async (databases: Databases, taskIds: string[]) => {
+const listCompletionActivities = async (db: Db, taskIds: string[]) => {
   const activities: Activity[] = [];
   for (let index = 0; index < taskIds.length; index += 100) {
-    const { documents } = await databases.listDocuments<Activity>(DATABASE_ID, ACTIVITIES_ID, [
-      Query.equal("taskId", taskIds.slice(index, index + 100)),
-      Query.equal("type", [ActivityType.STATUS, ActivityType.GITHUB_CLOSED]),
-      Query.limit(5000),
-    ]);
+    const { documents } = await db.activities.list({
+      where: {
+        taskId: taskIds.slice(index, index + 100),
+        type: [ActivityType.STATUS, ActivityType.GITHUB_CLOSED],
+      },
+      limit: 5000,
+    });
     activities.push(...documents);
   }
   return activities;
@@ -101,7 +102,7 @@ export const buildBurndown = ({
 };
 
 export const computeBurndown = async (
-  databases: Databases,
+  db: Db,
   sprint: Sprint,
   project: Project,
   tasks: Task[],
@@ -109,7 +110,7 @@ export const computeBurndown = async (
 ) => {
   const doneTasks = tasks.filter((task) => isDoneStatus(project, task.status));
   const activities = await listCompletionActivities(
-    databases,
+    db,
     doneTasks.map((task) => task.$id),
   );
   return buildBurndown({ sprint, project, tasks, activities, now });

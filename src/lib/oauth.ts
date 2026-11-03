@@ -1,27 +1,15 @@
 "use server";
 
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { OAuthProvider } from "node-appwrite";
 
 import { NEXT_COOKIE, safeNext } from "./safe-next";
 
 const DESKTOP_COOKIE = "boardify-desktop";
 
-const buildOAuthUrl = (provider: OAuthProvider, origin: string, desktop: boolean) => {
-  const url = new URL(
-    `${process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT}/account/tokens/oauth2/${provider}`,
-  );
-
-  url.searchParams.set("project", process.env.NEXT_PUBLIC_APPWRITE_PROJECT!);
-  url.searchParams.set("success", `${origin}/oauth${desktop ? "/desktop" : ""}`);
-  url.searchParams.set("failure", `${origin}/sign-up`);
-
-  return url.toString();
-};
+type OAuthProvider = "google" | "github";
 
 const startOAuth = async (provider: OAuthProvider, next?: string | null) => {
-  const origin = (await headers()).get("origin") ?? process.env.NEXT_PUBLIC_APP_URL!;
   const cookieStore = await cookies();
   const desktop = cookieStore.get(DESKTOP_COOKIE)?.value === "1";
 
@@ -36,13 +24,16 @@ const startOAuth = async (provider: OAuthProvider, next?: string | null) => {
     });
   }
 
-  redirect(buildOAuthUrl(provider, origin, desktop));
+  // La route prépare la connexion selon le service utilisé (Appwrite ou Better Auth).
+  redirect(
+    `/api/auth/oauth/start?${new URLSearchParams({ provider, desktop: desktop ? "1" : "0" })}`,
+  );
 };
 
 export async function signUpWithGithub(next?: string | null) {
-  await startOAuth(OAuthProvider.Github, next);
+  await startOAuth("github", next);
 }
 
 export async function signUpWithGoogle(next?: string | null) {
-  await startOAuth(OAuthProvider.Google, next);
+  await startOAuth("google", next);
 }

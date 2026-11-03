@@ -1,16 +1,6 @@
 import "server-only";
 
-import {
-  Account,
-  Client,
-  Databases,
-  Models,
-  Storage,
-  type Account as AccountType,
-  type Databases as DatabasesType,
-  type Storage as StorageType,
-  type Users as UsersType,
-} from "node-appwrite";
+import { Databases, Storage } from "node-appwrite";
 
 import { createHash } from "crypto";
 import { unstable_cache, revalidateTag } from "next/cache";
@@ -18,6 +8,11 @@ import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
 
 import { AUTH_COOKIE } from "@/features/auth/constants";
+import { requestClient } from "@/lib/appwrite";
+import { getAuth, isAuthError, type AuthUser } from "@/lib/auth";
+import type { AccountActions } from "@/lib/auth/types";
+import { createDb, type Db } from "@/lib/db";
+import { createFileStore, type FileStore } from "@/lib/files";
 
 const SESSION_TTL = 60;
 
@@ -28,40 +23,41 @@ export const forgetSession = (session: string) => revalidateTag(sessionTag(sessi
 
 type AdditionalContext = {
   Variables: {
-    account: AccountType;
-    databases: DatabasesType;
-    storage: StorageType;
-    users: UsersType;
-    user: Models.User<Models.Preferences>;
+    /** Actions de l'utilisateur sur son compte (interface neutre, indépendante du service). */
+    account: AccountActions;
+    /** Stockage de fichiers (interface neutre, indépendante du service). */
+    files: FileStore;
+    user: AuthUser;
+    /** Accès aux données (format neutre, indépendant de la base). */
+    db: Db;
   };
 };
 
 export const sessionMiddleware = createMiddleware<AdditionalContext>(async (c, next) => {
-  const client = new Client()
-    .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-    .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!);
-
   const session = getCookie(c, AUTH_COOKIE);
 
   if (!session) {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  client.setSession(session);
-
-  const account = new Account(client);
-  const databases = new Databases(client);
-  const storage = new Storage(client);
-
   const tag = sessionTag(session);
-  const user = await unstable_cache(() => account.get(), ["session", tag], {
-    revalidate: SESSION_TTL,
-    tags: [tag],
-  })();
+  let user: AuthUser;
+  try {
+    user = await unstable_cache(() => getAuth().getUser(session), ["session", tag], {
+      revalidate: SESSION_TTL,
+      tags: [tag],
+    })();
+  } catch (error) {
+    if (isAuthError(error, "unauthorized")) return c.json({ error: "Unauthorized" }, 401);
+    throw error;
+  }
 
-  c.set("account", account);
-  c.set("databases", databases);
-  c.set("storage", storage);
+  // Appwrite (données et fichiers, s'ils y sont encore) : session ou clé d'API selon la connexion.
+  const client = requestClient(session);
+
+  c.set("account", getAuth().account(session, user));
+  c.set("db", createDb(new Databases(client)));
+  c.set("files", createFileStore(new Storage(client)));
   c.set("user", user);
 
   await next();

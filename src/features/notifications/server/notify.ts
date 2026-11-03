@@ -1,10 +1,6 @@
 import "server-only";
 
-import { ID, Query, type Databases } from "node-appwrite";
-
-import { Member } from "@/features/members/types";
-
-import { DATABASE_ID, MEMBERS_ID, NOTIFICATIONS_ID } from "@/config";
+import type { Db } from "@/lib/db";
 
 import { NotificationType } from "../types";
 
@@ -17,22 +13,21 @@ interface NotifyOptions {
 }
 
 export const notifyMembers = async (
-  databases: Databases,
+  db: Db,
   { workspaceId, taskId, type, actorId, recipientIds }: NotifyOptions,
 ) => {
   const memberIds = [...new Set(recipientIds.filter((id): id is string => !!id && id !== actorId))];
   if (memberIds.length === 0) return;
 
   try {
-    const { documents: members } = await databases.listDocuments<Member>(DATABASE_ID, MEMBERS_ID, [
-      Query.equal("$id", memberIds),
-      Query.equal("workspaceId", workspaceId),
-      Query.limit(100),
-    ]);
+    const { documents: members } = await db.members.list({
+      where: { $id: memberIds, workspaceId },
+      limit: 100,
+    });
 
     await Promise.all(
       members.map((member) =>
-        databases.createDocument(DATABASE_ID, NOTIFICATIONS_ID, ID.unique(), {
+        db.notifications.create({
           workspaceId,
           userId: member.userId,
           taskId,

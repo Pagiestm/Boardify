@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { Models } from "node-appwrite";
+import type { BaseDocument } from "@/lib/db/types";
 
-export type Sprint = Models.Document & {
+export type Sprint = BaseDocument & {
   workspaceId: string;
   projectId: string;
   name: string;

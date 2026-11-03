@@ -1,24 +1,22 @@
 import "server-only";
 
-import { Query, type Databases } from "node-appwrite";
-
 import { Project } from "@/features/projects/types";
 
-import { DATABASE_ID, PROJECTS_ID, TASKS_ID } from "@/config";
+import type { Db } from "@/lib/db";
 
 import { Task } from "../types";
 import { isDoneStatus } from "./done";
 
 const MAX_DEPTH = 50;
 
-const listTasksByIds = async (databases: Databases, ids: string[]) => {
+const listTasksByIds = async (db: Db, ids: string[]) => {
   const tasks: Task[] = [];
 
   for (let index = 0; index < ids.length; index += 100) {
-    const { documents } = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-      Query.equal("$id", ids.slice(index, index + 100)),
-      Query.limit(100),
-    ]);
+    const { documents } = await db.tasks.list({
+      where: { $id: ids.slice(index, index + 100) },
+      limit: 100,
+    });
     tasks.push(...documents);
   }
 
@@ -26,14 +24,14 @@ const listTasksByIds = async (databases: Databases, ids: string[]) => {
 };
 
 export const validateBlockedBy = async (
-  databases: Databases,
+  db: Db,
   task: Pick<Task, "$id" | "workspaceId">,
   blockedBy: string[],
 ) => {
   const ids = [...new Set(blockedBy)];
   if (ids.includes(task.$id)) return "Une tâche ne peut pas se bloquer elle-même";
 
-  const blockers = await listTasksByIds(databases, ids);
+  const blockers = await listTasksByIds(db, ids);
   if (
     blockers.length !== ids.length ||
     blockers.some((blocker) => blocker.workspaceId !== task.workspaceId)
@@ -52,7 +50,7 @@ export const validateBlockedBy = async (
     if (next.includes(task.$id)) return "Cette dépendance créerait une boucle";
 
     next.forEach((id) => visited.add(id));
-    frontier = next.length > 0 ? await listTasksByIds(databases, next) : [];
+    frontier = next.length > 0 ? await listTasksByIds(db, next) : [];
   }
 
   return null;
@@ -64,23 +62,20 @@ export interface BlockerState {
   done: boolean;
 }
 
-export const getBlockerStates = async (databases: Databases, tasks: Task[]) => {
+export const getBlockerStates = async (db: Db, tasks: Task[]) => {
   const known = new Map(tasks.map((task) => [task.$id, task]));
   const missing = [
     ...new Set(tasks.flatMap((task) => task.blockedBy ?? []).filter((id) => !known.has(id))),
   ];
-  const blockers = [
-    ...tasks,
-    ...(missing.length > 0 ? await listTasksByIds(databases, missing) : []),
-  ];
+  const blockers = [...tasks, ...(missing.length > 0 ? await listTasksByIds(db, missing) : [])];
 
   const projectIds = [...new Set(blockers.map((task) => task.projectId))];
   const projects = new Map<string, Project>();
   for (let index = 0; index < projectIds.length; index += 100) {
-    const { documents } = await databases.listDocuments<Project>(DATABASE_ID, PROJECTS_ID, [
-      Query.equal("$id", projectIds.slice(index, index + 100)),
-      Query.limit(100),
-    ]);
+    const { documents } = await db.projects.list({
+      where: { $id: projectIds.slice(index, index + 100) },
+      limit: 100,
+    });
     documents.forEach((project) => projects.set(project.$id, project));
   }
 

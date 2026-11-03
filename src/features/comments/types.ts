@@ -1,8 +1,8 @@
-import { Models } from "node-appwrite";
+import type { BaseDocument } from "@/lib/db/types";
 
 export const GITHUB_AUTHOR_PREFIX = "github:";
 
-export type Comment = Models.Document & {
+export type Comment = BaseDocument & {
   workspaceId: string;
   taskId: string;
   memberId: string;

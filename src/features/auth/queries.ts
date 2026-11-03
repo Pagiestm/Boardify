@@ -1,10 +1,16 @@
-import { createSessionClient } from "@/lib/appwrite";
+import { cookies } from "next/headers";
 
+import { getAuth } from "@/lib/auth";
+
+import { AUTH_COOKIE } from "./constants";
+
+/** Utilisateur connecté (composants serveur), ou null. */
 export const getCurrent = async () => {
-  try {
-    const { account } = await createSessionClient();
+  const session = (await cookies()).get(AUTH_COOKIE)?.value;
+  if (!session) return null;
 
-    return await account.get();
+  try {
+    return await getAuth().getUser(session);
   } catch {
     return null;
   }

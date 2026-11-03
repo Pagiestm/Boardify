@@ -1,4 +1,4 @@
-import { Models } from "node-appwrite";
+import type { BaseDocument } from "@/lib/db/types";
 
 export enum ActivityType {
   CREATED = "created",
@@ -26,7 +26,7 @@ export interface ActivityChange {
   to?: string | string[] | null;
 }
 
-export type Activity = Models.Document & {
+export type Activity = BaseDocument & {
   workspaceId: string;
   taskId: string;
   memberId?: string | null;

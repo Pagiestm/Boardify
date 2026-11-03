@@ -1,15 +1,13 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { getMember } from "@/features/members/utils";
 import { MemberRole } from "@/features/members/types";
 
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, TASK_TEMPLATES_ID } from "@/config";
 
-import { parseTemplateData, TaskTemplate, templateDataSchema } from "../types";
+import { parseTemplateData, templateDataSchema } from "../types";
 
 const app = new Hono()
   .get(
@@ -17,19 +15,19 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("query", z.object({ workspaceId: z.string().min(1) })),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { workspaceId } = c.req.valid("query");
 
-      const member = await getMember({ databases, workspaceId, userId: c.get("user").$id });
+      const member = await getMember({ db, workspaceId, userId: c.get("user").$id });
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const templates = await databases.listDocuments<TaskTemplate>(
-        DATABASE_ID,
-        TASK_TEMPLATES_ID,
-        [Query.equal("workspaceId", workspaceId), Query.orderAsc("name"), Query.limit(100)],
-      );
+      const templates = await db.taskTemplates.list({
+        where: { workspaceId },
+        orderBy: { name: "asc" },
+        limit: 100,
+      });
 
       return c.json({
         data: templates.documents.map((template) => ({
@@ -53,34 +51,29 @@ const app = new Hono()
       }),
     ),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { workspaceId, name, data } = c.req.valid("json");
 
-      const member = await getMember({ databases, workspaceId, userId: c.get("user").$id });
+      const member = await getMember({ db, workspaceId, userId: c.get("user").$id });
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const template = await databases.createDocument<TaskTemplate>(
-        DATABASE_ID,
-        TASK_TEMPLATES_ID,
-        ID.unique(),
-        { workspaceId, name, data: JSON.stringify(data) },
-      );
+      const template = await db.taskTemplates.create({
+        workspaceId,
+        name,
+        data: JSON.stringify(data),
+      });
 
       return c.json({ data: { $id: template.$id, workspaceId } });
     },
   )
   .delete("/:templateId", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
-    const template = await databases.getDocument<TaskTemplate>(
-      DATABASE_ID,
-      TASK_TEMPLATES_ID,
-      c.req.param("templateId"),
-    );
+    const db = c.get("db");
+    const template = await db.taskTemplates.get(c.req.param("templateId"));
 
     const member = await getMember({
-      databases,
+      db,
       workspaceId: template.workspaceId,
       userId: c.get("user").$id,
     });
@@ -88,7 +81,7 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    await databases.deleteDocument(DATABASE_ID, TASK_TEMPLATES_ID, template.$id);
+    await db.taskTemplates.delete(template.$id);
 
     return c.json({ data: { $id: template.$id, workspaceId: template.workspaceId } });
   });

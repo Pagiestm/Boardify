@@ -1,4 +1,4 @@
-import { Models } from "node-appwrite";
+import type { BaseDocument } from "@/lib/db/types";
 
 export enum NotificationType {
   ASSIGNED = "assigned",
@@ -7,7 +7,7 @@ export enum NotificationType {
   DUE_SOON = "due_soon",
 }
 
-export type Notification = Models.Document & {
+export type Notification = BaseDocument & {
   workspaceId: string;
   userId: string;
   taskId: string;

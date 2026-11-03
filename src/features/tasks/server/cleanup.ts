@@ -1,50 +1,35 @@
 import "server-only";
 
-import { Query, type Databases, type Storage } from "node-appwrite";
+import type { Collection, Db } from "@/lib/db";
+import type { BaseDocument } from "@/lib/db/types";
+import type { FileStore } from "@/lib/files";
 
-import {
-  ACTIVITIES_ID,
-  ATTACHMENTS_ID,
-  CHECKLIST_ITEMS_ID,
-  COMMENTS_ID,
-  DATABASE_ID,
-  IMAGES_BUCKET_ID,
-  NOTIFICATIONS_ID,
-} from "@/config";
-
-const deleteByTask = async (
-  databases: Databases,
-  collectionId: string,
+const deleteByTask = async <T extends BaseDocument & { taskId: string }>(
+  collection: Collection<T>,
   taskId: string,
-  onDelete?: (document: Record<string, unknown>) => Promise<unknown>,
+  onDelete?: (document: T) => Promise<unknown>,
 ) => {
-  let documents;
+  let documents: T[];
   do {
-    ({ documents } = await databases.listDocuments(DATABASE_ID, collectionId, [
-      Query.equal("taskId", taskId),
-      Query.limit(100),
-    ]));
+    ({ documents } = await collection.list({ where: { taskId } as never, limit: 100 }));
     await Promise.all(
       documents.map(async (document) => {
         await onDelete?.(document);
-        await databases.deleteDocument(DATABASE_ID, collectionId, document.$id);
+        await collection.delete(document.$id);
       }),
     );
   } while (documents.length === 100);
 };
 
-export const deleteTaskRelations = async (
-  databases: Databases,
-  storage: Storage,
-  taskId: string,
-) => {
+export const deleteTaskRelations = async (db: Db, files: FileStore, taskId: string) => {
   try {
     await Promise.all([
-      ...[COMMENTS_ID, ACTIVITIES_ID, NOTIFICATIONS_ID, CHECKLIST_ITEMS_ID].map((collectionId) =>
-        deleteByTask(databases, collectionId, taskId),
-      ),
-      deleteByTask(databases, ATTACHMENTS_ID, taskId, (attachment) =>
-        storage.deleteFile(IMAGES_BUCKET_ID, attachment.fileId as string).catch(() => null),
+      deleteByTask(db.comments, taskId),
+      deleteByTask(db.activities, taskId),
+      deleteByTask(db.notifications, taskId),
+      deleteByTask(db.checklistItems, taskId),
+      deleteByTask(db.attachments, taskId, (attachment) =>
+        files.delete(attachment.fileId).catch(() => null),
       ),
     ]);
   } catch (error) {

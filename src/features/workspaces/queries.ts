@@ -1,16 +1,19 @@
-import { Query } from "node-appwrite";
+import { cookies } from "next/headers";
 
-import { createSessionClient } from "@/lib/appwrite";
-import { DATABASE_ID, MEMBERS_ID, WORKSPACES_ID } from "@/config";
+import { AUTH_COOKIE } from "@/features/auth/constants";
+import { getCurrent } from "@/features/auth/queries";
+
+import { createDb } from "@/lib/db";
+import { requestDatabases } from "@/lib/appwrite";
 
 export const getWorkspaces = async () => {
-  const { databases, account } = await createSessionClient();
+  const session = (await cookies()).get(AUTH_COOKIE)?.value;
+  const user = await getCurrent();
+  if (!session || !user) throw new Error("Unauthorized");
 
-  const user = await account.get();
+  const db = createDb(requestDatabases(session));
 
-  const members = await databases.listDocuments(DATABASE_ID, MEMBERS_ID, [
-    Query.equal("userId", user.$id),
-  ]);
+  const members = await db.members.list({ where: { userId: user.$id } });
 
   if (members.total === 0) {
     return { documents: [], total: 0 };
@@ -18,10 +21,10 @@ export const getWorkspaces = async () => {
 
   const workspaceIds = members.documents.map((member) => member.workspaceId);
 
-  const workspaces = await databases.listDocuments(DATABASE_ID, WORKSPACES_ID, [
-    Query.orderDesc("$createdAt"),
-    Query.contains("$id", workspaceIds),
-  ]);
+  const workspaces = await db.workspaces.list({
+    where: { $id: workspaceIds },
+    orderBy: { $createdAt: "desc" },
+  });
 
   return workspaces;
 };

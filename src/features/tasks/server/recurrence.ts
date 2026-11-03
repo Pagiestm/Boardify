@@ -1,14 +1,12 @@
 import "server-only";
 
 import { addDays, addMonths } from "date-fns";
-import { ID, Query, type Databases } from "node-appwrite";
 
-import { Project } from "@/features/projects/types";
 import { ActivityType } from "@/features/activities/types";
 import { logActivities } from "@/features/activities/server/activities";
 import { createChecklistItems, listChecklistItems } from "@/features/checklist/server/items";
 
-import { DATABASE_ID, PROJECTS_ID, TASKS_ID } from "@/config";
+import type { Db } from "@/lib/db";
 
 import { Task, TaskRecurrence } from "../types";
 import { createTaskIssue } from "./github-sync";
@@ -23,7 +21,7 @@ export const shift = (value: string, recurrence: TaskRecurrence) => {
 };
 
 export const createNextOccurrence = async (
-  databases: Databases,
+  db: Db,
   before: Task,
   after: Task,
   memberId: string | null,
@@ -31,29 +29,26 @@ export const createNextOccurrence = async (
   if (!after.recurrence) return null;
 
   try {
-    const project = await databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, after.projectId);
+    const project = await db.projects.get(after.projectId);
     if (isDoneStatus(project, before.status) || !isDoneStatus(project, after.status)) return null;
 
     const dueDate = shift(after.dueDate, after.recurrence).toISOString();
     const startDate = shift(after.startDate ?? after.dueDate, after.recurrence).toISOString();
 
-    const { total: existing } = await databases.listDocuments(DATABASE_ID, TASKS_ID, [
-      Query.equal("projectId", after.projectId),
-      Query.equal("name", after.name),
-      Query.equal("dueDate", dueDate),
-      Query.limit(1),
-    ]);
+    const { total: existing } = await db.tasks.list({
+      where: { projectId: after.projectId, name: after.name, dueDate },
+      limit: 1,
+    });
     if (existing > 0) return null;
 
     const status = before.projectId === after.projectId ? before.status : getOpenStatus(project);
-    const { documents: lowest } = await databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-      Query.equal("workspaceId", after.workspaceId),
-      Query.equal("status", status),
-      Query.orderAsc("position"),
-      Query.limit(1),
-    ]);
+    const { documents: lowest } = await db.tasks.list({
+      where: { workspaceId: after.workspaceId, status },
+      orderBy: { position: "asc" },
+      limit: 1,
+    });
 
-    const next = await databases.createDocument<Task>(DATABASE_ID, TASKS_ID, ID.unique(), {
+    const next = await db.tasks.create({
       name: after.name,
       description: after.description,
       status,
@@ -70,16 +65,16 @@ export const createNextOccurrence = async (
       position: (lowest[0]?.position ?? 0) + 1000,
     });
 
-    const checklist = await listChecklistItems(databases, [after.$id]);
+    const checklist = await listChecklistItems(db, [after.$id]);
 
     await Promise.all([
       createChecklistItems(
-        databases,
+        db,
         next,
         checklist.map((item) => item.title),
       ),
-      createTaskIssue(databases, next),
-      logActivities(databases, next, memberId, [
+      createTaskIssue(db, next),
+      logActivities(db, next, memberId, [
         { type: ActivityType.CREATED, change: { from: after.$id } },
       ]),
     ]);

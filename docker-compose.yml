@@ -1,0 +1,80 @@
+# Services pour le développement local : `docker compose up -d`
+services:
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: boardify
+      POSTGRES_PASSWORD: boardify
+      POSTGRES_DB: boardify
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+  # Interface d'administration : http://localhost:5050 (sans connexion, serveur déjà configuré)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dev@boardify.app
+      PGADMIN_DEFAULT_PASSWORD: boardify
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./docker/pgadmin/pgpass:/pgadmin4/pgpass.source:ro
+      - pgadmin-data:/var/lib/pgadmin
+    # Le fichier de mots de passe doit être en 0600 : copié au démarrage avec ces droits.
+    entrypoint:
+      - /bin/sh
+      - -c
+      - cp /pgadmin4/pgpass.source /var/lib/pgadmin/pgpass && chmod 600 /var/lib/pgadmin/pgpass && exec /entrypoint.sh
+
+  # E-mails envoyés en local (mot de passe oublié…) : http://localhost:8026, SMTP sur le port 1026
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "8026:8025"
+      - "1026:1025"
+
+  # Stockage de fichiers compatible S3 (RustFS) : API sur le port 9000, console sur http://localhost:9001
+  s3:
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: boardify
+      RUSTFS_SECRET_KEY: boardify-secret
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - s3-data:/data
+
+  # Crée le bucket « boardify » au démarrage, puis s'arrête.
+  s3-setup:
+    image: amazon/aws-cli:latest
+    depends_on:
+      - s3
+    environment:
+      AWS_ACCESS_KEY_ID: boardify
+      AWS_SECRET_ACCESS_KEY: boardify-secret
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        until aws --endpoint-url http://s3:9000 s3api list-buckets > /dev/null 2>&1; do sleep 1; done;
+        aws --endpoint-url http://s3:9000 s3api head-bucket --bucket boardify 2>/dev/null ||
+        aws --endpoint-url http://s3:9000 s3api create-bucket --bucket boardify
+
+volumes:
+  postgres-data:
+  pgadmin-data:
+  s3-data:

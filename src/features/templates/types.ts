@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { Models } from "node-appwrite";
 
 import { TaskPriority, TaskRecurrence } from "@/features/tasks/types";
+import type { BaseDocument } from "@/lib/db/types";
 
 export const templateDataSchema = z.object({
   description: z.string().max(2000).optional(),
@@ -14,7 +14,7 @@ export const templateDataSchema = z.object({
 
 export type TemplateData = z.infer<typeof templateDataSchema>;
 
-export type TaskTemplate = Models.Document & {
+export type TaskTemplate = BaseDocument & {
   workspaceId: string;
   name: string;
   data: string;

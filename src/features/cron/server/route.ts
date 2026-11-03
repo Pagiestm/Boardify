@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 
+import { createDb } from "@/lib/db";
 import { createAdminClient } from "@/lib/appwrite";
 import { notifyTasksDueSoon } from "@/features/notifications/server/due-soon";
 
@@ -10,7 +11,7 @@ const app = new Hono().get("/due-soon", async (c) => {
   }
 
   const { databases } = await createAdminClient();
-  const notified = await notifyTasksDueSoon(databases);
+  const notified = await notifyTasksDueSoon(createDb(databases));
 
   return c.json({ data: { notified } });
 });

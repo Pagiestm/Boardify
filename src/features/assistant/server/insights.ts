@@ -1,21 +1,17 @@
 import { z } from "zod";
 import { Hono } from "hono";
 import { generateText, Output, streamText } from "ai";
-import { Query, type Databases } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { getMember } from "@/features/members/utils";
-import { Label } from "@/features/labels/types";
 import { Project } from "@/features/projects/types";
 import { parseBoardColumns } from "@/features/projects/utils";
-import { Sprint } from "@/features/sprints/types";
-import { Comment } from "@/features/comments/types";
 import { replaceMentions } from "@/features/comments/mentions";
 import { Task, TaskPriority } from "@/features/tasks/types";
 import { isDoneStatus } from "@/features/tasks/server/done";
 
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { COMMENTS_ID, DATABASE_ID, LABELS_ID, PROJECTS_ID, SPRINTS_ID, TASKS_ID } from "@/config";
+import { type Db, type Where } from "@/lib/db";
 
 import { matchTasks } from "./match";
 import { describeAiError, getWorkspaceModel, streamTextResponse } from "./model";
@@ -47,22 +43,18 @@ interface TaskContext {
 
 /** Tâches, projets et noms des membres d'un espace (ou d'un projet). */
 const loadContext = async (
-  databases: Databases,
+  db: Db,
   workspaceId: string,
-  filters: string[] = [],
+  filters: Where<Task> = {},
 ): Promise<TaskContext> => {
   const [{ documents: tasks }, { documents: projects }, names] = await Promise.all([
-    databases.listDocuments<Task>(DATABASE_ID, TASKS_ID, [
-      Query.equal("workspaceId", workspaceId),
-      ...filters,
-      Query.orderDesc("$updatedAt"),
-      Query.limit(MAX_CONTEXT_TASKS),
-    ]),
-    databases.listDocuments<Project>(DATABASE_ID, PROJECTS_ID, [
-      Query.equal("workspaceId", workspaceId),
-      Query.limit(100),
-    ]),
-    getMemberNames(databases, workspaceId),
+    db.tasks.list({
+      where: { workspaceId, ...filters },
+      orderBy: { $updatedAt: "desc" },
+      limit: MAX_CONTEXT_TASKS,
+    }),
+    db.projects.list({ where: { workspaceId }, limit: 100 }),
+    getMemberNames(db, workspaceId),
   ]);
   return { tasks, projects: new Map(projects.map((project) => [project.$id, project])), names };
 };
@@ -118,17 +110,15 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("param", workspaceParam),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { workspaceId } = c.req.valid("param");
-      const member = await getMember({ databases, workspaceId, userId: c.get("user").$id });
+      const member = await getMember({ db, workspaceId, userId: c.get("user").$id });
       if (!member) return c.json({ error: "Unauthorized" }, 401);
 
       const model = await getWorkspaceModel(workspaceId);
       if (!model) return c.json(NOT_CONFIGURED, 400);
 
-      const context = await loadContext(databases, workspaceId, [
-        Query.equal("assigneeId", member.$id),
-      ]);
+      const context = await loadContext(db, workspaceId, { assigneeId: member.$id });
       const open = context.tasks.filter((task) => !isDone(context, task));
       if (open.length === 0) {
         return c.json({
@@ -184,21 +174,18 @@ Choisis les tâches à traiter en priorité aujourd'hui : d'abord les retards et
     zValidator("param", workspaceParam),
     zValidator("json", z.object({ query: z.string().trim().min(2).max(300) })),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { workspaceId } = c.req.valid("param");
       const { query } = c.req.valid("json");
-      const member = await getMember({ databases, workspaceId, userId: c.get("user").$id });
+      const member = await getMember({ db, workspaceId, userId: c.get("user").$id });
       if (!member) return c.json({ error: "Unauthorized" }, 401);
 
       const model = await getWorkspaceModel(workspaceId);
       if (!model) return c.json(NOT_CONFIGURED, 400);
 
       const [context, { documents: labels }] = await Promise.all([
-        loadContext(databases, workspaceId),
-        databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
-          Query.equal("workspaceId", workspaceId),
-          Query.limit(100),
-        ]),
+        loadContext(db, workspaceId),
+        db.labels.list({ where: { workspaceId }, limit: 100 }),
       ]);
 
       try {
@@ -292,25 +279,19 @@ Traduis cette recherche en critères, avec les identifiants entre crochets : « 
     zValidator("param", workspaceParam),
     zValidator("json", z.object({ text: z.string().trim().min(3).max(500) })),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { workspaceId } = c.req.valid("param");
       const { text } = c.req.valid("json");
-      const member = await getMember({ databases, workspaceId, userId: c.get("user").$id });
+      const member = await getMember({ db, workspaceId, userId: c.get("user").$id });
       if (!member) return c.json({ error: "Unauthorized" }, 401);
 
       const model = await getWorkspaceModel(workspaceId);
       if (!model) return c.json(NOT_CONFIGURED, 400);
 
       const [{ documents: projects }, names, { documents: labels }] = await Promise.all([
-        databases.listDocuments<Project>(DATABASE_ID, PROJECTS_ID, [
-          Query.equal("workspaceId", workspaceId),
-          Query.limit(100),
-        ]),
-        getMemberNames(databases, workspaceId),
-        databases.listDocuments<Label>(DATABASE_ID, LABELS_ID, [
-          Query.equal("workspaceId", workspaceId),
-          Query.limit(100),
-        ]),
+        db.projects.list({ where: { workspaceId }, limit: 100 }),
+        getMemberNames(db, workspaceId),
+        db.labels.list({ where: { workspaceId }, limit: 100 }),
       ]);
 
       try {
@@ -372,14 +353,10 @@ Analyse cette saisie rapide de tâche et extrais ses champs, avec les identifian
   )
   /** Estimation en masse des tâches ouvertes sans estimation d'un projet. */
   .post("/projects/:projectId/estimate", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
-    const project = await databases.getDocument<Project>(
-      DATABASE_ID,
-      PROJECTS_ID,
-      c.req.param("projectId"),
-    );
+    const db = c.get("db");
+    const project = await db.projects.get(c.req.param("projectId"));
     const member = await getMember({
-      databases,
+      db,
       workspaceId: project.workspaceId,
       userId: c.get("user").$id,
     });
@@ -388,9 +365,7 @@ Analyse cette saisie rapide de tâche et extrais ses champs, avec les identifian
     const model = await getWorkspaceModel(project.workspaceId);
     if (!model) return c.json(NOT_CONFIGURED, 400);
 
-    const context = await loadContext(databases, project.workspaceId, [
-      Query.equal("projectId", project.$id),
-    ]);
+    const context = await loadContext(db, project.workspaceId, { projectId: project.$id });
     const estimated = context.tasks.filter((task) => task.estimate != null).slice(0, 30);
     const pending = context.tasks
       .filter((task) => task.estimate == null && !isDone(context, task))
@@ -435,15 +410,11 @@ ${pending.map((task) => `- [${task.$id}] ${task.name}${task.description ? ` — 
   })
   /** Planification : tâches du backlog à ajouter au sprint selon la capacité. */
   .post("/sprints/:sprintId/plan", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
-    if (!SPRINTS_ID) return c.json({ error: "Sprints non configurés" }, 400);
-    const sprint = await databases.getDocument<Sprint>(
-      DATABASE_ID,
-      SPRINTS_ID,
-      c.req.param("sprintId"),
-    );
+    const db = c.get("db");
+    if (!db.sprints.enabled) return c.json({ error: "Sprints non configurés" }, 400);
+    const sprint = await db.sprints.get(c.req.param("sprintId"));
     const member = await getMember({
-      databases,
+      db,
       workspaceId: sprint.workspaceId,
       userId: c.get("user").$id,
     });
@@ -452,9 +423,7 @@ ${pending.map((task) => `- [${task.$id}] ${task.name}${task.description ? ` — 
     const model = await getWorkspaceModel(sprint.workspaceId);
     if (!model) return c.json(NOT_CONFIGURED, 400);
 
-    const context = await loadContext(databases, sprint.workspaceId, [
-      Query.equal("projectId", sprint.projectId),
-    ]);
+    const context = await loadContext(db, sprint.workspaceId, { projectId: sprint.projectId });
     const inSprint = context.tasks.filter((task) => task.sprintId === sprint.$id);
     const backlog = context.tasks
       .filter((task) => !task.sprintId && !isDone(context, task))
@@ -522,11 +491,11 @@ Propose les tâches du backlog à ajouter au sprint : celles qui servent l'objec
       }),
     ),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { mode, instructions } = c.req.valid("json");
-      const task = await databases.getDocument<Task>(DATABASE_ID, TASKS_ID, c.req.param("taskId"));
+      const task = await db.tasks.get(c.req.param("taskId"));
       const member = await getMember({
-        databases,
+        db,
         workspaceId: task.workspaceId,
         userId: c.get("user").$id,
       });
@@ -536,12 +505,12 @@ Propose les tâches du backlog à ajouter au sprint : celles qui servent l'objec
       if (!model) return c.json(NOT_CONFIGURED, 400);
 
       const [{ documents: comments }, names] = await Promise.all([
-        databases.listDocuments<Comment>(DATABASE_ID, COMMENTS_ID, [
-          Query.equal("taskId", task.$id),
-          Query.orderAsc("$createdAt"),
-          Query.limit(200),
-        ]),
-        getMemberNames(databases, task.workspaceId),
+        db.comments.list({
+          where: { taskId: task.$id },
+          orderBy: { $createdAt: "asc" },
+          limit: 200,
+        }),
+        getMemberNames(db, task.workspaceId),
       ]);
       if (comments.length === 0)
         return c.json({ error: "Aucun commentaire sur cette tâche." }, 400);

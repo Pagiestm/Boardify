@@ -1,45 +1,38 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { ID, Query, type Databases } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { Task } from "@/features/tasks/types";
-import { Project } from "@/features/projects/types";
 import { getMember } from "@/features/members/utils";
 import { isDoneStatus } from "@/features/tasks/server/done";
 import { ActivityType } from "@/features/activities/types";
 import { logActivities } from "@/features/activities/server/activities";
 
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, PROJECTS_ID, SPRINTS_ID, TASKS_ID } from "@/config";
+import type { Db } from "@/lib/db";
 
-import { Sprint, SprintStats, sprintFormSchema } from "../types";
+import { SprintStats, sprintFormSchema } from "../types";
 import { listSprintTasks, validateSprint } from "./sprints";
 import { computeBurndown } from "./burndown";
 
-const getProjectMember = async (databases: Databases, projectId: string, userId: string) => {
-  const project = await databases.getDocument<Project>(DATABASE_ID, PROJECTS_ID, projectId);
-  const member = await getMember({ databases, workspaceId: project.workspaceId, userId });
+const getProjectMember = async (db: Db, projectId: string, userId: string) => {
+  const project = await db.projects.get(projectId);
+  const member = await getMember({ db, workspaceId: project.workspaceId, userId });
   return { project, member };
 };
 
-const getSprintMember = async (databases: Databases, sprintId: string, userId: string) => {
-  const sprint = await databases.getDocument<Sprint>(DATABASE_ID, SPRINTS_ID, sprintId);
-  const { project, member } = await getProjectMember(databases, sprint.projectId, userId);
+const getSprintMember = async (db: Db, sprintId: string, userId: string) => {
+  const sprint = await db.sprints.get(sprintId);
+  const { project, member } = await getProjectMember(db, sprint.projectId, userId);
   return { sprint, project, member };
 };
 
-const moveTasks = async (
-  databases: Databases,
-  tasks: Task[],
-  sprintId: string | null,
-  memberId: string,
-) => {
+const moveTasks = async (db: Db, tasks: Task[], sprintId: string | null, memberId: string) => {
   for (let index = 0; index < tasks.length; index += 25) {
     await Promise.all(
       tasks.slice(index, index + 25).map(async (task) => {
-        await databases.updateDocument(DATABASE_ID, TASKS_ID, task.$id, { sprintId });
-        await logActivities(databases, task, memberId, [
+        await db.tasks.update(task.$id, { sprintId });
+        await logActivities(db, task, memberId, [
           { type: ActivityType.SPRINT, change: { from: task.sprintId ?? null, to: sprintId } },
         ]);
       }),
@@ -53,22 +46,22 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("query", z.object({ projectId: z.string().min(1) })),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { projectId } = c.req.valid("query");
 
-      const { project, member } = await getProjectMember(databases, projectId, c.get("user").$id);
+      const { project, member } = await getProjectMember(db, projectId, c.get("user").$id);
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const { documents: sprints } = await databases.listDocuments<Sprint>(
-        DATABASE_ID,
-        SPRINTS_ID,
-        [Query.equal("projectId", projectId), Query.orderAsc("startDate"), Query.limit(200)],
-      );
+      const { documents: sprints } = await db.sprints.list({
+        where: { projectId },
+        orderBy: { startDate: "asc" },
+        limit: 200,
+      });
 
       const tasks = await listSprintTasks(
-        databases,
+        db,
         sprints.map((sprint) => sprint.$id),
       );
 
@@ -94,35 +87,31 @@ const app = new Hono()
     },
   )
   .get("/:sprintId/burndown", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
     const { sprintId } = c.req.param();
 
-    const { sprint, project, member } = await getSprintMember(
-      databases,
-      sprintId,
-      c.get("user").$id,
-    );
+    const { sprint, project, member } = await getSprintMember(db, sprintId, c.get("user").$id);
     if (!member) {
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const tasks = await listSprintTasks(databases, [sprint.$id]);
-    return c.json({ data: await computeBurndown(databases, sprint, project, tasks) });
+    const tasks = await listSprintTasks(db, [sprint.$id]);
+    return c.json({ data: await computeBurndown(db, sprint, project, tasks) });
   })
   .post(
     "/",
     sessionMiddleware,
     zValidator("json", sprintFormSchema.and(z.object({ projectId: z.string().min(1) }))),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { projectId, name, goal, startDate, endDate } = c.req.valid("json");
 
-      const { project, member } = await getProjectMember(databases, projectId, c.get("user").$id);
+      const { project, member } = await getProjectMember(db, projectId, c.get("user").$id);
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const sprint = await databases.createDocument<Sprint>(DATABASE_ID, SPRINTS_ID, ID.unique(), {
+      const sprint = await db.sprints.create({
         workspaceId: project.workspaceId,
         projectId,
         name,
@@ -136,11 +125,11 @@ const app = new Hono()
     },
   )
   .patch("/:sprintId", sessionMiddleware, zValidator("json", sprintFormSchema), async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
     const { name, goal, startDate, endDate } = c.req.valid("json");
 
     const { sprint, member } = await getSprintMember(
-      databases,
+      db,
       c.req.param("sprintId"),
       c.get("user").$id,
     );
@@ -148,7 +137,7 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const updated = await databases.updateDocument<Sprint>(DATABASE_ID, SPRINTS_ID, sprint.$id, {
+    const updated = await db.sprints.update(sprint.$id, {
       name,
       goal: goal || null,
       startDate: startDate.toISOString(),
@@ -162,11 +151,11 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("json", z.object({ moveTo: z.string().min(1).nullable() })),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { moveTo } = c.req.valid("json");
 
       const { sprint, project, member } = await getSprintMember(
-        databases,
+        db,
         c.req.param("sprintId"),
         c.get("user").$id,
       );
@@ -180,17 +169,17 @@ const app = new Hono()
         return c.json({ error: "Choisissez un autre sprint" }, 400);
       }
 
-      const error = await validateSprint(databases, moveTo, sprint.projectId);
+      const error = await validateSprint(db, moveTo, sprint.projectId);
       if (error) {
         return c.json({ error }, 400);
       }
 
-      const openTasks = (await listSprintTasks(databases, [sprint.$id])).filter(
+      const openTasks = (await listSprintTasks(db, [sprint.$id])).filter(
         (task) => !isDoneStatus(project, task.status),
       );
-      await moveTasks(databases, openTasks, moveTo, member.$id);
+      await moveTasks(db, openTasks, moveTo, member.$id);
 
-      const updated = await databases.updateDocument<Sprint>(DATABASE_ID, SPRINTS_ID, sprint.$id, {
+      const updated = await db.sprints.update(sprint.$id, {
         completed: true,
       });
 
@@ -198,10 +187,10 @@ const app = new Hono()
     },
   )
   .delete("/:sprintId", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
+    const db = c.get("db");
 
     const { sprint, member } = await getSprintMember(
-      databases,
+      db,
       c.req.param("sprintId"),
       c.get("user").$id,
     );
@@ -209,9 +198,9 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    const tasks = await listSprintTasks(databases, [sprint.$id]);
-    await moveTasks(databases, tasks, null, member.$id);
-    await databases.deleteDocument(DATABASE_ID, SPRINTS_ID, sprint.$id);
+    const tasks = await listSprintTasks(db, [sprint.$id]);
+    await moveTasks(db, tasks, null, member.$id);
+    await db.sprints.delete(sprint.$id);
 
     return c.json({ data: { $id: sprint.$id, projectId: sprint.projectId } });
   });

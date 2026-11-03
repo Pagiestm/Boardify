@@ -1,14 +1,12 @@
 import { z } from "zod";
 import { Hono } from "hono";
-import { ID, Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
 import { getMember } from "@/features/members/utils";
 
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, SAVED_VIEWS_ID } from "@/config";
 
-import { parseSavedViewFilters, SavedView, savedViewFiltersSchema } from "../types";
+import { parseSavedViewFilters, savedViewFiltersSchema } from "../types";
 
 const app = new Hono()
   .get(
@@ -16,20 +14,19 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("query", z.object({ workspaceId: z.string().min(1) })),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { workspaceId } = c.req.valid("query");
 
-      const member = await getMember({ databases, workspaceId, userId: c.get("user").$id });
+      const member = await getMember({ db, workspaceId, userId: c.get("user").$id });
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const views = await databases.listDocuments<SavedView>(DATABASE_ID, SAVED_VIEWS_ID, [
-        Query.equal("workspaceId", workspaceId),
-        Query.equal("memberId", member.$id),
-        Query.orderAsc("name"),
-        Query.limit(100),
-      ]);
+      const views = await db.savedViews.list({
+        where: { workspaceId, memberId: member.$id },
+        orderBy: { name: "asc" },
+        limit: 100,
+      });
 
       return c.json({
         data: views.documents.map((view) => ({
@@ -54,34 +51,31 @@ const app = new Hono()
       }),
     ),
     async (c) => {
-      const databases = c.get("databases");
+      const db = c.get("db");
       const { workspaceId, name, view, filters } = c.req.valid("json");
 
-      const member = await getMember({ databases, workspaceId, userId: c.get("user").$id });
+      const member = await getMember({ db, workspaceId, userId: c.get("user").$id });
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const saved = await databases.createDocument<SavedView>(
-        DATABASE_ID,
-        SAVED_VIEWS_ID,
-        ID.unique(),
-        { workspaceId, memberId: member.$id, name, view, filters: JSON.stringify(filters) },
-      );
+      const saved = await db.savedViews.create({
+        workspaceId,
+        memberId: member.$id,
+        name,
+        view,
+        filters: JSON.stringify(filters),
+      });
 
       return c.json({ data: { $id: saved.$id, workspaceId } });
     },
   )
   .delete("/:viewId", sessionMiddleware, async (c) => {
-    const databases = c.get("databases");
-    const view = await databases.getDocument<SavedView>(
-      DATABASE_ID,
-      SAVED_VIEWS_ID,
-      c.req.param("viewId"),
-    );
+    const db = c.get("db");
+    const view = await db.savedViews.get(c.req.param("viewId"));
 
     const member = await getMember({
-      databases,
+      db,
       workspaceId: view.workspaceId,
       userId: c.get("user").$id,
     });
@@ -89,7 +83,7 @@ const app = new Hono()
       return c.json({ error: "Unauthorized" }, 401);
     }
 
-    await databases.deleteDocument(DATABASE_ID, SAVED_VIEWS_ID, view.$id);
+    await db.savedViews.delete(view.$id);
 
     return c.json({ data: { $id: view.$id, workspaceId: view.workspaceId } });
   });

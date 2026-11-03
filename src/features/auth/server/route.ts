@@ -1,21 +1,16 @@
+import { z } from "zod";
 import { Hono } from "hono";
-import { Account, AppwriteException, Client, ID } from "node-appwrite";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { zValidator } from "@hono/zod-validator";
 
-import { createAdminClient } from "@/lib/appwrite";
+import { AUTH_PROVIDER, getAuth, isAuthError } from "@/lib/auth";
+import { createOneTimeToken, getBetterAuth } from "@/lib/auth/better-auth";
 import { forgetSession, sessionMiddleware } from "@/lib/session-middleware";
 
 import { AUTH_COOKIE, isSecureUrl } from "../constants";
 import { loginShema, recoverySchema, registerShema, resetPasswordSchema } from "../schemas";
 
-/** Client sans session ni clé : la récupération de mot de passe se fait en visiteur. */
-const guestAccount = () =>
-  new Account(
-    new Client()
-      .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
-      .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!),
-  );
+const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
 
 const app = new Hono()
   .get("/current", sessionMiddleware, (c) => {
@@ -29,11 +24,7 @@ const app = new Hono()
     const origin = new URL(c.req.url).origin;
 
     // Même réponse que l'adresse existe ou non : on ne révèle pas qui a un compte.
-    await guestAccount()
-      .createRecovery(email, `${origin}/reset-password`)
-      .catch((error) => {
-        if (!(error instanceof AppwriteException) || error.code >= 500) throw error;
-      });
+    await getAuth().requestRecovery(email, `${origin}/reset-password`);
 
     return c.json({ data: { success: true } });
   })
@@ -41,14 +32,11 @@ const app = new Hono()
     const { userId, secret, password } = c.req.valid("json");
 
     try {
-      await guestAccount().updateRecovery(userId, secret, password);
+      await getAuth().confirmRecovery(userId, secret, password);
     } catch (error) {
-      const expired =
-        error instanceof AppwriteException &&
-        (error.type === "user_invalid_token" || error.code === 401 || error.code === 404);
       return c.json(
         {
-          error: expired
+          error: isAuthError(error, "invalid_token")
             ? "Ce lien a expiré ou a déjà servi. Demandez-en un nouveau."
             : "Impossible de changer le mot de passe. Réessayez.",
         },
@@ -61,15 +49,14 @@ const app = new Hono()
   .post("/login", zValidator("json", loginShema), async (c) => {
     const { email, password } = c.req.valid("json");
 
-    const { account } = await createAdminClient();
-    const session = await account.createEmailPasswordSession(email, password);
+    const token = await getAuth().signIn(email, password);
 
-    setCookie(c, AUTH_COOKIE, session.secret, {
+    setCookie(c, AUTH_COOKIE, token, {
       path: "/",
       httpOnly: true,
       secure: isSecureUrl(c.req.url),
       sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: SESSION_MAX_AGE,
     });
 
     return c.json({ success: true });
@@ -78,32 +65,86 @@ const app = new Hono()
   .post("/register", zValidator("json", registerShema), async (c) => {
     const { name, email, password } = c.req.valid("json");
 
-    const { account } = await createAdminClient();
-    await account.create(ID.unique(), email, password, name);
+    const token = await getAuth().signUp({ name, email, password });
 
-    const session = await account.createEmailPasswordSession(email, password);
-
-    setCookie(c, AUTH_COOKIE, session.secret, {
+    setCookie(c, AUTH_COOKIE, token, {
       path: "/",
       httpOnly: true,
       secure: isSecureUrl(c.req.url),
       sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge: SESSION_MAX_AGE,
     });
 
     return c.json({ success: true });
   })
 
   .post("/logout", sessionMiddleware, async (c) => {
-    const account = c.get("account");
     const session = getCookie(c, AUTH_COOKIE);
 
     deleteCookie(c, AUTH_COOKIE);
-    await account.deleteSession("current");
-
-    if (session) forgetSession(session);
+    if (session) {
+      await getAuth().signOut(session);
+      forgetSession(session);
+    }
 
     return c.json({ success: true });
+  })
+
+  /** Connexion Google ou GitHub : redirige vers le fournisseur. */
+  .get(
+    "/oauth/start",
+    zValidator(
+      "query",
+      z.object({ provider: z.enum(["google", "github"]), desktop: z.enum(["0", "1"]).optional() }),
+    ),
+    async (c) => {
+      const { provider, desktop } = c.req.valid("query");
+      const origin = new URL(c.req.url).origin;
+      const failure = `${origin}/sign-up`;
+      try {
+        const { url, cookies = [] } = await getAuth().startOAuth(provider, {
+          success: `${origin}/oauth${desktop === "1" ? "/desktop" : ""}`,
+          failure,
+        });
+
+        for (const cookie of cookies) c.header("Set-Cookie", cookie, { append: true });
+        return c.redirect(url);
+      } catch (error) {
+        // Fournisseur non configuré ou indisponible : retour à l'inscription.
+        console.error("[auth] connexion", provider, error);
+        return c.redirect(failure);
+      }
+    },
+  )
+
+  /**
+   * Retour de Google ou GitHub avec Better Auth : la session ouverte par Better Auth est remplacée
+   * par un jeton à usage unique, échangé ensuite comme avec Appwrite (web et application desktop).
+   */
+  .get("/oauth/complete", zValidator("query", z.object({ success: z.string() })), async (c) => {
+    const origin = new URL(c.req.url).origin;
+    const success = new URL(c.req.valid("query").success, origin);
+    if (AUTH_PROVIDER !== "better-auth" || success.origin !== origin) {
+      return c.redirect(`${origin}/sign-up`);
+    }
+
+    const auth = getBetterAuth();
+    const { headers, response } = await auth.api.getSession({
+      headers: c.req.raw.headers,
+      returnHeaders: true,
+    });
+    if (!response) return c.redirect(`${origin}/sign-up`);
+
+    const secret = await createOneTimeToken(response.user.id);
+    // La session du navigateur propre à Better Auth n'est plus utile.
+    const signOut = await auth.api.signOut({ headers: c.req.raw.headers, returnHeaders: true });
+    for (const cookie of [...headers.getSetCookie(), ...signOut.headers.getSetCookie()]) {
+      c.header("Set-Cookie", cookie, { append: true });
+    }
+
+    success.searchParams.set("userId", response.user.id);
+    success.searchParams.set("secret", secret);
+    return c.redirect(success.toString());
   });
 
 export default app;

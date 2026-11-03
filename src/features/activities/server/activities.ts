@@ -1,10 +1,8 @@
 import "server-only";
 
-import { ID, type Databases } from "node-appwrite";
+import type { Db } from "@/lib/db";
 
 import { Task } from "@/features/tasks/types";
-
-import { ACTIVITIES_ID, DATABASE_ID } from "@/config";
 
 import { ActivityChange, ActivityType } from "../types";
 
@@ -98,7 +96,7 @@ export const describeTaskChanges = (before: Task, after: Task): ActivityEntry[] 
 };
 
 export const logActivities = async (
-  databases: Databases,
+  db: Db,
   task: Pick<Task, "$id" | "workspaceId">,
   memberId: string | null,
   entries: ActivityEntry[],
@@ -106,7 +104,7 @@ export const logActivities = async (
   try {
     await Promise.all(
       entries.map(({ type, change }) =>
-        databases.createDocument(DATABASE_ID, ACTIVITIES_ID, ID.unique(), {
+        db.activities.create({
           workspaceId: task.workspaceId,
           taskId: task.$id,
           memberId,

@@ -1,16 +1,13 @@
 import { z } from "zod";
 
 import { Hono } from "hono";
-import { Query } from "node-appwrite";
 import { zValidator } from "@hono/zod-validator";
 
-import { createAdminClient } from "@/lib/appwrite";
 import { getUserIdentities } from "@/lib/users";
-import { DATABASE_ID, MEMBERS_ID } from "@/config";
 import { sessionMiddleware } from "@/lib/session-middleware";
 
 import { forgetMembers, getMember } from "../utils";
-import { Member, MemberRole } from "../types";
+import { MemberRole } from "../types";
 import { isLastAdmin } from "../rules";
 
 const app = new Hono()
@@ -19,13 +16,12 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("query", z.object({ workspaceId: z.string() })),
     async (c) => {
-      const { users } = await createAdminClient();
-      const databases = c.get("databases");
+      const db = c.get("db");
       const user = c.get("user");
       const { workspaceId } = c.req.valid("query");
 
       const member = await getMember({
-        databases,
+        db,
         workspaceId,
         userId: user.$id,
       });
@@ -34,14 +30,9 @@ const app = new Hono()
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const members = await databases.listDocuments<Member>(DATABASE_ID, MEMBERS_ID, [
-        Query.equal("workspaceId", workspaceId),
-      ]);
+      const members = await db.members.list({ where: { workspaceId } });
 
-      const identities = await getUserIdentities(
-        users,
-        members.documents.map((member) => member.userId),
-      );
+      const identities = await getUserIdentities(members.documents.map((member) => member.userId));
 
       const populatedMembers = members.documents.map((member) => ({
         ...member,
@@ -61,16 +52,16 @@ const app = new Hono()
   .delete("/:memberId", sessionMiddleware, async (c) => {
     const { memberId } = c.req.param();
     const user = c.get("user");
-    const databases = c.get("databases");
+    const db = c.get("db");
 
-    const memberToDelete = await databases.getDocument<Member>(DATABASE_ID, MEMBERS_ID, memberId);
+    const memberToDelete = await db.members.get(memberId);
 
-    const allMembersInWorkspace = await databases.listDocuments<Member>(DATABASE_ID, MEMBERS_ID, [
-      Query.equal("workspaceId", memberToDelete.workspaceId),
-    ]);
+    const allMembersInWorkspace = await db.members.list({
+      where: { workspaceId: memberToDelete.workspaceId },
+    });
 
     const member = await getMember({
-      databases,
+      db,
       workspaceId: memberToDelete.workspaceId,
       userId: user.$id,
     });
@@ -91,7 +82,7 @@ const app = new Hono()
       return c.json({ error: "Nommez un autre administrateur avant de retirer le dernier." }, 400);
     }
 
-    await databases.deleteDocument(DATABASE_ID, MEMBERS_ID, memberId);
+    await db.members.delete(memberId);
 
     forgetMembers(memberToDelete.workspaceId);
 
@@ -105,16 +96,16 @@ const app = new Hono()
       const { memberId } = c.req.param();
       const { role } = c.req.valid("json");
       const user = c.get("user");
-      const databases = c.get("databases");
+      const db = c.get("db");
 
-      const memberToUpdate = await databases.getDocument<Member>(DATABASE_ID, MEMBERS_ID, memberId);
+      const memberToUpdate = await db.members.get(memberId);
 
-      const allMembersInWorkspace = await databases.listDocuments<Member>(DATABASE_ID, MEMBERS_ID, [
-        Query.equal("workspaceId", memberToUpdate.workspaceId),
-      ]);
+      const allMembersInWorkspace = await db.members.list({
+        where: { workspaceId: memberToUpdate.workspaceId },
+      });
 
       const member = await getMember({
-        databases,
+        db,
         workspaceId: memberToUpdate.workspaceId,
         userId: user.$id,
       });
@@ -134,9 +125,7 @@ const app = new Hono()
         return c.json({ error: "Il doit rester au moins un administrateur dans l'espace." }, 400);
       }
 
-      await databases.updateDocument(DATABASE_ID, MEMBERS_ID, memberId, {
-        role,
-      });
+      await db.members.update(memberId, { role });
 
       forgetMembers(memberToUpdate.workspaceId);
 
