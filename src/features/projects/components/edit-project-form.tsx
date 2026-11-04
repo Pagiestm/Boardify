@@ -30,9 +30,11 @@ import { useDeleteProject } from "../api/use-delete-project";
 interface EditProjectFormProps {
   onCancel?: () => void;
   initialValues: Project;
+  /** Réglages complémentaires, affichés avant la zone de danger. */
+  children?: React.ReactNode;
 }
 
-export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProps) => {
+export const EditProjectForm = ({ onCancel, initialValues, children }: EditProjectFormProps) => {
   const router = useRouter();
   const { mutate, isPending } = useUpdateProject();
   const { mutate: deleteProject, isPending: isDeletingProject } = useDeleteProject();
@@ -151,6 +153,8 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
           </form>
         </Form>
       </Card>
+
+      {children}
 
       <DangerZone
         description="La suppression d'un projet est irréversible et supprime toutes les tâches associées."

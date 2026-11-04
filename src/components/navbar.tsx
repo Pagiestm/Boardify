@@ -16,6 +16,7 @@ import { useCommandPalette } from "./command-palette";
 
 const pathnameMap: Record<string, string> = {
   tasks: "Mes tâches",
+  portfolio: "Portefeuille",
   projects: "Projet",
   members: "Membres",
   settings: "Paramètres",

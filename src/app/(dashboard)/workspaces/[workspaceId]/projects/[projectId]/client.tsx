@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { SettingsIcon } from "lucide-react";
+import { BookOpenIcon, SettingsIcon } from "lucide-react";
 
 import { useProjectId } from "@/features/projects/hooks/use-project-id";
 import { useGetProject } from "@/features/projects/api/use-get-project";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 import { TaskViewSwitcher } from "@/features/tasks/components/task-view-switcher";
 import { SprintBar } from "@/features/sprints/components/sprint-bar";
+import { FlowMetrics } from "@/features/flow/components/flow-metrics";
 import { NO_SPRINT } from "@/features/sprints/types";
 import { useGetSprints } from "@/features/sprints/api/use-sprints";
 import { useTaskFilters } from "@/features/tasks/hooks/use-task-filters";
@@ -20,6 +21,7 @@ import {
 } from "@/features/assistant/components/project-assistant-menu";
 
 import { PresenceAvatars } from "@/features/presence/components/presence-avatars";
+import { useGetDocs } from "@/features/docs/api/use-docs";
 
 import { Button } from "@/components/ui/button";
 import { PageError } from "@/components/page-error";
@@ -32,6 +34,7 @@ export const ProjectIdClient = () => {
   const [{ sprintId }] = useTaskFilters();
   const { data: sprints } = useGetSprints({ projectId });
   const assistantReady = useAssistantReady(project?.workspaceId);
+  const { data: docs } = useGetDocs({ projectId });
   const sprint =
     sprintId && sprintId !== NO_SPRINT
       ? (sprints?.find((candidate) => candidate.$id === sprintId) ?? null)
@@ -71,6 +74,14 @@ export const ProjectIdClient = () => {
               <ProjectAssistantMenu onSelect={setDialog} />
             </div>
           )}
+          {docs?.enabled && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/workspaces/${project.workspaceId}/projects/${project.$id}/docs`}>
+                <BookOpenIcon />
+                Documentation
+              </Link>
+            </Button>
+          )}
           <Button variant="outline" size="sm" asChild data-tour="project-settings">
             <Link href={`/workspaces/${project.workspaceId}/projects/${project.$id}/settings`}>
               <SettingsIcon />
@@ -88,6 +99,7 @@ export const ProjectIdClient = () => {
         />
       )}
       <SprintBar workspaceId={project.workspaceId} projectId={project.$id} />
+      <FlowMetrics projectId={project.$id} sprintId={sprint?.$id} sprintName={sprint?.name} />
       <TaskViewSwitcher hideProjectFilter />
     </div>
   );

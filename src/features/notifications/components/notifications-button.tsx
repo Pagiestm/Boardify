@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AtSignIcon,
+  AlarmClockIcon,
   BellIcon,
   CalendarClockIcon,
   MessageSquareIcon,
@@ -26,6 +27,7 @@ const ICONS = {
   [NotificationType.MENTIONED]: AtSignIcon,
   [NotificationType.COMMENTED]: MessageSquareIcon,
   [NotificationType.DUE_SOON]: CalendarClockIcon,
+  [NotificationType.REMINDER]: AlarmClockIcon,
 };
 
 export const NotificationsButton = () => {

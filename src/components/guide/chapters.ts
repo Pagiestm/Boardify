@@ -36,13 +36,13 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
   {
     id: "projets",
     title: "Projets et colonnes",
-    summary: "Créer un projet et adapter ses colonnes à votre façon de travailler.",
+    summary: "Créer un projet, adapter ses colonnes, sa documentation et son formulaire public.",
     icon: FolderKanbanIcon,
   },
   {
     id: "taches",
     title: "Les tâches",
-    summary: "Créer, détailler, commenter, répéter et réutiliser vos tâches.",
+    summary: "Créer, détailler, commenter, chronométrer, estimer et réutiliser vos tâches.",
     icon: ListChecksIcon,
   },
   {
@@ -54,13 +54,14 @@ export const GUIDE_CHAPTERS: GuideChapter[] = [
   {
     id: "sprints",
     title: "Sprints",
-    summary: "Planifier des itérations, suivre leur avancement et les clôturer.",
+    summary:
+      "Planifier des itérations, suivre leur avancement, les clôturer et en tirer les leçons.",
     icon: FlagIcon,
   },
   {
     id: "accueil",
     title: "Accueil et statistiques",
-    summary: "Échéances, charge de l'équipe et activité en un coup d'œil.",
+    summary: "Échéances, charge de l'équipe, portefeuille de projets et indicateurs de flux.",
     icon: HouseIcon,
   },
   {

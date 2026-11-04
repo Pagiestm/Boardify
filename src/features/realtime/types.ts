@@ -12,7 +12,13 @@ export type RealtimeTopic =
   | "saved-views"
   | "templates"
   | "notifications"
-  | "presence";
+  | "presence"
+  | "time-entries"
+  | "reminders"
+  | "poker"
+  | "docs"
+  | "intake-forms"
+  | "retro";
 
 export interface RealtimeChange {
   topic: RealtimeTopic;

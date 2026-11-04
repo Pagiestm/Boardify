@@ -230,6 +230,28 @@ export const GuideContent = () => (
           ]}
         </Bullets>
       </Part>
+
+      <Part title="Documentation du projet">
+        <Text>
+          <Ui>Documentation</Ui>, en haut d&apos;un projet, rassemble ses pages : spécifications,
+          notes de réunion, décisions. Elles s&apos;écrivent en Markdown, se retrouvent par leur
+          titre et peuvent être liées aux tâches concernées. Chaque page indique qui l&apos;a créée
+          et modifiée en dernier.
+        </Text>
+      </Part>
+
+      <Part title="Formulaire public de demande">
+        <Text>
+          Dans les paramètres du projet, un administrateur peut activer un formulaire public :
+          choisissez à qui assigner les demandes et dans quel statut, puis partagez l&apos;adresse.
+          N&apos;importe qui peut alors envoyer une demande sans compte (un client, un testeur…), et
+          chacune devient une tâche du projet.
+        </Text>
+        <Tip>
+          <Ui>Nouvelle adresse</Ui> désactive aussitôt l&apos;ancienne : utile si le lien a trop
+          circulé.
+        </Tip>
+      </Part>
     </Chapter>
 
     <Chapter id="taches">
@@ -316,6 +338,40 @@ export const GuideContent = () => (
             </>,
           ]}
         </Bullets>
+      </Part>
+
+      <Part title="Temps passé et rappels">
+        <Bullets>
+          {[
+            <>
+              <Ui>Démarrer le chronomètre</Ui> compte votre temps sur la tâche jusqu&apos;à{" "}
+              <Ui>Arrêter</Ui> (un seul chronomètre à la fois). Vous pouvez aussi saisir un temps
+              après coup, par exemple « 45m » ou « 1h30 ». L&apos;icône graphique montre le temps de
+              chacun sur 7, 30 ou 90 jours, ou sur un sprint.
+            </>,
+            <>
+              <Ui>Rappel</Ui>, en haut de la tâche, vous la rappelle dans une heure, ce soir, demain
+              ou lundi matin, ou à la date de votre choix. Le rappel arrive dans vos notifications ;
+              vous seul le voyez.
+            </>,
+          ]}
+        </Bullets>
+      </Part>
+
+      <Part title="Estimer à plusieurs (planning poker)">
+        <Steps>
+          {[
+            <>
+              Sur la carte <Ui>Estimation</Ui> d&apos;une tâche, cliquez sur{" "}
+              <Ui>Lancer le planning poker</Ui>.
+            </>,
+            <>Chaque membre choisit sa carte en secret : on voit qui a voté, pas la valeur.</>,
+            <>
+              <Ui>Révéler les cartes</Ui> affiche tous les votes. Relancez un tour si les avis
+              divergent, puis <Ui>Appliquer</Ui> enregistre l&apos;estimation sur la tâche.
+            </>,
+          ]}
+        </Steps>
       </Part>
     </Chapter>
 
@@ -408,6 +464,15 @@ export const GuideContent = () => (
           sprint de votre choix, ou remises dans le backlog.
         </Text>
       </Part>
+
+      <Part title="Rétrospective">
+        <Text>
+          Quand vous terminez un sprint, sa rétrospective s&apos;ouvre : chacun note ce qui a bien
+          marché, ce qui est à améliorer et les actions à mener. Une action devient une tâche du
+          projet en un clic. La rétrospective reste accessible avec le bouton <Ui>Rétrospective</Ui>{" "}
+          du sprint.
+        </Text>
+      </Part>
     </Chapter>
 
     <Chapter id="accueil">
@@ -434,6 +499,35 @@ export const GuideContent = () => (
             <>vos tâches assignées, les projets et les membres de l&apos;espace.</>,
           ]}
         </Bullets>
+      </Part>
+
+      <Part title="Portefeuille">
+        <Text>
+          <Ui>Portefeuille</Ui>, dans la barre latérale, réunit tous les projets de l&apos;espace :
+          avancement, tâches en retard, prochaine échéance, sprint en cours et une santé (
+          <Ui>En retard</Ui>, <Ui>À surveiller</Ui>, <Ui>En bonne voie</Ui>) expliquée sur chaque
+          carte. Filtrez par santé, cherchez un projet ou changez le tri.
+        </Text>
+      </Part>
+
+      <Part title="Indicateurs de flux">
+        <Text>
+          Sur la page d&apos;un projet, dépliez <Ui>Indicateurs de flux</Ui> :
+        </Text>
+        <Bullets>
+          {[
+            <>
+              le <Ui>temps de cycle</Ui> (du début du travail à la fin) et le{" "}
+              <Ui>temps de traversée</Ui> (de la création à la fin) ;
+            </>,
+            <>le nombre de tâches terminées chaque semaine ;</>,
+            <>
+              le <Ui>flux cumulé</Ui> : une bande qui s&apos;épaissit signale une étape où les
+              tâches s&apos;accumulent.
+            </>,
+          ]}
+        </Bullets>
+        <Text>Choisissez une période de 30 à 90 jours, ou le sprint sélectionné.</Text>
       </Part>
     </Chapter>
 

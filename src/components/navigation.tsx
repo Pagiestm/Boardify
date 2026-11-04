@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HomeIcon, ListChecksIcon, SettingsIcon, UsersIcon } from "lucide-react";
+import {
+  BriefcaseBusinessIcon,
+  HomeIcon,
+  ListChecksIcon,
+  SettingsIcon,
+  UsersIcon,
+} from "lucide-react";
 
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 
@@ -11,6 +17,7 @@ import { cn } from "@/lib/utils";
 const routes = [
   { label: "Accueil", href: "", icon: HomeIcon },
   { label: "Mes tâches", href: "/tasks", icon: ListChecksIcon },
+  { label: "Portefeuille", href: "/portfolio", icon: BriefcaseBusinessIcon },
   { label: "Membres", href: "/members", icon: UsersIcon },
   { label: "Paramètres", href: "/settings", icon: SettingsIcon },
 ];

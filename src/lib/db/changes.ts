@@ -19,7 +19,17 @@ export const TABLE_TOPICS: Record<string, RealtimeTopic> = {
   task_templates: "templates",
   notifications: "notifications",
   presence: "presence",
+  time_entries: "time-entries",
+  reminders: "reminders",
+  poker_sessions: "poker",
+  poker_votes: "poker",
+  docs: "docs",
+  intake_forms: "intake-forms",
+  retro_items: "retro",
 };
+
+/** Sujets privés : seul leur destinataire (`userId`) les reçoit. */
+export const PRIVATE_TOPICS: RealtimeTopic[] = ["notifications", "reminders"];
 
 /** Changement annoncé : uniquement des identifiants (une notification Postgres fait 8 000 octets au plus). */
 export interface ChangePayload {
@@ -43,8 +53,8 @@ export const changePayload = (
   const payload: ChangePayload = { topic, workspaceId };
   const taskId = text(row.taskId);
   if (taskId) payload.taskId = taskId;
-  // Les notifications ne concernent que leur destinataire.
-  const userId = topic === "notifications" ? text(row.userId) : undefined;
+  // Les notifications et les rappels ne concernent que leur destinataire.
+  const userId = PRIVATE_TOPICS.includes(topic) ? text(row.userId) : undefined;
   if (userId) payload.userId = userId;
   return payload;
 };

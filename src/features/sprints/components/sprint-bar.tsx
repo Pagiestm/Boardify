@@ -3,7 +3,15 @@
 import { useState } from "react";
 import { fr } from "date-fns/locale";
 import { addDays, differenceInCalendarDays, format, startOfDay } from "date-fns";
-import { FlagIcon, PencilIcon, PlusIcon, SparklesIcon, Trash2Icon, TrophyIcon } from "lucide-react";
+import {
+  FlagIcon,
+  MessagesSquareIcon,
+  PencilIcon,
+  PlusIcon,
+  SparklesIcon,
+  Trash2Icon,
+  TrophyIcon,
+} from "lucide-react";
 
 import { PopulatedTask } from "@/features/tasks/types";
 import { isTaskDone } from "@/features/tasks/utils";
@@ -12,6 +20,8 @@ import { useTaskFilters } from "@/features/tasks/hooks/use-task-filters";
 import { MemberAvatar } from "@/features/members/components/member-avatar";
 import { useAssistantReady } from "@/features/assistant/api/use-assistant";
 import { SprintPlanDialog } from "@/features/assistant/components/sprint-plan-dialog";
+import { useRetro } from "@/features/retro/api/use-retro";
+import { SprintRetroDialog } from "@/features/retro/components/sprint-retro-dialog";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +89,8 @@ type SprintDialog =
   | { kind: "create"; defaults: SprintFormValues }
   | { kind: "edit"; sprint: Sprint }
   | { kind: "complete" }
-  | { kind: "plan" };
+  | { kind: "plan" }
+  | { kind: "retro" };
 
 export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
   const [{ sprintId }, setFilters] = useTaskFilters();
@@ -89,6 +100,9 @@ export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
   const assistantReady = useAssistantReady(workspaceId);
 
   const selected = sprints?.find((sprint) => sprint.$id === sprintId);
+  // Sans collection de rétrospective, le bouton et l'ouverture après clôture sont masqués.
+  const { data: retro } = useRetro(selected?.$id);
+  const retroEnabled = Boolean(retro?.enabled);
   const { data: sprintTasks } = useGetTasks({
     workspaceId,
     projectId,
@@ -254,6 +268,21 @@ export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
               </Button>
             </>
           )}
+          {selected && retroEnabled && (
+            <Button
+              size="sm"
+              variant={selected.completed ? "outline" : "ghost"}
+              onClick={() => setDialog({ kind: "retro" })}
+            >
+              <MessagesSquareIcon />
+              Rétrospective
+              {(retro?.items.length ?? 0) > 0 && (
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {retro?.items.length}
+                </span>
+              )}
+            </Button>
+          )}
           {selected && (
             <Button
               variant="ghost"
@@ -364,7 +393,12 @@ export const SprintBar = ({ workspaceId, projectId }: SprintBarProps) => {
           sprint={selected}
           targets={openSprints.filter((sprint) => sprint.$id !== selected.$id)}
           onClose={() => setDialog(null)}
+          // Une fois le sprint terminé, la rétrospective est proposée aussitôt.
+          onCompleted={() => setDialog(retroEnabled ? { kind: "retro" } : null)}
         />
+      )}
+      {dialog?.kind === "retro" && selected && (
+        <SprintRetroDialog sprint={selected} onClose={() => setDialog(null)} />
       )}
     </section>
   );

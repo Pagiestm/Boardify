@@ -24,6 +24,12 @@ const QUERIES: Record<RealtimeTopic, string[][]> = {
   templates: [["templates"]],
   notifications: [["notifications"]],
   presence: [["presence"]],
+  "time-entries": [["time-entries"]],
+  reminders: [["reminders"], ["notifications"]],
+  poker: [["poker"]],
+  docs: [["docs"]],
+  "intake-forms": [["intake-forms"]],
+  retro: [["retro"]],
 };
 
 /** Regroupe les changements reçus en rafale avant de rafraîchir. */

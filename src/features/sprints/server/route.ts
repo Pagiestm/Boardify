@@ -7,6 +7,7 @@ import { getMember } from "@/features/members/utils";
 import { isDoneStatus } from "@/features/tasks/server/done";
 import { ActivityType } from "@/features/activities/types";
 import { logActivities } from "@/features/activities/server/activities";
+import { deleteSprintRetro } from "@/features/retro/server/cleanup";
 
 import { sessionMiddleware } from "@/lib/session-middleware";
 import type { Db } from "@/lib/db";
@@ -200,6 +201,7 @@ const app = new Hono()
 
     const tasks = await listSprintTasks(db, [sprint.$id]);
     await moveTasks(db, tasks, null, member.$id);
+    await deleteSprintRetro(db, sprint.$id);
     await db.sprints.delete(sprint.$id);
 
     return c.json({ data: { $id: sprint.$id, projectId: sprint.projectId } });

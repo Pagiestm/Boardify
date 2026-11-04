@@ -5,6 +5,7 @@ export enum NotificationType {
   MENTIONED = "mentioned",
   COMMENTED = "commented",
   DUE_SOON = "due_soon",
+  REMINDER = "reminder",
 }
 
 export type Notification = BaseDocument & {

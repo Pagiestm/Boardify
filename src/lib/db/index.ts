@@ -17,12 +17,25 @@ import type { ChecklistItem } from "@/features/checklist/types";
 import type { PresenceRecord } from "@/features/presence/types";
 import type { Notification } from "@/features/notifications/types";
 import type { AiSettings } from "@/features/assistant/server/model";
+import type { TimeEntry } from "@/features/time-tracking/types";
+import type { Reminder } from "@/features/reminders/types";
+import type { PokerSession, PokerVote } from "@/features/poker/types";
+import type { ProjectDoc } from "@/features/docs/types";
+import type { IntakeForm } from "@/features/intake/types";
+import type { RetroItem } from "@/features/retro/types";
 
 import {
   ACTIVITIES_ID,
   AI_SETTINGS_ID,
   ATTACHMENTS_ID,
   CHECKLIST_ITEMS_ID,
+  DOCS_ID,
+  INTAKE_FORMS_ID,
+  POKER_SESSIONS_ID,
+  POKER_VOTES_ID,
+  REMINDERS_ID,
+  RETRO_ITEMS_ID,
+  TIME_ENTRIES_ID,
   COMMENTS_ID,
   DATABASE_ID,
   LABELS_ID,
@@ -64,6 +77,13 @@ export interface Db {
   sprints: Collection<Sprint>;
   aiSettings: Collection<AiSettings>;
   presence: Collection<PresenceRecord>;
+  timeEntries: Collection<TimeEntry>;
+  reminders: Collection<Reminder>;
+  pokerSessions: Collection<PokerSession>;
+  pokerVotes: Collection<PokerVote>;
+  docs: Collection<ProjectDoc>;
+  intakeForms: Collection<IntakeForm>;
+  retroItems: Collection<RetroItem>;
 }
 
 const appwriteDb = (databases: Databases): Db => {
@@ -86,6 +106,13 @@ const appwriteDb = (databases: Databases): Db => {
     sprints: collection<Sprint>(SPRINTS_ID),
     aiSettings: collection<AiSettings>(AI_SETTINGS_ID),
     presence: collection<PresenceRecord>(PRESENCE_ID),
+    timeEntries: collection<TimeEntry>(TIME_ENTRIES_ID),
+    reminders: collection<Reminder>(REMINDERS_ID),
+    pokerSessions: collection<PokerSession>(POKER_SESSIONS_ID),
+    pokerVotes: collection<PokerVote>(POKER_VOTES_ID),
+    docs: collection<ProjectDoc>(DOCS_ID),
+    intakeForms: collection<IntakeForm>(INTAKE_FORMS_ID),
+    retroItems: collection<RetroItem>(RETRO_ITEMS_ID),
   };
 };
 
@@ -109,6 +136,13 @@ const getPostgresDb = (): Db =>
     sprints: postgresCollection<Sprint>(getPostgres, schema.sprints),
     aiSettings: postgresCollection<AiSettings>(getPostgres, schema.aiSettings),
     presence: postgresCollection<PresenceRecord>(getPostgres, schema.presence),
+    timeEntries: postgresCollection<TimeEntry>(getPostgres, schema.timeEntries),
+    reminders: postgresCollection<Reminder>(getPostgres, schema.reminders),
+    pokerSessions: postgresCollection<PokerSession>(getPostgres, schema.pokerSessions),
+    pokerVotes: postgresCollection<PokerVote>(getPostgres, schema.pokerVotes),
+    docs: postgresCollection<ProjectDoc>(getPostgres, schema.docs),
+    intakeForms: postgresCollection<IntakeForm>(getPostgres, schema.intakeForms),
+    retroItems: postgresCollection<RetroItem>(getPostgres, schema.retroItems),
   });
 
 /**

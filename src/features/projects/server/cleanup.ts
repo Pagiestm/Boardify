@@ -25,8 +25,21 @@ const deleteProjectTasks = async (db: Db, files: FileStore, projectId: string) =
   } while (documents.length === 100);
 };
 
+/** Pages de documentation et formulaire public du projet (collections facultatives). */
+const deleteProjectExtras = async (db: Db, projectId: string) => {
+  for (const collection of [db.docs, db.intakeForms]) {
+    if (!collection.enabled) continue;
+    let documents: { $id: string }[];
+    do {
+      ({ documents } = await collection.list({ where: { projectId }, limit: 100 }));
+      await Promise.all(documents.map((document) => collection.delete(document.$id)));
+    } while (documents.length === 100);
+  }
+};
+
 export const deleteProject = async (db: Db, files: FileStore, projectId: string) => {
   await deleteProjectTasks(db, files, projectId);
   await deleteProjectSprints(db, projectId);
+  await deleteProjectExtras(db, projectId);
   await db.projects.delete(projectId);
 };

@@ -9,6 +9,8 @@ import { TaskDescription } from "@/features/tasks/components/task-description";
 import { TaskGithubDevelopment } from "@/features/github/components/task-github-development";
 import { TaskChecklist } from "@/features/checklist/components/task-checklist";
 import { TaskAttachments } from "@/features/attachments/components/task-attachments";
+import { TaskTimeTracking } from "@/features/time-tracking/components/task-time-tracking";
+import { TaskPoker } from "@/features/poker/components/task-poker";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageError } from "@/components/page-error";
@@ -61,6 +63,12 @@ export const TaskIdClient = () => {
         <div className="flex flex-col gap-4">
           <div data-tour="task-overview">
             <TaskOverview task={data} />
+          </div>
+          <div data-tour="task-time">
+            <TaskTimeTracking task={data} />
+          </div>
+          <div data-tour="task-poker">
+            <TaskPoker task={data} />
           </div>
           {data.githubIssueUrl && <TaskGithubDevelopment taskId={data.$id} />}
         </div>

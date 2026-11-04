@@ -27,9 +27,16 @@ interface CompleteSprintDialogProps {
   sprint: Sprint & { stats: SprintStats };
   targets: Sprint[];
   onClose: () => void;
+  /** Appelé une fois le sprint terminé (par exemple pour ouvrir la rétrospective). */
+  onCompleted?: () => void;
 }
 
-export const CompleteSprintDialog = ({ sprint, targets, onClose }: CompleteSprintDialogProps) => {
+export const CompleteSprintDialog = ({
+  sprint,
+  targets,
+  onClose,
+  onCompleted,
+}: CompleteSprintDialogProps) => {
   const [moveTo, setMoveTo] = useState(targets[0]?.$id ?? NO_SPRINT);
   const { mutate, isPending } = useCompleteSprint();
 
@@ -41,7 +48,7 @@ export const CompleteSprintDialog = ({ sprint, targets, onClose }: CompleteSprin
         param: { sprintId: sprint.$id },
         json: { moveTo: moveTo === NO_SPRINT ? null : moveTo },
       },
-      { onSuccess: onClose },
+      { onSuccess: onCompleted ?? onClose },
     );
 
   return (

@@ -16,3 +16,11 @@ export const SPRINTS_ID = process.env.NEXT_PUBLIC_APPWRITE_SPRINTS_ID!;
 export const AI_SETTINGS_ID = process.env.NEXT_PUBLIC_APPWRITE_AI_SETTINGS_ID!;
 /** Facultatif : sans cette collection, la présence en direct est désactivée. */
 export const PRESENCE_ID = process.env.NEXT_PUBLIC_APPWRITE_PRESENCE_ID;
+/** Facultatives : sans leur collection, la fonctionnalité correspondante est masquée. */
+export const TIME_ENTRIES_ID = process.env.NEXT_PUBLIC_APPWRITE_TIME_ENTRIES_ID;
+export const REMINDERS_ID = process.env.NEXT_PUBLIC_APPWRITE_REMINDERS_ID;
+export const POKER_SESSIONS_ID = process.env.NEXT_PUBLIC_APPWRITE_POKER_SESSIONS_ID;
+export const POKER_VOTES_ID = process.env.NEXT_PUBLIC_APPWRITE_POKER_VOTES_ID;
+export const DOCS_ID = process.env.NEXT_PUBLIC_APPWRITE_DOCS_ID;
+export const INTAKE_FORMS_ID = process.env.NEXT_PUBLIC_APPWRITE_INTAKE_FORMS_ID;
+export const RETRO_ITEMS_ID = process.env.NEXT_PUBLIC_APPWRITE_RETRO_ITEMS_ID;

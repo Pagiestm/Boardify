@@ -56,10 +56,13 @@ interface CreateTaskOptions {
   via?: string;
 }
 
-/** Crée une tâche avec ses effets : issue GitHub, checklist, activité, notification, webhooks. */
+/**
+ * Crée une tâche avec ses effets : issue GitHub, checklist, activité, notification, webhooks.
+ * `memberId` vide : création sans membre (formulaire public), l'origine est alors `via`.
+ */
 export const createTask = async (
   db: Db,
-  memberId: string,
+  memberId: string | null,
   input: CreateTaskInput,
   { via }: CreateTaskOptions = {},
 ): Promise<MutationResult> => {

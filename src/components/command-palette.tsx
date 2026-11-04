@@ -5,6 +5,7 @@ import { Command } from "cmdk";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import {
+  BriefcaseBusinessIcon,
   CircleCheckIcon,
   CircleIcon,
   FolderIcon,
@@ -247,6 +248,14 @@ export const CommandPalette = () => {
                 onSelect={go(`${base}/tasks`)}
               >
                 Mes tâches
+              </Item>
+              <Item
+                value="portefeuille"
+                keywords={["projets", "portfolio", "santé", "avancement"]}
+                icon={<BriefcaseBusinessIcon />}
+                onSelect={go(`${base}/portfolio`)}
+              >
+                Portefeuille
               </Item>
               <Item
                 value="parametres"

@@ -24,6 +24,14 @@ import assistant from "@/features/assistant/server/route";
 import account from "@/features/account/server/route";
 import realtime from "@/features/realtime/server/route";
 import presence from "@/features/presence/server/route";
+import timeEntries from "@/features/time-tracking/server/route";
+import reminders from "@/features/reminders/server/route";
+import poker from "@/features/poker/server/route";
+import docs from "@/features/docs/server/route";
+import intake from "@/features/intake/server/route";
+import retro from "@/features/retro/server/route";
+import portfolio from "@/features/portfolio/server/route";
+import flow from "@/features/flow/server/route";
 
 import { isNotFound } from "@/lib/db";
 import { AUTH_PROVIDER, isAuthError, type AuthError } from "@/lib/auth";
@@ -84,7 +92,15 @@ const routes = app
   .route("/assistant", assistant)
   .route("/account", account)
   .route("/realtime", realtime)
-  .route("/presence", presence);
+  .route("/presence", presence)
+  .route("/time-entries", timeEntries)
+  .route("/reminders", reminders)
+  .route("/poker", poker)
+  .route("/docs", docs)
+  .route("/intake", intake)
+  .route("/retro", retro)
+  .route("/portfolio", portfolio)
+  .route("/flow", flow);
 
 export const GET = handle(app);
 export const POST = handle(app);

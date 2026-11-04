@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Db } from "@/lib/db";
 import { Task } from "@/features/tasks/types";
+import { deleteSprintRetro } from "@/features/retro/server/cleanup";
 
 import { Sprint } from "../types";
 
@@ -42,6 +43,11 @@ export const deleteProjectSprints = async (db: Db, projectId: string) => {
   do {
     ({ documents } = await db.sprints.list({ where: { projectId }, limit: 100 }));
 
-    await Promise.all(documents.map((sprint) => db.sprints.delete(sprint.$id)));
+    await Promise.all(
+      documents.map(async (sprint) => {
+        await deleteSprintRetro(db, sprint.$id);
+        await db.sprints.delete(sprint.$id);
+      }),
+    );
   } while (documents.length === 100);
 };

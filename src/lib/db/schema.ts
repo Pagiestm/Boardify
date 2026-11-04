@@ -240,6 +240,105 @@ export const presence = pgTable(
   (table) => [index().on(table.workspaceId)],
 );
 
+export const timeEntries = pgTable(
+  "time_entries",
+  {
+    ...base,
+    workspaceId: text("workspace_id").notNull(),
+    taskId: text("task_id").notNull(),
+    memberId: text("member_id").notNull(),
+    startedAt: date("started_at").notNull(),
+    endedAt: date("ended_at"),
+    note: text("note"),
+  },
+  (table) => [index().on(table.taskId), index().on(table.workspaceId, table.memberId)],
+);
+
+export const reminders = pgTable(
+  "reminders",
+  {
+    ...base,
+    workspaceId: text("workspace_id").notNull(),
+    taskId: text("task_id").notNull(),
+    userId: text("user_id").notNull(),
+    remindAt: date("remind_at").notNull(),
+    sent: boolean("sent").notNull().default(false),
+  },
+  (table) => [index().on(table.userId, table.sent, table.remindAt), index().on(table.taskId)],
+);
+
+/** Une séance par tâche : son identifiant est celui de la tâche. */
+export const pokerSessions = pgTable(
+  "poker_sessions",
+  {
+    ...base,
+    workspaceId: text("workspace_id").notNull(),
+    taskId: text("task_id").notNull(),
+    startedBy: text("started_by").notNull(),
+    round: integer("round").notNull().default(1),
+    revealed: boolean("revealed").notNull().default(false),
+  },
+  (table) => [index().on(table.workspaceId)],
+);
+
+export const pokerVotes = pgTable(
+  "poker_votes",
+  {
+    ...base,
+    workspaceId: text("workspace_id").notNull(),
+    taskId: text("task_id").notNull(),
+    memberId: text("member_id").notNull(),
+    round: integer("round").notNull(),
+    value: text("value").notNull(),
+  },
+  (table) => [index().on(table.taskId, table.round)],
+);
+
+export const docs = pgTable(
+  "docs",
+  {
+    ...base,
+    workspaceId: text("workspace_id").notNull(),
+    projectId: text("project_id").notNull(),
+    title: text("title").notNull(),
+    content: text("content").notNull().default(""),
+    createdBy: text("created_by").notNull(),
+    updatedBy: text("updated_by"),
+    taskIds: text("task_ids").array().default([]),
+  },
+  (table) => [index().on(table.projectId)],
+);
+
+export const intakeForms = pgTable(
+  "intake_forms",
+  {
+    ...base,
+    workspaceId: text("workspace_id").notNull(),
+    projectId: text("project_id").notNull(),
+    token: text("token").notNull(),
+    enabled: boolean("enabled").notNull().default(true),
+    title: text("title").notNull(),
+    intro: text("intro"),
+    assigneeId: text("assignee_id").notNull(),
+    status: text("status").notNull(),
+  },
+  (table) => [uniqueIndex().on(table.token), index().on(table.projectId)],
+);
+
+export const retroItems = pgTable(
+  "retro_items",
+  {
+    ...base,
+    workspaceId: text("workspace_id").notNull(),
+    sprintId: text("sprint_id").notNull(),
+    memberId: text("member_id").notNull(),
+    kind: text("kind").notNull(),
+    content: text("content").notNull(),
+    taskId: text("task_id"),
+  },
+  (table) => [index().on(table.sprintId)],
+);
+
 /*
  * Comptes et sessions de Better Auth (connexion avec AUTH_PROVIDER=better-auth). Les noms de
  * champs sont ceux attendus par Better Auth ; `prefs` reprend les préférences Appwrite (JSON).

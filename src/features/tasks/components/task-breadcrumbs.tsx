@@ -7,6 +7,7 @@ import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { useGetChecklist } from "@/features/checklist/api/use-checklist";
 import { useCreateTemplate } from "@/features/templates/api/use-templates";
+import { ReminderButton } from "@/features/reminders/components/reminder-button";
 
 import { Button } from "@/components/ui/button";
 
@@ -72,10 +73,13 @@ export const TaskBreadcrumbs = ({ project, task }: TaskBreadcrumbsProps) => {
         <h1 className="truncate font-semibold">{task.name}</h1>
       </nav>
       <PresenceAvatars className="ml-auto shrink-0" />
+      <div className="shrink-0 [nav+&]:ml-auto">
+        <ReminderButton taskId={task.$id} />
+      </div>
       <Button
         onClick={handleSaveTemplate}
         disabled={isSavingTemplate}
-        className="shrink-0 [nav+&]:ml-auto"
+        className="shrink-0"
         variant="outline"
         size="sm"
         title="Enregistrer comme modèle"

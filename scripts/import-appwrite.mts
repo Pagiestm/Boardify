@@ -39,6 +39,13 @@ const COLLECTIONS: [PgTable, string][] = [
   [schema.sprints, "NEXT_PUBLIC_APPWRITE_SPRINTS_ID"],
   [schema.aiSettings, "NEXT_PUBLIC_APPWRITE_AI_SETTINGS_ID"],
   [schema.presence, "NEXT_PUBLIC_APPWRITE_PRESENCE_ID"],
+  [schema.timeEntries, "NEXT_PUBLIC_APPWRITE_TIME_ENTRIES_ID"],
+  [schema.reminders, "NEXT_PUBLIC_APPWRITE_REMINDERS_ID"],
+  [schema.pokerSessions, "NEXT_PUBLIC_APPWRITE_POKER_SESSIONS_ID"],
+  [schema.pokerVotes, "NEXT_PUBLIC_APPWRITE_POKER_VOTES_ID"],
+  [schema.docs, "NEXT_PUBLIC_APPWRITE_DOCS_ID"],
+  [schema.intakeForms, "NEXT_PUBLIC_APPWRITE_INTAKE_FORMS_ID"],
+  [schema.retroItems, "NEXT_PUBLIC_APPWRITE_RETRO_ITEMS_ID"],
 ];
 
 const PAGE = 100;

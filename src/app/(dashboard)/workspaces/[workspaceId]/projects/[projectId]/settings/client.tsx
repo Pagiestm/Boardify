@@ -3,6 +3,7 @@
 import { useGetProject } from "@/features/projects/api/use-get-project";
 import { useProjectId } from "@/features/projects/hooks/use-project-id";
 import { EditProjectForm } from "@/features/projects/components/edit-project-form";
+import { IntakeFormCard } from "@/features/intake/components/intake-form-card";
 
 import { PageLoader } from "@/components/page-loader";
 import { PageError } from "@/components/page-error";
@@ -21,7 +22,9 @@ export const ProjectIdSettingsClient = () => {
 
   return (
     <div className="mx-auto w-full max-w-2xl">
-      <EditProjectForm initialValues={initialValues} />
+      <EditProjectForm initialValues={initialValues}>
+        <IntakeFormCard project={initialValues} />
+      </EditProjectForm>
     </div>
   );
 };

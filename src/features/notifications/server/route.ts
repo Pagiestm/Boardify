@@ -6,6 +6,7 @@ import { getUserIdentities } from "@/lib/users";
 import { sessionMiddleware } from "@/lib/session-middleware";
 
 import { GITHUB_AUTHOR_PREFIX } from "@/features/comments/types";
+import { deliverDueReminders } from "@/features/reminders/server/deliver";
 
 const NOTIFICATIONS_LIMIT = 30;
 
@@ -13,6 +14,9 @@ const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
     const db = c.get("db");
     const user = c.get("user");
+
+    // Les rappels arrivés à échéance deviennent des notifications à cette lecture.
+    await deliverDueReminders(db, user.$id);
 
     const [notifications, unreadCount] = await Promise.all([
       db.notifications.list({

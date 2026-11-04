@@ -15,6 +15,7 @@ interface Crumb {
 
 const SECTION_LABELS: Record<string, string> = {
   tasks: "Mes tâches",
+  portfolio: "Portefeuille",
   members: "Membres",
   settings: "Paramètres",
   account: "Mon compte",

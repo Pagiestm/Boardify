@@ -31,6 +31,12 @@ export const deleteTaskRelations = async (db: Db, files: FileStore, taskId: stri
       deleteByTask(db.attachments, taskId, (attachment) =>
         files.delete(attachment.fileId).catch(() => null),
       ),
+      // Collections facultatives : ignorées si elles ne sont pas configurées.
+      db.timeEntries.enabled && deleteByTask(db.timeEntries, taskId),
+      db.reminders.enabled && deleteByTask(db.reminders, taskId),
+      db.pokerVotes.enabled && deleteByTask(db.pokerVotes, taskId),
+      // La séance d'estimation porte l'identifiant de la tâche.
+      db.pokerSessions.enabled && db.pokerSessions.delete(taskId).catch(() => null),
     ]);
   } catch (error) {
     console.error("Suppression des éléments liés à la tâche impossible", error);

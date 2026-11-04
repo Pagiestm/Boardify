@@ -10,5 +10,7 @@ export const describeNotification = (type: NotificationType, actor: string, task
       return `${actor} a commenté « ${task} »`;
     case NotificationType.DUE_SOON:
       return `« ${task} » arrive à échéance demain`;
+    case NotificationType.REMINDER:
+      return `Rappel : « ${task} »`;
   }
 };

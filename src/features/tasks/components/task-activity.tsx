@@ -4,7 +4,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { FaGithub } from "react-icons/fa";
-import { MoreHorizontalIcon, PencilIcon, SparklesIcon, Trash2Icon } from "lucide-react";
+import { InboxIcon, MoreHorizontalIcon, PencilIcon, SparklesIcon, Trash2Icon } from "lucide-react";
 
 import { useCurrent } from "@/features/auth/api/use-current";
 import { useGetLabels } from "@/features/labels/api/use-get-labels";
@@ -42,6 +42,7 @@ import {
 
 import { useGetTasks } from "../api/use-get-tasks";
 import { useGetSprints } from "@/features/sprints/api/use-sprints";
+import { INTAKE_VIA } from "@/features/intake/constants";
 import { PopulatedTask, TaskPriority, TaskRecurrence } from "../types";
 import { TASK_PRIORITY_CONFIG, TASK_RECURRENCE_LABELS } from "../constants";
 
@@ -303,18 +304,24 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
             {items.map((item) => {
               if (item.kind === "activity") {
                 const { activity } = item;
-                const fromGithub = !activity.memberId;
                 const change = parseChange(activity.data);
-                const actor = fromGithub
-                  ? String(change.to ?? "GitHub")
-                  : memberName(activity.memberId);
+                // Sans membre : action venue de GitHub, ou tâche reçue par le formulaire public.
+                const fromForm = !activity.memberId && change.to === INTAKE_VIA;
+                const fromGithub = !activity.memberId && !fromForm;
+                const actor = fromForm
+                  ? INTAKE_VIA
+                  : fromGithub
+                    ? String(change.to ?? "GitHub")
+                    : memberName(activity.memberId);
 
                 return (
                   <li
                     key={activity.$id}
                     className="flex items-start gap-2.5 text-[13px] text-muted-foreground"
                   >
-                    {fromGithub ? (
+                    {fromForm ? (
+                      <InboxIcon className="mt-0.5 size-5 shrink-0 text-foreground" />
+                    ) : fromGithub ? (
                       <FaGithub className="mt-0.5 size-5 shrink-0 text-foreground" />
                     ) : (
                       <MemberAvatar
@@ -324,7 +331,8 @@ export const TaskActivity = ({ task }: TaskActivityProps) => {
                       />
                     )}
                     <p className="min-w-0">
-                      <Strong>{actor}</Strong> {describe(activity.type, fromGithub ? {} : change)} ·{" "}
+                      <Strong>{actor}</Strong>{" "}
+                      {describe(activity.type, fromGithub || fromForm ? {} : change)} ·{" "}
                       <TimeAgo date={activity.$createdAt} />
                     </p>
                   </li>
