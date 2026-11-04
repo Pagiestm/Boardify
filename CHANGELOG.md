@@ -1,3 +1,13 @@
+## [1.19.0](https://github.com/Pagiestm/Boardify/compare/v1.18.2...v1.19.0) (2026-11-04)
+
+### Features
+
+* **outils:** temps, rappels, planning poker, documentation, formulaire public et pilotage ([109712b](https://github.com/Pagiestm/Boardify/commit/109712bda479e23f887a24c8186247a761ddbcd2))
+
+### Bug Fixes
+
+* **markdown:** barre de mise en forme inactive dans la fenêtre d'une tâche ([7b62972](https://github.com/Pagiestm/Boardify/commit/7b62972723bb5b001e6b8e44a99c8f2e4d4276a8))
+
 ## [1.18.2](https://github.com/Pagiestm/Boardify/compare/v1.18.1...v1.18.2) (2026-11-03)
 
 ### Bug Fixes
