@@ -76,9 +76,17 @@ export const MarkdownEditor = ({
   className,
   onKeyDown,
   disabled,
+  ref,
   ...props
 }: MarkdownEditorProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // La zone de texte est gardée pour la mise en forme, tout en servant la ref reçue (formulaires).
+  const setTextarea = (node: HTMLTextAreaElement | null) => {
+    textareaRef.current = node;
+    if (typeof ref === "function") ref(node);
+    else if (ref) ref.current = node;
+  };
   const [preview, setPreview] = useState(false);
 
   // Applique la mise en forme à la sélection (ou insère un exemple), puis garde le focus.
@@ -159,7 +167,7 @@ export const MarkdownEditor = ({
         </div>
       ) : (
         <Textarea
-          ref={textareaRef}
+          ref={setTextarea}
           value={value}
           disabled={disabled}
           onChange={(event) => onChange(event.target.value)}
