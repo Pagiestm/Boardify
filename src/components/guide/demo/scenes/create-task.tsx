@@ -1,8 +1,18 @@
 import {
+  BoldIcon,
+  BookOpenIcon,
   CalendarDaysIcon,
+  ChevronDownIcon,
+  ChevronsUpDownIcon,
+  FlagIcon,
   GanttChartIcon,
+  ItalicIcon,
   KanbanSquareIcon,
+  LayoutListIcon,
+  ListIcon,
   PlusIcon,
+  SettingsIcon,
+  SparklesIcon,
   TableIcon,
 } from "lucide-react";
 
@@ -52,37 +62,125 @@ const VIEWS = [
   { label: "Frise", icon: GanttChartIcon },
 ];
 
-/** Barre d'outils d'une page de tâches : vues et bouton « Nouvelle tâche ». */
+/** Bandeau replié des indicateurs de flux, sous la barre de sprint. */
+export const FlowStrip = () => (
+  <div className="flex items-center justify-between gap-2 rounded-lg border bg-card px-3 py-1 text-xs shadow-xs">
+    <span className="font-medium">
+      Indicateurs de flux
+      <span className="ml-1.5 font-normal text-muted-foreground">
+        temps de cycle, débit, flux cumulé
+      </span>
+    </span>
+    <ChevronDownIcon className="size-3.5 text-muted-foreground" />
+  </div>
+);
+
+/** Barre de sprint repliée : aucun sprint sélectionné. */
+const EmptySprintBar = () => (
+  <div className="flex items-center gap-3 rounded-lg border bg-card p-2 shadow-xs">
+    <span className="flex h-7 w-28 shrink-0 items-center gap-2 rounded-md border bg-background px-2 text-xs">
+      <FlagIcon className="size-3 text-muted-foreground" />
+      <span className="flex-1 truncate">Tous les sprints</span>
+      <ChevronsUpDownIcon className="size-3 text-muted-foreground" />
+    </span>
+    <span className="min-w-0 truncate text-[11px] text-muted-foreground">
+      Découpez le projet en sprints pour suivre ce qui doit être livré et quand.
+    </span>
+    <MockButton variant="outline" size="sm" className="ml-auto">
+      <PlusIcon />
+      Nouveau sprint
+    </MockButton>
+  </div>
+);
+
+/** Ligne de filtres de la vue des tâches. */
+const Filters = () => (
+  <div className="flex items-center gap-1.5">
+    {["Tous les statuts", "Tous les membres", "Toutes les étiquettes", "Échéance"].map((label) => (
+      <span
+        key={label}
+        className="flex h-7 min-w-0 flex-1 items-center justify-between gap-1 rounded-md border bg-background px-2 text-[11px] text-muted-foreground"
+      >
+        <span className="truncate">{label}</span>
+        <ChevronsUpDownIcon className="size-3 shrink-0" />
+      </span>
+    ))}
+  </div>
+);
+
+/**
+ * Page d'un projet : en-tête, barre de sprint, indicateurs de flux, vues et filtres.
+ * `chrome` est désactivé par la démo des sprints, qui dessine sa propre barre.
+ */
 export const TaskToolbar = ({
   view = "Kanban",
   hoverNew,
+  project = "Site vitrine",
+  chrome = true,
 }: {
   view?: string;
   hoverNew?: boolean;
+  project?: string;
+  chrome?: boolean;
 }) => (
-  <div className="flex items-center justify-between gap-2">
-    <div className="flex rounded-lg bg-muted p-0.5">
-      {VIEWS.map(({ label, icon: Icon }) => (
-        <span
-          key={label}
-          data-demo={`view-${label}`}
-          className={cn(
-            "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs",
-            label === view ? "bg-background font-medium shadow-xs" : "text-muted-foreground",
-          )}
-        >
-          <Icon className="size-3.5" />
-          {label}
+  <div className="flex flex-col gap-2.5">
+    <div className="flex items-center justify-between gap-2">
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="flex size-6 shrink-0 items-center justify-center rounded bg-green-100 text-[11px] font-semibold text-green-700 dark:bg-green-500/20 dark:text-green-300">
+          {project[0]}
         </span>
-      ))}
+        <span className="truncate text-sm font-semibold">{project}</span>
+      </span>
+      <span className="flex shrink-0 items-center gap-1.5">
+        <MockButton demo="project-docs" variant="outline" size="sm">
+          <BookOpenIcon />
+          Documentation
+        </MockButton>
+        <MockButton demo="project-settings" variant="outline" size="sm">
+          <SettingsIcon />
+          Paramètres
+        </MockButton>
+      </span>
     </div>
-    <MockButton demo="new-task" size="sm" hover={hoverNew}>
-      <PlusIcon />
-      Nouvelle tâche
-      <Kbd className="h-4 min-w-4 border-white/30 bg-white/15 text-[10px] text-primary-foreground">
-        N
-      </Kbd>
-    </MockButton>
+    {chrome && (
+      <>
+        <EmptySprintBar />
+        <FlowStrip />
+      </>
+    )}
+    <div className="flex flex-col gap-2 rounded-lg border bg-card p-2 shadow-xs">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex rounded-lg bg-muted p-0.5">
+          {VIEWS.map(({ label, icon: Icon }) => (
+            <span
+              key={label}
+              data-demo={`view-${label}`}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs",
+                label === view ? "bg-background font-medium shadow-xs" : "text-muted-foreground",
+              )}
+            >
+              <Icon className="size-3.5" />
+              {label}
+            </span>
+          ))}
+        </div>
+        <span className="flex items-center gap-1.5">
+          <MockButton demo="saved-views" variant="outline" size="sm">
+            <LayoutListIcon />
+            Vues
+          </MockButton>
+          <MockButton demo="new-task" size="sm" hover={hoverNew}>
+            <PlusIcon />
+            Nouvelle tâche
+            <Kbd className="h-4 min-w-4 border-white/30 bg-white/15 text-[10px] text-primary-foreground">
+              N
+            </Kbd>
+          </MockButton>
+        </span>
+      </div>
+      <Filters />
+    </div>
   </div>
 );
 
@@ -90,9 +188,12 @@ export const TaskToolbar = ({
 export const MockKanban = ({
   tasks,
   render,
+  minHeight = 240,
 }: {
   tasks: SampleTask[];
   render?: (task: SampleTask) => React.ReactNode;
+  /** Hauteur des colonnes : réduite quand la scène affiche la barre de sprint. */
+  minHeight?: number;
 }) => (
   <div className="grid grid-cols-4 gap-2.5">
     {PREVIEW_STATUSES.map((status) => {
@@ -101,7 +202,8 @@ export const MockKanban = ({
         <div
           key={status}
           data-demo={`column-${status}`}
-          className="flex min-h-[400px] flex-col gap-2 rounded-lg bg-muted/60 p-2"
+          className="flex flex-col gap-2 overflow-hidden rounded-lg bg-muted/60 p-2"
+          style={{ height: minHeight }}
         >
           <div className="flex items-center justify-between px-1 py-0.5">
             <StatusLabel status={status} />
@@ -192,6 +294,10 @@ export const createTaskScene: DemoScene = {
                 </>
               }
             >
+              <span className="flex items-center justify-between gap-2 rounded-md border border-dashed px-2.5 py-1.5 text-[11px] text-muted-foreground">
+                Partir d&apos;un modèle
+                <ChevronsUpDownIcon className="size-3" />
+              </span>
               <MockField
                 demo="field-name"
                 label="Nom de la tâche"
@@ -199,7 +305,31 @@ export const createTaskScene: DemoScene = {
                 value={name}
                 focused={between(t, T.open, T.priority)}
               />
-              <div data-demo="dialog-fields" className="relative grid grid-cols-2 gap-3">
+              <span className="flex items-center gap-1.5 self-start rounded-md border px-2 py-1 text-[11px] font-medium">
+                <SparklesIcon className="size-3" />
+                Compléter avec l&apos;IA
+              </span>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium">Description</span>
+                <div className="overflow-hidden rounded-md border bg-background">
+                  <div className="flex items-center gap-1 border-b px-1.5 py-1 text-[10px]">
+                    <span className="rounded bg-muted px-1.5 py-0.5 font-medium">Écrire</span>
+                    <span className="px-1.5 py-0.5 text-muted-foreground">Aperçu</span>
+                    <span className="ml-1 flex items-center gap-1 text-muted-foreground">
+                      <BoldIcon className="size-2.5" />
+                      <ItalicIcon className="size-2.5" />
+                      <ListIcon className="size-2.5" />
+                    </span>
+                  </div>
+                  <span className="block px-2.5 py-2 text-[11px] text-muted-foreground">
+                    Contexte, étapes, liens utiles…
+                  </span>
+                </div>
+              </div>
+              <div
+                data-demo="dialog-fields"
+                className="relative grid max-h-[190px] grid-cols-2 gap-3 overflow-hidden [mask-image:linear-gradient(to_bottom,black_80%,transparent)]"
+              >
                 <MockSelect
                   label="Statut"
                   value={
@@ -261,6 +391,19 @@ export const createTaskScene: DemoScene = {
                 <MockSelect
                   label="Étiquettes"
                   value={<span className="text-muted-foreground">Aucune</span>}
+                />
+                <MockSelect
+                  label="Sprint"
+                  value={<span className="text-muted-foreground">Sans sprint</span>}
+                />
+                <MockField label="Estimation (points)" placeholder="Ex. : 3" />
+                <MockSelect
+                  label="Répétition"
+                  value={<span className="text-muted-foreground">Jamais</span>}
+                />
+                <MockSelect
+                  label="Bloquée par"
+                  value={<span className="text-muted-foreground">Choisir des tâches</span>}
                 />
               </div>
             </MockDialog>

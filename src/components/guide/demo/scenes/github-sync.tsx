@@ -260,6 +260,12 @@ const ProjectSettings = ({ t }: { t: number }) => {
           </MockButton>
         </div>
       </Card>
+      <Card className="mt-3">
+        <span className="text-sm font-semibold">Formulaire public de demande</span>
+        <span className="text-[11px] text-muted-foreground">
+          Un lien à partager : chaque envoi crée une tâche dans ce projet, sans compte Boardify.
+        </span>
+      </Card>
     </AppFrame>
   );
 };

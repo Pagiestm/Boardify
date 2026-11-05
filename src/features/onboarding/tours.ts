@@ -49,6 +49,11 @@ export const TOURS: Tour[] = [
         body: "Chaque projet a son Kanban, ses vues et ses sprints. Créez-en un avec + ou la touche P.",
       },
       {
+        target: "portfolio",
+        title: "Portefeuille",
+        body: "Tous vos projets sur une page : avancement, tâches en retard, prochaine échéance et sprint en cours, avec une santé expliquée pour chacun.",
+      },
+      {
         target: "search",
         title: "Tout trouver avec ⌘K",
         body: "Tâches (tapez une partie de leur nom), pages, projets, actions et espaces de travail. Avec l'assistant IA, posez aussi une question sur vos tâches.",
@@ -112,14 +117,24 @@ export const TOURS: Tour[] = [
         body: "Planifiez des itérations avec un objectif, suivez leur avancement et la charge de chacun, puis terminez-les.",
       },
       {
+        target: "project-flow",
+        title: "Indicateurs de flux",
+        body: "Temps de cycle, temps de traversée, débit par semaine et flux cumulé. Une bande qui s'épaissit signale une étape où les tâches s'accumulent.",
+      },
+      {
         target: "project-assistant",
         title: "Assistant IA",
         body: "Point d'avancement, bilan, notes de version, tâches depuis un compte rendu, estimations.",
       },
       {
+        target: "project-docs",
+        title: "Documentation",
+        body: "Les specs, notes de réunion et décisions du projet, rédigées en Markdown et reliées aux tâches concernées.",
+      },
+      {
         target: "project-settings",
         title: "Paramètres du projet",
-        body: "Nom, icône et dépôt GitHub synchronisé avec les tâches.",
+        body: "Nom, icône, dépôt GitHub synchronisé avec les tâches, et le formulaire public qui transforme chaque demande reçue en tâche.",
       },
     ],
   },
@@ -155,9 +170,24 @@ export const TOURS: Tour[] = [
         body: "Statut, priorité, période, sprint, dépendances… Modifiez-les avec la touche E.",
       },
       {
+        target: "task-time",
+        title: "Temps passé",
+        body: "Lancez le chronomètre pendant que vous y travaillez, ou saisissez un temps après coup (« 45m », « 1h30 »).",
+      },
+      {
+        target: "task-poker",
+        title: "Estimer à plusieurs",
+        body: "Le planning poker : chacun choisit sa carte en secret, puis elles se révèlent ensemble. La valeur retenue devient l'estimation.",
+      },
+      {
         target: "task-header",
         title: "Modèle",
         body: "Enregistrez cette tâche comme modèle pour la réutiliser à la création d'une nouvelle.",
+      },
+      {
+        target: "task-reminder",
+        title: "Rappel",
+        body: "Faites-vous rappeler cette tâche dans une heure, demain matin ou à la date de votre choix. Le rappel arrive dans vos notifications, vous seul le voyez.",
       },
     ],
   },

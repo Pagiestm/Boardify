@@ -1,5 +1,6 @@
 import {
   BellIcon,
+  BriefcaseBusinessIcon,
   CheckCircle2Icon,
   ChevronsUpDownIcon,
   HomeIcon,
@@ -26,6 +27,7 @@ type DemoProps = { demo?: string; className?: string };
 export const NAV_ITEMS = [
   { label: "Accueil", icon: HomeIcon },
   { label: "Mes tâches", icon: CheckCircle2Icon },
+  { label: "Portefeuille", icon: BriefcaseBusinessIcon },
   { label: "Membres", icon: UsersIcon },
   { label: "Paramètres", icon: SettingsIcon },
 ] as const;

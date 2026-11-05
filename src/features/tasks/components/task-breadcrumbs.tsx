@@ -73,7 +73,7 @@ export const TaskBreadcrumbs = ({ project, task }: TaskBreadcrumbsProps) => {
         <h1 className="truncate font-semibold">{task.name}</h1>
       </nav>
       <PresenceAvatars className="ml-auto shrink-0" />
-      <div className="shrink-0 [nav+&]:ml-auto">
+      <div data-tour="task-reminder" className="shrink-0 [nav+&]:ml-auto">
         <ReminderButton taskId={task.$id} />
       </div>
       <Button

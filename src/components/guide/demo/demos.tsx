@@ -13,6 +13,9 @@ import { aiCompleteScene } from "./scenes/ai-complete";
 import { aiFromTextScene } from "./scenes/ai-from-text";
 import { quickAddScene } from "./scenes/quick-add";
 import { githubSyncScene } from "./scenes/github-sync";
+import { pokerScene } from "./scenes/poker";
+import { timeScene } from "./scenes/time";
+import { portfolioScene } from "./scenes/portfolio";
 
 const SCENES = {
   "create-task": createTaskScene,
@@ -26,6 +29,9 @@ const SCENES = {
   "ai-from-text": aiFromTextScene,
   "quick-add": quickAddScene,
   "github-sync": githubSyncScene,
+  poker: pokerScene,
+  time: timeScene,
+  portfolio: portfolioScene,
 } satisfies Record<string, DemoScene>;
 
 export type DemoId = keyof typeof SCENES;

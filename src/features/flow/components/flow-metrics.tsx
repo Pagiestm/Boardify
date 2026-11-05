@@ -175,7 +175,11 @@ export const FlowMetrics = ({ projectId, sprintId, sprintName }: FlowMetricsProp
     : 0;
 
   return (
-    <section className="rounded-lg border bg-card shadow-xs" aria-labelledby="flow-metrics-title">
+    <section
+      data-tour="project-flow"
+      className="rounded-lg border bg-card shadow-xs"
+      aria-labelledby="flow-metrics-title"
+    >
       <div className="flex flex-wrap items-center gap-2 p-2 pl-4">
         <button
           type="button"

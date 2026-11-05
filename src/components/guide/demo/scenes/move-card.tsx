@@ -138,7 +138,7 @@ const Board = ({ t }: { t: number }) => {
           <div
             key={status}
             data-demo={`column-${status}`}
-            className="flex min-h-[420px] flex-col rounded-lg bg-muted/60 p-2"
+            className="flex h-[250px] flex-col overflow-hidden rounded-lg bg-muted/60 p-2"
           >
             <div className="relative flex items-center gap-2 px-1 pb-2">
               <span

@@ -241,7 +241,7 @@ export const commandPaletteScene: DemoScene = {
               ...highlight(progress(t, NAVIGATE, NAVIGATE + 1500)),
             }}
           >
-            <TaskToolbar />
+            <TaskToolbar project="App mobile" />
             <MockKanban tasks={SAMPLE_TASKS.filter((task) => task.project === "App mobile")} />
           </div>
         ) : (

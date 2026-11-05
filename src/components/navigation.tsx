@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 const routes = [
   { label: "Accueil", href: "", icon: HomeIcon },
   { label: "Mes tâches", href: "/tasks", icon: ListChecksIcon },
-  { label: "Portefeuille", href: "/portfolio", icon: BriefcaseBusinessIcon },
+  { label: "Portefeuille", href: "/portfolio", icon: BriefcaseBusinessIcon, tour: "portfolio" },
   { label: "Membres", href: "/members", icon: UsersIcon },
   { label: "Paramètres", href: "/settings", icon: SettingsIcon },
 ];
@@ -29,7 +29,7 @@ export const Navigation = () => {
   return (
     <nav data-tour="navigation">
       <ul className="flex flex-col gap-0.5">
-        {routes.map(({ label, href, icon: Icon }) => {
+        {routes.map(({ label, href, icon: Icon, tour }) => {
           const fullHref = `/workspaces/${workspaceId}${href}`;
           const isActive = pathname === fullHref;
 
@@ -37,6 +37,7 @@ export const Navigation = () => {
             <li key={href}>
               <Link
                 href={fullHref}
+                data-tour={tour}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm transition-colors",

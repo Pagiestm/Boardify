@@ -2,6 +2,7 @@ import {
   CalendarIcon,
   ChevronsUpDownIcon,
   FlagIcon,
+  MessagesSquareIcon,
   PencilIcon,
   PlusIcon,
   Trash2Icon,
@@ -13,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { TaskPriority, TaskStatus } from "@/features/tasks/types";
 import { MiniAvatar, SampleTask } from "@/components/landing/preview-data";
 
-import { MockKanban, TaskToolbar } from "./create-task";
+import { FlowStrip, MockKanban, TaskToolbar } from "./create-task";
 import {
   AppFrame,
   MockButton,
@@ -216,6 +217,12 @@ const SprintBar = ({ t }: { t: number }) => {
                 Terminer
               </MockButton>
             </>
+          )}
+          {selected && (
+            <MockButton variant="ghost" size="sm" className="text-muted-foreground">
+              <MessagesSquareIcon />
+              Rétrospective
+            </MockButton>
           )}
           {selected && (
             <span className="flex size-7 items-center justify-center text-muted-foreground">
@@ -431,8 +438,10 @@ export const sprintScene: DemoScene = {
       >
         <div className="flex flex-col gap-3">
           <SprintBar t={t} />
-          <TaskToolbar />
+          <FlowStrip />
+          <TaskToolbar chrome={false} />
           <MockKanban
+            minHeight={130}
             tasks={t >= COMPLETED ? tasks.filter((task) => task.status === TaskStatus.DONE) : tasks}
             render={(task) => {
               const doneAt = TASKS.find((item) => item.id === task.id)?.doneAt;

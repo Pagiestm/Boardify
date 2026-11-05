@@ -317,6 +317,7 @@ export const aiFromTextScene: DemoScene = {
           </div>
           <TaskToolbar />
           <MockKanban
+            minHeight={205}
             tasks={tasks}
             render={(task) =>
               task.id.startsWith("x") ? (

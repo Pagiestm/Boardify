@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   BellIcon,
+  BriefcaseBusinessIcon,
   HouseIcon,
   ListChecksIcon,
   SearchIcon,
@@ -21,6 +22,7 @@ const InterfaceMap = () => (
         {[
           { icon: HouseIcon, label: "Accueil" },
           { icon: ListChecksIcon, label: "Mes tâches" },
+          { icon: BriefcaseBusinessIcon, label: "Portefeuille" },
           { icon: UsersIcon, label: "Membres" },
           { icon: SettingsIcon, label: "Paramètres" },
         ].map(({ icon: Icon, label }) => (
@@ -116,8 +118,8 @@ export const GuideContent = () => (
           {[
             <>
               <Ui>La barre latérale</Ui> : l&apos;espace en cours, <Ui>Accueil</Ui>,{" "}
-              <Ui>Mes tâches</Ui>, <Ui>Membres</Ui>, <Ui>Paramètres</Ui>, puis la liste de vos
-              projets.
+              <Ui>Mes tâches</Ui>, <Ui>Portefeuille</Ui>, <Ui>Membres</Ui>, <Ui>Paramètres</Ui>,
+              puis la liste de vos projets.
             </>,
             <>
               <Ui>La barre du haut</Ui> : la recherche <Keys k="⌘K" />, la cloche des notifications,
@@ -311,8 +313,12 @@ export const GuideContent = () => (
               En haut de la page, les avatars des membres qui consultent la même tâche en ce moment.
             </>,
             <>
-              <Ui>Détails</Ui> : statut, priorité, échéance, sprint, dépendances… <Keys k="E" />{" "}
-              pour les modifier.
+              <Ui>Détails</Ui> : assigné, échéance, statut, priorité, projet, étiquettes et
+              estimation. <Keys k="E" /> pour les modifier.
+            </>,
+            <>
+              <Ui>Temps passé</Ui> et <Ui>Estimation</Ui> : le chronomètre et l&apos;estimation à
+              plusieurs, détaillés juste après.
             </>,
           ]}
         </Bullets>
@@ -341,6 +347,7 @@ export const GuideContent = () => (
       </Part>
 
       <Part title="Temps passé et rappels">
+        <Demo id="time" />
         <Bullets>
           {[
             <>
@@ -359,6 +366,7 @@ export const GuideContent = () => (
       </Part>
 
       <Part title="Estimer à plusieurs (planning poker)">
+        <Demo id="poker" />
         <Steps>
           {[
             <>
@@ -502,6 +510,7 @@ export const GuideContent = () => (
       </Part>
 
       <Part title="Portefeuille">
+        <Demo id="portfolio" />
         <Text>
           <Ui>Portefeuille</Ui>, dans la barre latérale, réunit tous les projets de l&apos;espace :
           avancement, tâches en retard, prochaine échéance, sprint en cours et une santé (

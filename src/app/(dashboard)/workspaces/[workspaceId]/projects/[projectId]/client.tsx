@@ -75,7 +75,7 @@ export const ProjectIdClient = () => {
             </div>
           )}
           {docs?.enabled && (
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" size="sm" asChild data-tour="project-docs">
               <Link href={`/workspaces/${project.workspaceId}/projects/${project.$id}/docs`}>
                 <BookOpenIcon />
                 Documentation
