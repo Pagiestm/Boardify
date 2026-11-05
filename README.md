@@ -20,47 +20,80 @@
   <a href="https://github.com/Pagiestm/Boardify/releases/latest"><img src="https://img.shields.io/github/v/release/Pagiestm/Boardify" alt="Version" /></a>
 </p>
 
-## Quatre vues sur les mêmes tâches
+## Fonctionnalités
+
+<table>
+<tr>
+<td width="40%" valign="top">
+
+### Quatre vues sur les mêmes tâches
 
 Kanban, tableau, calendrier et frise. Chacun filtre comme il veut et enregistre ses vues ; les colonnes s'adaptent à votre façon de travailler.
 
-<img src="docs/videos/vues.webp" alt="Déplacement d'une tâche dans le Kanban, puis passage en vue tableau" width="900" />
+</td>
+<td width="60%"><img src="docs/videos/vues.webp" alt="Déplacement d'une tâche dans le Kanban" width="620" /></td>
+</tr>
+<tr>
+<td width="40%" valign="top">
 
-## Planifier et suivre un sprint
+### Planifier et suivre un sprint
 
 Un objectif, des dates, et l'avancement en tâches comme en points. Le burndown et la vélocité montrent où en est l'équipe ; clôturer un sprint reporte ce qui reste.
 
-<img src="docs/videos/sprint.webp" alt="Création d'un sprint, suivi de l'avancement et clôture" width="900" />
+</td>
+<td width="60%"><img src="docs/videos/sprint.webp" alt="Création d'un sprint, suivi de l'avancement et clôture" width="620" /></td>
+</tr>
+<tr>
+<td width="40%" valign="top">
 
-## Estimer à plusieurs, en direct
+### Estimer à plusieurs, en direct
 
 Chacun choisit sa carte en secret, les cartes se révèlent ensemble, et l'estimation retenue part sur la tâche.
 
-<img src="docs/videos/poker.webp" alt="Planning poker : votes cachés puis révélés" width="900" />
+</td>
+<td width="60%"><img src="docs/videos/poker.webp" alt="Planning poker : votes cachés puis révélés" width="620" /></td>
+</tr>
+<tr>
+<td width="40%" valign="top">
 
-## Savoir où passe le temps
+### Savoir où passe le temps
 
 Un chronomètre sur la tâche, ou une durée saisie après coup. Le temps se répartit par membre, sur une période ou sur un sprint.
 
-<img src="docs/videos/temps.webp" alt="Chronomètre démarré puis arrêté, et saisie manuelle d'une durée" width="900" />
+</td>
+<td width="60%"><img src="docs/videos/temps.webp" alt="Chronomètre démarré puis arrêté, et saisie manuelle d'une durée" width="620" /></td>
+</tr>
+<tr>
+<td width="40%" valign="top">
 
-## Piloter tous vos projets d'un coup d'œil
+### Piloter tous vos projets d'un coup d'œil
 
 Le portefeuille réunit l'avancement, les retards et la santé de chaque projet. Les indicateurs de flux (temps de cycle, débit, flux cumulé) montrent où les tâches s'accumulent.
 
-<img src="docs/videos/portefeuille.webp" alt="Vue portefeuille avec la santé de chaque projet" width="900" />
+</td>
+<td width="60%"><img src="docs/videos/portefeuille.webp" alt="Vue portefeuille avec la santé de chaque projet" width="620" /></td>
+</tr>
+<tr>
+<td width="40%" valign="top">
 
-## Synchronisé avec vos issues GitHub
+### Synchronisé avec vos issues GitHub
 
 Chaque tâche crée son issue, la met à jour, la ferme et la rouvre. Ce qui se passe sur GitHub revient dans Boardify : fermeture, commentaires, titres, branches et pull requests liées.
 
-<img src="docs/videos/github.webp" alt="Une tâche Boardify synchronisée avec une issue GitHub" width="900" />
+</td>
+<td width="60%"><img src="docs/videos/github.webp" alt="Une tâche Boardify synchronisée avec une issue GitHub" width="620" /></td>
+</tr>
+<tr>
+<td width="40%" valign="top">
 
-## Un assistant IA branché sur votre clé
+### Un assistant IA branché sur votre clé
 
 Chaque espace choisit son fournisseur (OpenAI, Anthropic, Mistral, Gemini ou compatible) et colle sa clé. L'assistant rédige les descriptions, découpe en sous-tâches, résume les discussions, planifie un sprint et transforme un compte rendu en tâches.
 
-<img src="docs/videos/assistant.webp" alt="Un texte transformé en plusieurs tâches par l'assistant" width="900" />
+</td>
+<td width="60%"><img src="docs/videos/assistant.webp" alt="Un texte transformé en plusieurs tâches par l'assistant" width="620" /></td>
+</tr>
+</table>
 
 ## Et aussi
 
@@ -72,9 +105,18 @@ Chaque espace choisit son fournisseur (OpenAI, Anthropic, Mistral, Gemini ou com
 
 ## Application desktop
 
+<table>
+<tr>
+<td width="40%" valign="top">
+
 macOS, Windows et Linux, avec l'ajout rapide depuis n'importe quelle application (`⌃⌥N`), les tâches du jour dans la barre des menus et les mises à jour automatiques.
 
-<img src="docs/videos/desktop.webp" alt="Ajout rapide d'une tâche depuis le raccourci global" width="900" />
+[Télécharger](https://boardify.theotimepagies.com/download)
+
+</td>
+<td width="60%"><img src="docs/videos/desktop.webp" alt="Ajout rapide d'une tâche depuis le raccourci global" width="620" /></td>
+</tr>
+</table>
 
 ## Stack
 
