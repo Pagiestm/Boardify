@@ -1,3 +1,9 @@
+## [1.19.1](https://github.com/Pagiestm/Boardify/compare/v1.19.0...v1.19.1) (2026-11-09)
+
+### Bug Fixes
+
+* **guide:** plein écran des démos impossible sur iPhone ([cae5b38](https://github.com/Pagiestm/Boardify/commit/cae5b38d6cb57980f5ae65e9de2b2be0b66b52da))
+
 ## [1.19.0](https://github.com/Pagiestm/Boardify/compare/v1.18.2...v1.19.0) (2026-11-04)
 
 ### Features
