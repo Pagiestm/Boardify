@@ -72,6 +72,7 @@ export const DemoPlayer = ({ scene, className }: DemoPlayerProps) => {
   const [playing, setPlaying] = useState(false);
   const [scale, setScale] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
+  const [canFullscreen, setCanFullscreen] = useState(false);
 
   const tRef = useRef(0);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -146,10 +147,21 @@ export const DemoPlayer = ({ scene, className }: DemoPlayerProps) => {
   }, []);
 
   useEffect(() => {
+    // Safari sur iPhone n'ouvre pas un élément en plein écran : le bouton est alors masqué.
+    setCanFullscreen(
+      typeof rootRef.current?.requestFullscreen === "function" &&
+        Boolean(document.fullscreenEnabled),
+    );
     const onChange = () => setFullscreen(document.fullscreenElement === rootRef.current);
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
+
+  const toggleFullscreen = () => {
+    const action = fullscreen ? document.exitFullscreen() : rootRef.current?.requestFullscreen();
+    // Le navigateur peut refuser (onglet en arrière-plan, réglage système) : sans conséquence.
+    void action?.catch(() => undefined);
+  };
 
   // Place la caméra et le curseur : les cibles sont mesurées dans la scène affichée.
   useLayoutEffect(() => {
@@ -315,16 +327,20 @@ export const DemoPlayer = ({ scene, className }: DemoPlayerProps) => {
           <span className="shrink-0 text-xs text-muted-foreground tabular-nums">
             {formatTime(t)} / {formatTime(scene.duration)}
           </span>
-          <button
-            type="button"
-            onClick={() =>
-              fullscreen ? document.exitFullscreen() : rootRef.current?.requestFullscreen()
-            }
-            aria-label={fullscreen ? "Quitter le plein écran" : "Plein écran"}
-            className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-accent"
-          >
-            {fullscreen ? <MinimizeIcon className="size-4" /> : <MaximizeIcon className="size-4" />}
-          </button>
+          {canFullscreen && (
+            <button
+              type="button"
+              onClick={toggleFullscreen}
+              aria-label={fullscreen ? "Quitter le plein écran" : "Plein écran"}
+              className="flex size-8 shrink-0 items-center justify-center rounded-md hover:bg-accent"
+            >
+              {fullscreen ? (
+                <MinimizeIcon className="size-4" />
+              ) : (
+                <MaximizeIcon className="size-4" />
+              )}
+            </button>
+          )}
         </div>
         <ol className="flex flex-wrap gap-1.5">
           {scene.steps.map((item, index) => (
